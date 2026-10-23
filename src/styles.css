@@ -1,1 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-cream-50: #fbf8f3;
+  --color-cream-100: #f4ede3;
+  --color-cream-200: #e9ded0;
+
+  --color-ink-900: #1f1b16;
+  --color-ink-700: #3f3a33;
+  --color-ink-500: #7a7167;
+  --color-ink-400: #9a9187;
+
+  --color-brand-50: #fef3ed;
+  --color-brand-100: #fde7dc;
+  --color-brand-300: #f6a483;
+  --color-brand-500: #f26b3a;
+  --color-brand-600: #d9531f;
+  --color-brand-700: #b93f17;
+
+  --color-star: #f5a524;
+  --color-line: #ebe2d6;
+
+  --shadow-soft: 0 24px 60px -28px rgb(31 27 22 / 0.24);
+  --shadow-card: 0 14px 40px -24px rgb(31 27 22 / 0.22);
+
+  --radius-4xl: 2rem;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--color-cream-50);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--color-brand-100);
+  color: var(--color-ink-900);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 3px;
+}
