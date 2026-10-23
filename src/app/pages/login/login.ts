@@ -41,10 +41,14 @@ export class Login {
     await submit(this.loginForm, async () => {
       try {
         await firstValueFrom(this.auth.login(this.model(), this.role()));
-        await this.router.navigateByUrl(this.portal().homePath);
       } catch (error) {
         this.errorMessage.set(toMessage(error));
+        return undefined;
       }
+      // Navigation failures are routing problems, not login failures: the session is already stored.
+      await this.router.navigateByUrl(this.portal().homePath).catch((error: unknown) => {
+        console.error(`Could not open ${this.portal().homePath} after login`, error);
+      });
       return undefined;
     });
   }

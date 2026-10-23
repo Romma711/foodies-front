@@ -65,4 +65,20 @@ describe('Login', () => {
     );
     expect(localStorage.getItem('foodies.token.CLIENTE')).toBeNull();
   });
+
+  it('does not report a successful login as failed when navigation fails', async () => {
+    // The test router has no `/admin` route, so the post-login navigation is rejected.
+    type('#login-email', 'admin@foodies.com');
+    type('#login-password', 'admin123');
+    await submitForm();
+
+    http
+      .expectOne(() => true)
+      .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_ADMIN'], exp: futureExp() })}` });
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+
+    expect(localStorage.getItem('foodies.token.ADMIN')).not.toBeNull();
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+  });
 });
