@@ -1,1 +1,157 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Design tokens. Minimal "Swiss" style (ui-ux-pro-max) with a warm food palette.
+ * Contrast checked for WCAG AA: text on --color-bg/--color-surface ≥ 4.5:1, borders of inputs ≥ 3:1.
+ */
+:root {
+  --color-primary: #c2410c;
+  --color-primary-hover: #9a3412;
+  --color-on-primary: #ffffff;
+  --color-bg: #fff7ed;
+  --color-surface: #ffffff;
+  --color-fg: #1c1917;
+  --color-muted-fg: #57534e;
+  --color-border: #e7d8cc;
+  --color-input-border: #8a7e74;
+  --color-focus: #1d4ed8;
+
+  --color-success: #15803d;
+  --color-success-bg: #dcfce7;
+  --color-success-fg: #14532d;
+  --color-warning-bg: #fef3c7;
+  --color-warning-fg: #92400e;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-danger-fg: #7f1d1d;
+  --color-neutral-bg: #f5f5f4;
+  --color-neutral-fg: #44403c;
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius: 0.5rem;
+  --shadow-card: 0 1px 2px rgb(28 25 23 / 0.08);
+  --touch-target: 2.75rem;
+  --duration-fast: 150ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-fg);
+  background: var(--color-bg);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--duration-fast) ease-out;
+}
+
+.btn-primary {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  color: var(--color-fg);
+  background: var(--color-surface);
+  border-color: var(--color-input-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-neutral-bg);
+}
+
+.btn-danger {
+  color: #ffffff;
+  background: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-fg);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Status messages */
+.alert {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius);
+}
+
+.alert-error {
+  color: var(--color-danger-fg);
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+.alert-success {
+  color: var(--color-success-fg);
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
