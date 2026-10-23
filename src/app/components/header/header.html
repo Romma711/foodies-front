@@ -1,1 +1,23 @@
-<p>header works!</p>
+<header class="site-header">
+  <a class="brand" routerLink="/">Foodies</a>
+
+  <nav aria-label="Account">
+    <ul>
+      @for (role of activeRoles(); track role) {
+        <li>
+          <a [routerLink]="portals[role].homePath">{{ portals[role].title }}</a>
+          <button
+            type="button"
+            [attr.aria-label]="'Sign out of ' + portals[role].title"
+            (click)="logout(role)"
+          >
+            Sign out
+          </button>
+        </li>
+      } @empty {
+        <li><a routerLink="/login">Sign in</a></li>
+        <li><a routerLink="/restaurante/login">For restaurants</a></li>
+      }
+    </ul>
+  </nav>
+</header>
