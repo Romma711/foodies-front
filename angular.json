@@ -59,7 +59,8 @@
               "buildTarget": "foodies-front:build:production"
             },
             "development": {
-              "buildTarget": "foodies-front:build:development"
+              "buildTarget": "foodies-front:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
