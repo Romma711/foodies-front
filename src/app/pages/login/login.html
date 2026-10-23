@@ -1,0 +1,47 @@
+<main class="auth-page">
+  <h1>{{ portal().title }} sign in</h1>
+
+  <form novalidate (submit)="onSubmit($event)">
+    @if (errorMessage(); as message) {
+      <p class="form-error" role="alert">{{ message }}</p>
+    }
+
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input
+        id="login-email"
+        type="email"
+        autocomplete="email"
+        [formField]="loginForm.email"
+        [attr.aria-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
+        aria-describedby="login-email-error"
+      />
+      @if (loginForm.email().touched() && loginForm.email().errors()[0]; as error) {
+        <p id="login-email-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="login-password">Password</label>
+      <input
+        id="login-password"
+        type="password"
+        autocomplete="current-password"
+        [formField]="loginForm.password"
+        [attr.aria-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
+        aria-describedby="login-password-error"
+      />
+      @if (loginForm.password().touched() && loginForm.password().errors()[0]; as error) {
+        <p id="login-password-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <button type="submit" [disabled]="loginForm().submitting()">
+      {{ loginForm().submitting() ? 'Signing in…' : 'Sign in' }}
+    </button>
+  </form>
+
+  @if (portal().registerPath; as registerPath) {
+    <p>Don't have an account? <a [routerLink]="registerPath">Create one</a></p>
+  }
+</main>
