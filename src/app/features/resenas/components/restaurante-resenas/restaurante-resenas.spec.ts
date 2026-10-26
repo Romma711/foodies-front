@@ -329,7 +329,10 @@ describe('RestauranteResenas', () => {
       const fixture = crearComponente('5');
 
       expect(botonesEliminar(fixture).length).toBe(2);
-      confirmar(fixture, 1);
+      const indice = Array.from(
+        fixture.nativeElement.querySelectorAll('app-resena-card') as NodeListOf<HTMLElement>,
+      ).findIndex((card) => card.textContent?.includes('Muy buena atención'));
+      confirmar(fixture, indice);
 
       expect(eliminar).toHaveBeenCalledWith(2, 'ADMIN');
       expect(fixture.nativeElement.textContent).toContain('La reseña se eliminó.');
@@ -346,6 +349,79 @@ describe('RestauranteResenas', () => {
 
       const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
       expect(alerta.textContent).toContain('No podés modificar una reseña de otro usuario.');
+    });
+  });
+
+  describe('orden y filtros', () => {
+    function comentarios(fixture: ReturnType<typeof crearComponente>) {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'app-resena-card [data-testid="comentario"]',
+        ) as NodeListOf<HTMLElement>,
+      ).map((item) => item.textContent?.trim());
+    }
+
+    function ordenar(fixture: ReturnType<typeof crearComponente>, valor: string) {
+      const select = fixture.nativeElement.querySelector('#orden-resenas') as HTMLSelectElement;
+      select.value = valor;
+      select.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    }
+
+    function filtro(fixture: ReturnType<typeof crearComponente>, estrellas: string) {
+      return fixture.nativeElement.querySelector(
+        `button[data-estrellas="${estrellas}"]`,
+      ) as HTMLButtonElement;
+    }
+
+    it('debería mostrar primero las más recientes', () => {
+      const fixture = crearComponente('5');
+
+      expect(comentarios(fixture)).toEqual([
+        'Muy buena atención y ambiente.',
+        'La pasta estaba increíble.',
+      ]);
+    });
+
+    it('debería reordenar por puntuación', () => {
+      const fixture = crearComponente('5');
+
+      ordenar(fixture, 'peores');
+      expect(comentarios(fixture)[0]).toBe('Muy buena atención y ambiente.');
+
+      ordenar(fixture, 'mejores');
+      expect(comentarios(fixture)[0]).toBe('La pasta estaba increíble.');
+    });
+
+    it('debería filtrar por estrellas, marcar el filtro activo y anunciar el resultado', () => {
+      const fixture = crearComponente('5');
+
+      expect(filtro(fixture, '5').textContent).toContain('(1)');
+      filtro(fixture, '5').click();
+      fixture.detectChanges();
+
+      expect(comentarios(fixture)).toEqual(['La pasta estaba increíble.']);
+      expect(filtro(fixture, '5').getAttribute('aria-pressed')).toBe('true');
+      expect(filtro(fixture, 'todas').getAttribute('aria-pressed')).toBe('false');
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="resultado-filtro"]')?.textContent,
+      ).toContain('Mostrando 1 de 2 reseñas');
+    });
+
+    it('debería explicar un filtro sin resultados y permitir volver a todas', () => {
+      const fixture = crearComponente('5');
+
+      filtro(fixture, '3').click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('No hay reseñas de 3 estrellas');
+
+      const verTodas = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((boton) => boton.textContent?.trim() === 'Ver todas');
+      verTodas?.click();
+      fixture.detectChanges();
+
+      expect(comentarios(fixture).length).toBe(2);
     });
   });
 });

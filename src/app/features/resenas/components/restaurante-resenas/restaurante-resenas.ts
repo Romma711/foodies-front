@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
+import { OPCIONES_ORDEN, OrdenResenas, filtrarYOrdenar } from '../../utils/ordenar-resenas';
 import { ToastService } from '../../../../shared/toast/toast.service';
 import { RatingDistribution } from '../rating-distribution/rating-distribution';
 import { ResenaCard } from '../resena-card/resena-card';
@@ -39,6 +40,16 @@ export class RestauranteResenas {
   readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
   readonly esAdmin = computed(() => this.auth.isAuthenticated('ADMIN'));
   readonly misResenaIds = this.resenaService.misResenaIds;
+  readonly orden = signal<OrdenResenas>('recientes');
+  /** Star count to show; null shows every review. */
+  readonly filtroEstrellas = signal<number | null>(null);
+  readonly visibles = computed(() =>
+    filtrarYOrdenar(this.resenas(), this.orden(), this.filtroEstrellas()),
+  );
+  protected readonly opcionesOrden = OPCIONES_ORDEN;
+  protected readonly chipActivo = 'bg-ink-900 text-white ring-ink-900';
+  protected readonly chipInactivo = 'bg-white text-ink-700 ring-line hover:bg-cream-100';
+
   readonly yaReseno = computed(() =>
     this.resenas().some((resena) => this.misResenaIds().has(resena.id)),
   );
@@ -52,6 +63,9 @@ export class RestauranteResenas {
   constructor() {
     effect(() => {
       const id = this.restauranteId();
+      // Filters belong to the restaurant being viewed, so a new restaurant starts clean.
+      this.filtroEstrellas.set(null);
+      this.orden.set('recientes');
       if (this.idValido()) {
         this.cargar(id);
       }
@@ -66,6 +80,18 @@ export class RestauranteResenas {
           .subscribe();
       }
     });
+  }
+
+  filtrar(estrellas: number | null): void {
+    this.filtroEstrellas.set(estrellas);
+  }
+
+  ordenar(event: Event): void {
+    const valor = (event.target as HTMLSelectElement).value;
+    const opcion = OPCIONES_ORDEN.find((item) => item.valor === valor);
+    if (opcion) {
+      this.orden.set(opcion.valor);
+    }
   }
 
   recargar(): void {
