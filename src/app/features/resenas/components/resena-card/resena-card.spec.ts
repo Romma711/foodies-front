@@ -45,10 +45,20 @@ describe('ResenaCard', () => {
     expect(elemento.querySelector('[data-testid="avatar"]')?.textContent).toContain('A');
   });
 
-  it('debería mostrar la calificación numérica', () => {
+  it('debería exponer la calificación accesible mediante las estrellas', () => {
     const fixture = crear(resena);
     const elemento = fixture.nativeElement as HTMLElement;
 
-    expect(elemento.querySelector('[data-testid="calificacion"]')?.textContent).toContain('5.0');
+    expect(elemento.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
+      'Calificación: 5.0 de 5 estrellas',
+    );
+  });
+
+  it('no debería mostrar el ID interno ni una nota duplicada', () => {
+    const fixture = crear(resena);
+    const elemento = fixture.nativeElement as HTMLElement;
+
+    expect(elemento.textContent).not.toContain('Reseña #');
+    expect(elemento.querySelector('[data-testid="calificacion"]')).toBeNull();
   });
 });

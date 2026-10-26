@@ -7,20 +7,9 @@ import { StarRating } from '../star-rating/star-rating';
   imports: [StarRating],
   template: `
     <article
-      class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line/60 bg-white p-5 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft sm:p-6"
+      class="flex h-full flex-col rounded-2xl border border-line/60 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
     >
-      <svg
-        class="pointer-events-none absolute -top-2 right-2 size-16 text-brand-50"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          d="M7.17 6A5.17 5.17 0 0 0 2 11.17V18h6.83v-6.83H5.5A1.67 1.67 0 0 1 7.17 9.5V6Zm10 0A5.17 5.17 0 0 0 12 11.17V18h6.83v-6.83H15.5a1.67 1.67 0 0 1 1.67-1.67V6Z"
-        />
-      </svg>
-
-      <header class="relative flex items-start gap-3">
+      <header class="flex items-start gap-3">
         <span
           class="grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold text-ink-900 ring-1 ring-black/5"
           [style]="avatarStyle()"
@@ -39,23 +28,12 @@ import { StarRating } from '../star-rating/star-rating';
         </div>
       </header>
 
-      <blockquote class="relative mt-4 flex-1">
-        <p class="text-[0.95rem] leading-7 text-ink-700" data-testid="comentario">
-          {{ resena().comentario }}
-        </p>
+      <blockquote class="mt-4 flex-1">
+        <p
+          class="whitespace-pre-line break-words text-[0.95rem] leading-7 text-ink-700"
+          data-testid="comentario"
+        >{{ resena().comentario }}</p>
       </blockquote>
-
-      <footer
-        class="relative mt-5 flex items-center justify-between gap-3 border-t border-line/60 pt-4"
-      >
-        <span class="text-xs font-medium text-ink-500">Reseña #{{ resena().id }}</span>
-        <span
-          class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-100"
-          data-testid="calificacion"
-        >
-          {{ resena().calificacion }}.0
-        </span>
-      </footer>
     </article>
   `,
 })
