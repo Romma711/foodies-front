@@ -41,6 +41,8 @@ describe('ResenaList', () => {
   let mutationError: WritableSignal<string | null>;
   let listarPorRestaurante: ReturnType<typeof vi.fn>;
   let crear: ReturnType<typeof vi.fn>;
+  let misResenaIds: WritableSignal<ReadonlySet<number>>;
+  let cargarMisResenas: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     resenas = signal(mock);
@@ -51,6 +53,8 @@ describe('ResenaList', () => {
     mutationError = signal<string | null>(null);
     listarPorRestaurante = vi.fn(() => of(mock));
     crear = vi.fn(() => of(detalle));
+    misResenaIds = signal<ReadonlySet<number>>(new Set());
+    cargarMisResenas = vi.fn(() => of(new Set<number>()));
 
     await TestBed.configureTestingModule({
       imports: [ResenaList],
@@ -75,11 +79,16 @@ describe('ResenaList', () => {
             }),
             listarPorRestaurante,
             crear,
+            misResenaIds: misResenaIds.asReadonly(),
+            cargarMisResenas,
           },
         },
         {
           provide: AuthService,
-          useValue: { isAuthenticated: () => autenticado() },
+          useValue: {
+            isAuthenticated: () => autenticado(),
+            userId: () => (autenticado() ? 3 : null),
+          },
         },
       ],
     }).compileComponents();
@@ -177,5 +186,54 @@ describe('ResenaList', () => {
     const texto = fixture.nativeElement.textContent as string;
     expect(texto).toContain('¡Gracias, Ana! Tu reseña ya está publicada.');
     expect(fixture.nativeElement.querySelector('app-resena-form')).toBeNull();
+  });
+
+  describe('con reseñas propias', () => {
+    beforeEach(() => {
+      autenticado.set(true);
+      misResenaIds.set(new Set([1]));
+    });
+
+    function botonesEditar(fixture: ReturnType<typeof crearComponente>) {
+      return fixture.nativeElement.querySelectorAll(
+        'button[aria-label="Editar tu reseña"]',
+      ) as NodeListOf<HTMLButtonElement>;
+    }
+
+    it('debería cargar los ids propios del cliente autenticado', () => {
+      crearComponente('5');
+
+      expect(cargarMisResenas).toHaveBeenCalledWith(3);
+    });
+
+    it('debería ofrecer editar solo la reseña propia', () => {
+      const fixture = crearComponente('5');
+
+      expect(botonesEditar(fixture).length).toBe(1);
+    });
+
+    it('no debería invitar a escribir otra reseña si ya opinó', () => {
+      const fixture = crearComponente('5');
+      const texto = fixture.nativeElement.textContent as string;
+
+      expect(texto).not.toContain('Escribir reseña');
+    });
+
+    it('debería editar inline y mostrar el éxito al guardar', () => {
+      const fixture = crearComponente('5');
+      botonesEditar(fixture)[0].click();
+      fixture.detectChanges();
+
+      const formulario = fixture.debugElement.query(By.directive(ResenaForm));
+      expect(formulario).toBeTruthy();
+      expect((formulario.componentInstance as ResenaForm).resena()?.id).toBe(1);
+      expect(fixture.nativeElement.querySelectorAll('app-resena-card').length).toBe(1);
+
+      (formulario.componentInstance as ResenaForm).actualizada.emit(detalle);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('app-resena-form')).toBeNull();
+      expect(fixture.nativeElement.textContent).toContain('Tu reseña se actualizó.');
+    });
   });
 });

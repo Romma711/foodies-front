@@ -61,4 +61,26 @@ describe('ResenaCard', () => {
     expect(elemento.textContent).not.toContain('Reseña #');
     expect(elemento.querySelector('[data-testid="calificacion"]')).toBeNull();
   });
+
+  it('no debería ofrecer editar una reseña ajena', () => {
+    const fixture = crear(resena);
+
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+
+  it('debería emitir editar cuando la reseña es editable', () => {
+    const fixture = TestBed.createComponent(ResenaCard);
+    fixture.componentRef.setInput('resena', resena);
+    fixture.componentRef.setInput('editable', true);
+    fixture.detectChanges();
+    const editar = vi.fn();
+    fixture.componentInstance.editar.subscribe(editar);
+
+    const boton = fixture.nativeElement.querySelector(
+      'button[aria-label="Editar tu reseña"]',
+    ) as HTMLButtonElement;
+    boton.click();
+
+    expect(editar).toHaveBeenCalled();
+  });
 });

@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { environment } from '../../../../environments/environment';
 import { ResenaDetailDTO, ResenaListDTO, ResenaPatchDTO, ResenaRequestDTO } from '../models';
@@ -22,6 +22,7 @@ export class ResenaService {
   private readonly _saving = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _mutationError = signal<string | null>(null);
+  private readonly _misResenaIds = signal<ReadonlySet<number>>(new Set());
 
   readonly resenas = this._resenas.asReadonly();
   readonly resena = this._resena.asReadonly();
@@ -29,6 +30,8 @@ export class ResenaService {
   readonly saving = this._saving.asReadonly();
   readonly error = this._error.asReadonly();
   readonly mutationError = this._mutationError.asReadonly();
+  /** Ids of the reviews written by the signed-in client; the list DTO has no owner field. */
+  readonly misResenaIds = this._misResenaIds.asReadonly();
 
   readonly totalResenas = computed(() => this._resenas().length);
 
@@ -67,6 +70,18 @@ export class ResenaService {
     );
   }
 
+  cargarMisResenas(usuarioId: number): Observable<ReadonlySet<number>> {
+    return this.http
+      .get<ResenaListDTO[] | null>(`${this.apiUrl}/usuario/${usuarioId}`, {
+        context: withRole('CLIENTE'),
+      })
+      .pipe(
+        map((resenas) => new Set((resenas ?? []).map((resena) => resena.id))),
+        catchError(() => of(new Set<number>())),
+        tap((ids) => this._misResenaIds.set(ids)),
+      );
+  }
+
   obtenerPorId(id: number): Observable<ResenaDetailDTO> {
     return this.ejecutarLectura(
       this.http
@@ -86,6 +101,7 @@ export class ResenaService {
         .pipe(
           tap((creada) => {
             this._resena.set(creada);
+            this._misResenaIds.update((ids) => new Set(ids).add(creada.id));
             this._resenas.update((resenas) => [
               ...resenas,
               {
@@ -134,6 +150,7 @@ export class ResenaService {
     ).pipe(
       tap(() => {
         this._resenas.update((resenas) => resenas.filter((resena) => resena.id !== id));
+        this._misResenaIds.update((ids) => new Set([...ids].filter((propio) => propio !== id)));
       }),
     );
   }

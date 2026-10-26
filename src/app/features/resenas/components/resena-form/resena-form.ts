@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, output } from '@angular/core';
 import {
   form,
   FormField,
@@ -10,7 +10,7 @@ import {
   submit,
 } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { ResenaDetailDTO } from '../../models';
+import { ResenaDetailDTO, ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
 import { StarRating } from '../star-rating/star-rating';
 
@@ -29,8 +29,11 @@ export class ResenaForm {
 
   readonly restauranteId = input.required<number>();
   readonly nombreRestaurante = input('');
+  /** When set, the form edits this review instead of creating a new one. */
+  readonly resena = input<ResenaListDTO | null>(null);
 
   readonly creada = output<ResenaDetailDTO>();
+  readonly actualizada = output<ResenaDetailDTO>();
   readonly cancelada = output<void>();
 
   protected readonly saving = this.resenaService.saving;
@@ -38,10 +41,12 @@ export class ResenaForm {
 
   protected readonly maxComentario = 255;
 
-  protected readonly modelo = signal<ResenaFormModel>({
-    calificacion: 0,
-    comentario: '',
-  });
+  protected readonly esEdicion = computed(() => this.resena() !== null);
+
+  protected readonly modelo = linkedSignal<ResenaFormModel>(() => ({
+    calificacion: this.resena()?.calificacion ?? 0,
+    comentario: this.resena()?.comentario ?? '',
+  }));
 
   protected readonly formulario = form(this.modelo, (path) => {
     min(path.calificacion, 1, { message: 'Elegí de 1 a 5 estrellas.' });
@@ -63,15 +68,25 @@ export class ResenaForm {
   async enviar(event: Event): Promise<void> {
     event.preventDefault();
     await submit(this.formulario, async () => {
+      const comentario = this.modelo().comentario.trim();
+      const calificacion = this.modelo().calificacion;
+      const existente = this.resena();
       try {
-        const creada = await firstValueFrom(
-          this.resenaService.crear({
-            comentario: this.modelo().comentario.trim(),
-            calificacion: this.modelo().calificacion,
-            restaurantId: this.restauranteId(),
-          }),
-        );
-        this.creada.emit(creada);
+        if (existente) {
+          const actualizada = await firstValueFrom(
+            this.resenaService.actualizar(existente.id, { comentario, calificacion }),
+          );
+          this.actualizada.emit(actualizada);
+        } else {
+          const creada = await firstValueFrom(
+            this.resenaService.crear({
+              comentario,
+              calificacion,
+              restaurantId: this.restauranteId(),
+            }),
+          );
+          this.creada.emit(creada);
+        }
       } catch {
         // El error queda expuesto por `mutationError`.
       }

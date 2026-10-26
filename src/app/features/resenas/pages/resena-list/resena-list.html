@@ -86,7 +86,7 @@
               (creada)="alCrear($event)"
               (cancelada)="cerrarFormulario()"
             />
-          } @else {
+          } @else if (!yaReseno()) {
             <div
               class="flex flex-col gap-4 rounded-2xl border border-line/70 bg-white/85 p-5 shadow-card sm:flex-row sm:items-center sm:justify-between"
             >
@@ -226,9 +226,24 @@
       } @else {
         <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           @for (resena of resenas(); track resena.id) {
-            <li class="h-full">
-              <app-resena-card [resena]="resena" />
-            </li>
+            @if (editandoId() === resena.id) {
+              <li class="sm:col-span-2 xl:col-span-3">
+                <app-resena-form
+                  [restauranteId]="id()"
+                  [resena]="resena"
+                  (actualizada)="alActualizar()"
+                  (cancelada)="cancelarEdicion()"
+                />
+              </li>
+            } @else {
+              <li class="h-full">
+                <app-resena-card
+                  [resena]="resena"
+                  [editable]="misResenaIds().has(resena.id) && editandoId() === null"
+                  (editar)="editar(resena.id)"
+                />
+              </li>
+            }
           }
         </ul>
       }

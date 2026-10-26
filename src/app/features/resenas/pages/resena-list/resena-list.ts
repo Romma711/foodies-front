@@ -28,8 +28,13 @@ export class ResenaList {
   readonly total = this.resenaService.totalResenas;
   readonly promedio = this.resenaService.promedioCalificacion;
   readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
+  readonly misResenaIds = this.resenaService.misResenaIds;
+  readonly yaReseno = computed(() =>
+    this.resenas().some((resena) => this.misResenaIds().has(resena.id)),
+  );
 
   readonly mostrarFormulario = signal(false);
+  readonly editandoId = signal<number | null>(null);
   readonly mensajeExito = signal<string | null>(null);
 
   constructor() {
@@ -37,6 +42,16 @@ export class ResenaList {
       const id = this.id();
       if (this.idValido()) {
         this.cargar(id);
+      }
+    });
+
+    effect(() => {
+      const usuarioId = this.esCliente() ? this.auth.userId('CLIENTE') : null;
+      if (usuarioId !== null) {
+        this.resenaService
+          .cargarMisResenas(usuarioId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
       }
     });
   }
@@ -52,7 +67,23 @@ export class ResenaList {
       return;
     }
     this.mensajeExito.set(null);
+    this.editandoId.set(null);
     this.mostrarFormulario.set(true);
+  }
+
+  editar(id: number): void {
+    this.mensajeExito.set(null);
+    this.mostrarFormulario.set(false);
+    this.editandoId.set(id);
+  }
+
+  cancelarEdicion(): void {
+    this.editandoId.set(null);
+  }
+
+  alActualizar(): void {
+    this.editandoId.set(null);
+    this.mensajeExito.set('Tu reseña se actualizó.');
   }
 
   cerrarFormulario(): void {

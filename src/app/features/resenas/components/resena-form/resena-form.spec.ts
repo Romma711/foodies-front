@@ -17,11 +17,13 @@ describe('ResenaForm', () => {
   let saving: WritableSignal<boolean>;
   let mutationError: WritableSignal<string | null>;
   let crear: ReturnType<typeof vi.fn>;
+  let actualizar: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     saving = signal(false);
     mutationError = signal<string | null>(null);
     crear = vi.fn(() => of(detalle));
+    actualizar = vi.fn(() => of({ ...detalle, comentario: 'Volví y estuvo aún mejor.' }));
 
     await TestBed.configureTestingModule({
       imports: [ResenaForm],
@@ -32,6 +34,7 @@ describe('ResenaForm', () => {
             saving: saving.asReadonly(),
             mutationError: mutationError.asReadonly(),
             crear,
+            actualizar,
           },
         },
       ],
@@ -108,5 +111,53 @@ describe('ResenaForm', () => {
     cerrar.click();
 
     expect(cancelada).toHaveBeenCalled();
+  });
+
+  describe('en modo edición', () => {
+    function crearEdicion() {
+      const fixture = TestBed.createComponent(ResenaForm);
+      fixture.componentRef.setInput('restauranteId', 5);
+      fixture.componentRef.setInput('resena', {
+        id: 30,
+        nombreUsuario: 'Ana',
+        comentario: 'La pasta estaba increíble.',
+        calificacion: 4,
+      });
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('debería precargar la calificación y el comentario', () => {
+      const fixture = crearEdicion();
+      const elemento = fixture.nativeElement as HTMLElement;
+      const radios = elemento.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+
+      expect(radios[3].checked).toBe(true);
+      expect((elemento.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+        'La pasta estaba increíble.',
+      );
+      expect(elemento.textContent).toContain('Editar tu reseña');
+      expect(elemento.textContent).toContain('Guardar cambios');
+    });
+
+    it('debería guardar con PUT y emitir actualizada', async () => {
+      const fixture = crearEdicion();
+      const elemento = fixture.nativeElement as HTMLElement;
+      const textarea = elemento.querySelector('textarea') as HTMLTextAreaElement;
+      textarea.value = ' Volví y estuvo aún mejor. ';
+      textarea.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      const emitida = vi.fn();
+      fixture.componentInstance.actualizada.subscribe(emitida);
+
+      await fixture.componentInstance.enviar(new Event('submit'));
+
+      expect(actualizar).toHaveBeenCalledWith(30, {
+        comentario: 'Volví y estuvo aún mejor.',
+        calificacion: 4,
+      });
+      expect(crear).not.toHaveBeenCalled();
+      expect(emitida).toHaveBeenCalled();
+    });
   });
 });

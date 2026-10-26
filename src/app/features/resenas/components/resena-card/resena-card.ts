@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { ResenaListDTO } from '../../models';
 import { StarRating } from '../star-rating/star-rating';
 
@@ -18,7 +18,7 @@ import { StarRating } from '../star-rating/star-rating';
         >
           {{ iniciales() }}
         </span>
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-bold text-ink-900" data-testid="nombre">
             {{ nombre() }}
           </p>
@@ -26,19 +26,45 @@ import { StarRating } from '../star-rating/star-rating';
             <app-star-rating [value]="resena().calificacion" size="sm" />
           </div>
         </div>
+        @if (editable()) {
+          <button
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
+            aria-label="Editar tu reseña"
+            (click)="editar.emit()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+            </svg>
+          </button>
+        }
       </header>
 
       <blockquote class="mt-4 flex-1">
         <p
           class="whitespace-pre-line break-words text-[0.95rem] leading-7 text-ink-700"
           data-testid="comentario"
-        >{{ resena().comentario }}</p>
+        >
+          {{ resena().comentario }}
+        </p>
       </blockquote>
     </article>
   `,
 })
 export class ResenaCard {
   readonly resena = input.required<ResenaListDTO>();
+  readonly editable = input(false);
+
+  readonly editar = output<void>();
 
   private readonly palette = ['#fde7dc', '#e7f0ff', '#e7f6ec', '#f3e8ff', '#fff4d6', '#ffe4e6'];
 

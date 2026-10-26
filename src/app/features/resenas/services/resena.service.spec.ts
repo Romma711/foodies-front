@@ -138,4 +138,73 @@ describe('ResenaService', () => {
     expect(service.mutationError()).toContain('El comentario debe tener entre 10 y 255 caracteres');
     expect(service.mutationError()).toContain('La calificación mínima es 1');
   });
+
+  it('debería cargar los ids de las reseñas propias sin pisar el listado', () => {
+    const listado: ResenaListDTO[] = [
+      { id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 },
+    ];
+    service.listarPorRestaurante(7).subscribe();
+    httpMock.expectOne((request) => request.url === apiUrl).flush(listado);
+
+    service.cargarMisResenas(3).subscribe();
+    const req = httpMock.expectOne(`${apiUrl}/usuario/3`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.context.get(AUTH_ROLE)).toBe('CLIENTE');
+    req.flush([
+      { id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 },
+      { id: 9, nombreUsuario: 'Ana', comentario: 'Otra visita', calificacion: 3 },
+    ]);
+
+    expect([...service.misResenaIds()]).toEqual([1, 9]);
+    expect(service.resenas()).toEqual(listado);
+    expect(service.loading()).toBe(false);
+  });
+
+  it('debería dejar vacíos los ids propios cuando el usuario no tiene reseñas', () => {
+    service.cargarMisResenas(3).subscribe();
+    httpMock
+      .expectOne(`${apiUrl}/usuario/3`)
+      .flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(service.misResenaIds().size).toBe(0);
+  });
+
+  it('debería marcar como propia la reseña recién creada', () => {
+    service.crear({ comentario: 'Muy rico todo', calificacion: 4, restaurantId: 7 }).subscribe();
+    httpMock.expectOne(apiUrl).flush({
+      id: 42,
+      comentario: 'Muy rico todo',
+      calificacion: 4,
+      nombreUsuario: 'Ana',
+      nombreRestaurant: 'Ochiwan',
+    } satisfies ResenaDetailDTO);
+
+    expect(service.misResenaIds().has(42)).toBe(true);
+  });
+
+  it('debería actualizar una reseña con PUT y reflejarla en el listado', () => {
+    service.listarPorRestaurante(7).subscribe();
+    httpMock
+      .expectOne((request) => request.url === apiUrl)
+      .flush([{ id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 }]);
+
+    service.actualizar(1, { comentario: 'Cambié de opinión', calificacion: 3 }).subscribe();
+    const req = httpMock.expectOne(`${apiUrl}/1`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ comentario: 'Cambié de opinión', calificacion: 3 });
+    req.flush({
+      id: 1,
+      comentario: 'Cambié de opinión',
+      calificacion: 3,
+      nombreUsuario: 'Ana',
+      nombreRestaurant: 'Ochiwan',
+    } satisfies ResenaDetailDTO);
+
+    expect(service.resenas()[0]).toEqual({
+      id: 1,
+      nombreUsuario: 'Ana',
+      comentario: 'Cambié de opinión',
+      calificacion: 3,
+    });
+  });
 });

@@ -5,7 +5,7 @@
   <div class="flex items-start justify-between gap-4">
     <div>
       <h2 id="titulo-formulario" class="text-xl font-extrabold tracking-tight text-ink-900">
-        Tu reseña
+        {{ esEdicion() ? 'Editar tu reseña' : 'Tu reseña' }}
       </h2>
       @if (nombreRestaurante(); as nombre) {
         <p class="mt-1 text-sm text-ink-500">Sobre {{ nombre }}</p>
@@ -117,9 +117,9 @@
             class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
             aria-hidden="true"
           ></span>
-          Publicando…
+          {{ esEdicion() ? 'Guardando…' : 'Publicando…' }}
         } @else {
-          Publicar reseña
+          {{ esEdicion() ? 'Guardar cambios' : 'Publicar reseña' }}
         }
       </button>
     </div>
