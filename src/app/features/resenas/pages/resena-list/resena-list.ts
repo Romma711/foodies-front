@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, effect, inject, input, signal } from '
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { RatingDistribution } from '../../components/rating-distribution/rating-distribution';
 import { ResenaCard } from '../../components/resena-card/resena-card';
 import { ResenaForm } from '../../components/resena-form/resena-form';
 import { StarRating } from '../../components/star-rating/star-rating';
@@ -10,7 +11,7 @@ import { ResenaService } from '../../services/resena.service';
 
 @Component({
   selector: 'app-resena-list',
-  imports: [ResenaCard, ResenaForm, StarRating, RouterLink],
+  imports: [RatingDistribution, ResenaCard, ResenaForm, StarRating, RouterLink],
   templateUrl: './resena-list.html',
 })
 export class ResenaList {
@@ -27,6 +28,7 @@ export class ResenaList {
   readonly error = this.resenaService.error;
   readonly total = this.resenaService.totalResenas;
   readonly promedio = this.resenaService.promedioCalificacion;
+  readonly distribucion = this.resenaService.distribucionCalificaciones;
   readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
   readonly misResenaIds = this.resenaService.misResenaIds;
   readonly yaReseno = computed(() =>

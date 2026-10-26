@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { BAR_CHART_FACTORY } from '../../components/rating-distribution/bar-chart-factory';
 import { ResenaForm } from '../../components/resena-form/resena-form';
 import { ResenaDetailDTO, ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
@@ -61,6 +62,10 @@ describe('ResenaList', () => {
       providers: [
         provideRouter([]),
         {
+          provide: BAR_CHART_FACTORY,
+          useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
+        },
+        {
           provide: ResenaService,
           useValue: {
             resenas: resenas.asReadonly(),
@@ -79,6 +84,12 @@ describe('ResenaList', () => {
             }),
             listarPorRestaurante,
             crear,
+            distribucionCalificaciones: computed(() =>
+              [5, 4, 3, 2, 1].map((estrellas) => ({
+                estrellas,
+                cantidad: resenas().filter((item) => item.calificacion === estrellas).length,
+              })),
+            ),
             misResenaIds: misResenaIds.asReadonly(),
             cargarMisResenas,
           },
@@ -115,6 +126,15 @@ describe('ResenaList', () => {
 
     expect(texto).toContain('4.5');
     expect(texto).toContain('2 reseñas');
+  });
+
+  it('debería mostrar la distribución de calificaciones en el resumen', () => {
+    const fixture = crearComponente('5');
+    const resumen = fixture.nativeElement.querySelector(
+      '[aria-label="Resumen de calificaciones"]',
+    ) as HTMLElement;
+
+    expect(resumen.querySelector('app-rating-distribution')).not.toBeNull();
   });
 
   it('debería mostrar el estado de carga', () => {

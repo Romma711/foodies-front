@@ -3,7 +3,13 @@ import { Service, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { environment } from '../../../../environments/environment';
-import { ResenaDetailDTO, ResenaListDTO, ResenaPatchDTO, ResenaRequestDTO } from '../models';
+import {
+  DistribucionCalificacion,
+  ResenaDetailDTO,
+  ResenaListDTO,
+  ResenaPatchDTO,
+  ResenaRequestDTO,
+} from '../models';
 
 interface ApiError {
   error?: string;
@@ -42,6 +48,15 @@ export class ResenaService {
     }
     const total = resenas.reduce((suma, resena) => suma + resena.calificacion, 0);
     return Math.round((total / resenas.length) * 10) / 10;
+  });
+
+  /** Review count per star, from 5 down to 1, for the rating distribution chart. */
+  readonly distribucionCalificaciones = computed<DistribucionCalificacion[]>(() => {
+    const resenas = this._resenas();
+    return [5, 4, 3, 2, 1].map((estrellas) => ({
+      estrellas,
+      cantidad: resenas.filter((resena) => resena.calificacion === estrellas).length,
+    }));
   });
 
   listarPorRestaurante(restauranteId: number): Observable<ResenaListDTO[]> {

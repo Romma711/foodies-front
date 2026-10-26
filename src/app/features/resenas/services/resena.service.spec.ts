@@ -207,4 +207,23 @@ describe('ResenaService', () => {
       calificacion: 3,
     });
   });
+
+  it('debería calcular la distribución de calificaciones de 5 a 1 estrellas', () => {
+    service.listarPorRestaurante(7).subscribe();
+    httpMock
+      .expectOne((request) => request.url === apiUrl)
+      .flush([
+        { id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 },
+        { id: 2, nombreUsuario: 'Luis', comentario: 'Muy bueno', calificacion: 5 },
+        { id: 3, nombreUsuario: 'Sol', comentario: 'Regular', calificacion: 2 },
+      ]);
+
+    expect(service.distribucionCalificaciones()).toEqual([
+      { estrellas: 5, cantidad: 2 },
+      { estrellas: 4, cantidad: 0 },
+      { estrellas: 3, cantidad: 0 },
+      { estrellas: 2, cantidad: 1 },
+      { estrellas: 1, cantidad: 0 },
+    ]);
+  });
 });
