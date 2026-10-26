@@ -4,21 +4,25 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
+import { ToastService } from '../../services/toast.service';
 import { RatingDistribution } from '../rating-distribution/rating-distribution';
 import { ResenaCard } from '../resena-card/resena-card';
 import { ResenaForm } from '../resena-form/resena-form';
 import { StarRating } from '../star-rating/star-rating';
+import { ToastOutlet } from '../toast-outlet/toast-outlet';
 
 /** Reviews block of a restaurant: summary, chart, write/edit/delete flows and the review grid. */
 @Component({
   selector: 'app-restaurante-resenas',
-  imports: [RatingDistribution, ResenaCard, ResenaForm, StarRating, RouterLink],
+  imports: [RatingDistribution, ResenaCard, ResenaForm, StarRating, ToastOutlet, RouterLink],
+  providers: [ToastService],
   templateUrl: './restaurante-resenas.html',
 })
 export class RestauranteResenas {
   private readonly resenaService = inject(ResenaService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toasts = inject(ToastService);
 
   readonly restauranteId = input.required<number>();
   readonly nombreRestaurante = input('');
@@ -39,11 +43,11 @@ export class RestauranteResenas {
     this.resenas().some((resena) => this.misResenaIds().has(resena.id)),
   );
 
+  protected readonly skeletons = [1, 2, 3];
+
   readonly mostrarFormulario = signal(false);
   readonly editandoId = signal<number | null>(null);
-  readonly mensajeExito = signal<string | null>(null);
   readonly eliminandoId = signal<number | null>(null);
-  readonly errorEliminacion = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -74,13 +78,11 @@ export class RestauranteResenas {
     if (!this.idValido()) {
       return;
     }
-    this.mensajeExito.set(null);
     this.editandoId.set(null);
     this.mostrarFormulario.set(true);
   }
 
   editar(id: number): void {
-    this.mensajeExito.set(null);
     this.mostrarFormulario.set(false);
     this.editandoId.set(id);
   }
@@ -91,7 +93,7 @@ export class RestauranteResenas {
 
   alActualizar(): void {
     this.editandoId.set(null);
-    this.mensajeExito.set('Tu reseña se actualizó.');
+    this.toasts.exito('Tu reseña se actualizó.');
   }
 
   esPropia(id: number): boolean {
@@ -105,8 +107,6 @@ export class RestauranteResenas {
 
   eliminar(id: number): void {
     const propia = this.esPropia(id);
-    this.mensajeExito.set(null);
-    this.errorEliminacion.set(null);
     this.eliminandoId.set(id);
     this.resenaService
       .eliminar(id, propia ? 'CLIENTE' : 'ADMIN')
@@ -114,19 +114,13 @@ export class RestauranteResenas {
       .subscribe({
         next: () => {
           this.eliminandoId.set(null);
-          this.mensajeExito.set(propia ? 'Tu reseña se eliminó.' : 'La reseña se eliminó.');
+          this.toasts.exito(propia ? 'Tu reseña se eliminó.' : 'La reseña se eliminó.');
         },
         error: () => {
           this.eliminandoId.set(null);
-          this.errorEliminacion.set(
-            this.resenaService.mutationError() ?? 'No se pudo eliminar la reseña.',
-          );
+          this.toasts.error(this.resenaService.mutationError() ?? 'No se pudo eliminar la reseña.');
         },
       });
-  }
-
-  cerrarErrorEliminacion(): void {
-    this.errorEliminacion.set(null);
   }
 
   cerrarFormulario(): void {
@@ -136,15 +130,11 @@ export class RestauranteResenas {
   alCrear(resena: ResenaDetailDTO): void {
     this.mostrarFormulario.set(false);
     const nombre = resena.nombreUsuario?.trim();
-    this.mensajeExito.set(
+    this.toasts.exito(
       nombre
         ? `¡Gracias, ${nombre}! Tu reseña ya está publicada.`
         : '¡Gracias! Tu reseña ya está publicada.',
     );
-  }
-
-  cerrarExito(): void {
-    this.mensajeExito.set(null);
   }
 
   private cargar(id: number): void {

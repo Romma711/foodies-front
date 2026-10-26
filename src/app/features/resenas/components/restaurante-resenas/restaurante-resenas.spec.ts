@@ -142,11 +142,36 @@ describe('RestauranteResenas', () => {
     expect(resumen.querySelector('app-rating-distribution')).not.toBeNull();
   });
 
-  it('debería mostrar el estado de carga', () => {
+  it('debería mostrar skeletons accesibles mientras carga', () => {
     cargando.set(true);
     const fixture = crearComponente('5');
+    const elemento = fixture.nativeElement as HTMLElement;
+    const carga = elemento.querySelector('[data-testid="resenas-cargando"]') as HTMLElement;
 
-    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeTruthy();
+    expect(carga.getAttribute('role')).toBe('status');
+    expect(carga.textContent).toContain('Cargando reseñas…');
+    expect(carga.querySelectorAll('[data-testid="resena-skeleton"]').length).toBe(3);
+    expect(elemento.querySelectorAll('app-resena-card').length).toBe(0);
+  });
+
+  it('debería avisar las acciones con un toast en lugar de un banner fijo', () => {
+    autenticado.set(true);
+    misResenaIds.set(new Set([1]));
+    const fixture = crearComponente('5');
+    (
+      fixture.nativeElement.querySelector(
+        'button[aria-label="Eliminar reseña"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((item) => item.textContent?.trim() === 'Eliminar')
+      ?.click();
+    fixture.detectChanges();
+
+    const toast = fixture.nativeElement.querySelector('[data-testid="toast"]') as HTMLElement;
+    expect(toast.textContent).toContain('Tu reseña se eliminó.');
+    expect(toast.closest('[role="status"]')).not.toBeNull();
   });
 
   it('debería mostrar el estado vacío', () => {
