@@ -1,0 +1,133 @@
+import { Component, signal, WritableSignal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { BAR_CHART_FACTORY } from '../../shared/charts/bar-chart-factory';
+import { violacionesAxe } from '../../shared/testing/axe';
+import { AdminLayout } from './layout/admin-layout';
+import { MetricasAdmin } from './models/metricas-admin';
+import { ResenaModeracion } from './models/resena-moderacion';
+import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
+import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
+import { AdminMetricasService } from './services/admin-metricas.service';
+import { AdminModeracionService } from './services/admin-moderacion.service';
+
+@Component({ template: '<h1>Contenido</h1>' })
+class PaginaFalsa {}
+
+/** WCAG checks (axe-core) for the admin panel shell and pages. */
+describe('Accesibilidad del panel de administración', () => {
+  const metricas: MetricasAdmin = {
+    periodo: '2026-10',
+    topRestaurantesMejorCalificados: [
+      { id: 5, nombre: 'Ochiwan', promedio: 4.5, cantidadResenas: 2 },
+    ],
+    topRestaurantesConMasReservas: [],
+    topUsuariosConMasResenas: [{ id: 3, nombre: 'Ana', apellido: 'Gómez', cantidadResenas: 4 }],
+    usuariosRegistradosEsteMes: 12,
+  };
+  const resenas: ResenaModeracion[] = [
+    {
+      id: 9,
+      comentario: 'Muy rico todo',
+      calificacion: 5,
+      nombreUsuario: '',
+      restauranteId: 5,
+      nombreRestaurante: 'Ochiwan',
+    },
+  ];
+
+  let datos: WritableSignal<MetricasAdmin | null>;
+  let cargandoMetricas: WritableSignal<boolean>;
+  let errorMetricas: WritableSignal<string | null>;
+  let lista: WritableSignal<ResenaModeracion[]>;
+
+  beforeEach(async () => {
+    datos = signal<MetricasAdmin | null>(metricas);
+    cargandoMetricas = signal(false);
+    errorMetricas = signal<string | null>(null);
+    lista = signal(resenas);
+
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([
+          {
+            path: 'admin',
+            component: AdminLayout,
+            children: [{ path: '', component: PaginaFalsa }],
+          },
+        ]),
+        {
+          provide: BAR_CHART_FACTORY,
+          useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
+        },
+        { provide: AuthService, useValue: { logout: vi.fn() } },
+        {
+          provide: AdminMetricasService,
+          useValue: {
+            metricas: datos.asReadonly(),
+            cargando: cargandoMetricas.asReadonly(),
+            error: errorMetricas.asReadonly(),
+            cargar: vi.fn(() => of(metricas)),
+          },
+        },
+        {
+          provide: AdminModeracionService,
+          useValue: {
+            resenas: lista.asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of(resenas)),
+            eliminar: vi.fn(() => of(undefined)),
+          },
+        },
+      ],
+    }).compileComponents();
+  });
+
+  async function sinViolaciones(fixture: ComponentFixture<unknown>) {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(await violacionesAxe(fixture.nativeElement)).toEqual([]);
+  }
+
+  it('AdminLayout con el menú mobile cerrado y abierto', async () => {
+    const harness = await RouterTestingHarness.create('/admin');
+    const elemento = harness.routeNativeElement as HTMLElement;
+    expect(await violacionesAxe(elemento)).toEqual([]);
+
+    (elemento.querySelector('button[aria-controls="admin-sidebar"]') as HTMLButtonElement).click();
+    harness.detectChanges();
+    expect(await violacionesAxe(elemento)).toEqual([]);
+  });
+
+  it('DashboardAdmin con métricas, incluido un ranking vacío', async () => {
+    await sinViolaciones(TestBed.createComponent(DashboardAdmin));
+  });
+
+  it('DashboardAdmin cargando y con error', async () => {
+    datos.set(null);
+    cargandoMetricas.set(true);
+    const fixture = TestBed.createComponent(DashboardAdmin);
+    await sinViolaciones(fixture);
+
+    cargandoMetricas.set(false);
+    errorMetricas.set('No se pudo conectar con el servidor.');
+    await sinViolaciones(fixture);
+  });
+
+  it('ModeracionResenas con la tabla y con la confirmación abierta', async () => {
+    const fixture = TestBed.createComponent(ModeracionResenas);
+    await sinViolaciones(fixture);
+
+    (fixture.nativeElement.querySelector('button[id="eliminar-9"]') as HTMLButtonElement).click();
+    await sinViolaciones(fixture);
+  });
+
+  it('ModeracionResenas vacía', async () => {
+    lista.set([]);
+    await sinViolaciones(TestBed.createComponent(ModeracionResenas));
+  });
+});
