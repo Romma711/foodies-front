@@ -6,11 +6,13 @@ import { roleGuard } from './core/auth/role.guard';
 const loadLogin = () => import('./pages/login/login').then((m) => m.Login);
 const loadRegister = () => import('./pages/register/register').then((m) => m.Register);
 
+const RESTAURANTE_DEMO_ID = 5;
+
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+    redirectTo: `resenas/${RESTAURANTE_DEMO_ID}`,
   },
   {
     path: 'resenas/:restauranteId',
