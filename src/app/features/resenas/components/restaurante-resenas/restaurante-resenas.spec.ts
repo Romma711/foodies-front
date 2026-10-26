@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { BAR_CHART_FACTORY } from '../rating-distribution/bar-chart-factory';
+import { BAR_CHART_FACTORY } from '../../../../shared/charts/bar-chart-factory';
 import { ResenaForm } from '../resena-form/resena-form';
 import { ResenaDetailDTO, ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';

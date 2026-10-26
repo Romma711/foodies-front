@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { DistribucionCalificacion } from '../../models';
-import { BAR_CHART_FACTORY, BarChart } from './bar-chart-factory';
+import { BAR_CHART_FACTORY, BarChart } from '../../../../shared/charts/bar-chart-factory';
 
 // Chart.js draws on a canvas, so it cannot read Tailwind classes; these mirror the @theme tokens.
 const COLOR_STAR = '#f5a524';

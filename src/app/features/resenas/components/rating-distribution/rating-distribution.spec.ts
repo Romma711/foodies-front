@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ChartConfiguration } from 'chart.js';
 import { DistribucionCalificacion } from '../../models';
-import { BAR_CHART_FACTORY, BarChart } from './bar-chart-factory';
+import { BAR_CHART_FACTORY, BarChart } from '../../../../shared/charts/bar-chart-factory';
 import { RatingDistribution } from './rating-distribution';
 
 describe('RatingDistribution', () => {
