@@ -77,7 +77,12 @@ const COLOR_INK_700 = '#3f3a33';
             class="flex flex-col justify-between rounded-2xl border border-line/60 bg-white p-6 shadow-sm"
             data-testid="kpi-usuarios"
           >
-            <h2 class="text-base font-bold tracking-tight text-ink-900">Usuarios nuevos</h2>
+            <div>
+              <h2 class="text-base font-bold tracking-tight text-ink-900">Usuarios nuevos</h2>
+              <p class="mt-1 text-sm text-ink-500">
+                Cuentas creadas este mes: clientes, encargados y administradores.
+              </p>
+            </div>
             <div class="mt-6">
               <p class="text-6xl font-extrabold leading-none tracking-tight text-ink-900">
                 {{ datos.usuariosRegistradosEsteMes }}
@@ -88,19 +93,22 @@ const COLOR_INK_700 = '#3f3a33';
 
           <app-ranking-chart
             titulo="Restaurantes mejor calificados"
-            unidad="puntos"
+            descripcion="Promedio de calificación de 1 a 5 estrellas. Solo restaurantes aprobados."
+            unidad="de 5"
             [items]="mejorCalificados()"
             [maximo]="5"
             [color]="colorEstrella"
           />
           <app-ranking-chart
             titulo="Restaurantes con más reservas"
+            descripcion="Cantidad de reservas recibidas, sin contar las canceladas."
             unidad="reservas"
             [items]="masReservados()"
             [color]="colorBrand"
           />
           <app-ranking-chart
             titulo="Usuarios con más reseñas"
+            descripcion="Cantidad de reseñas publicadas por cada usuario."
             unidad="reseñas"
             [items]="usuariosActivos()"
             [color]="colorInk"

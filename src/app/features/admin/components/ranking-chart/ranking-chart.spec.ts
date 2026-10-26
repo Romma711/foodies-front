@@ -40,12 +40,46 @@ describe('RankingChart', () => {
   }
 
   it('debería graficar una barra por item con el máximo indicado', () => {
-    crear(items, 'puntos', 5);
+    crear(items, 'de 5', 5);
     const config = crearGrafico.mock.calls[0][1] as ChartConfiguration<'bar'>;
 
     expect(config.data.labels).toEqual(['Ochiwan', 'La Casona']);
     expect(config.data.datasets[0].data).toEqual([4.5, 3]);
     expect(config.options?.scales?.['x']?.max).toBe(5);
+  });
+
+  it('debería mostrar la descripción de qué mide el ranking', () => {
+    const fixture = TestBed.createComponent(RankingChart);
+    fixture.componentRef.setInput('titulo', 'Mejor calificados');
+    fixture.componentRef.setInput('descripcion', 'Promedio de calificación de 1 a 5.');
+    fixture.componentRef.setInput('items', items);
+    fixture.detectChanges();
+
+    const descripcion = fixture.nativeElement.querySelector('[data-testid="descripcion"]');
+    expect(descripcion?.textContent?.trim()).toBe('Promedio de calificación de 1 a 5.');
+  });
+
+  it('debería escribir el valor con su unidad al final de cada barra', () => {
+    crear(items, 'de 5', 5);
+    const config = crearGrafico.mock.calls[0][1] as ChartConfiguration<'bar'>;
+    const plugin = config.plugins?.find((p) => p.id === 'valores');
+    const textos: [string, number, number][] = [];
+    const chart = {
+      ctx: {
+        save: vi.fn(),
+        restore: vi.fn(),
+        fillText: (texto: string, x: number, y: number) => textos.push([texto, x, y]),
+      },
+      chartArea: { right: 200 },
+      data: config.data,
+      getDatasetMeta: () => ({ data: [{ y: 10 }, { y: 50 }] }),
+    };
+
+    plugin?.afterDatasetsDraw?.(chart as never, {} as never, {} as never, false);
+
+    expect(textos.map(([texto]) => texto)).toEqual(['4.5 de 5', '3 de 5']);
+    expect(textos.every(([, x]) => x > 200)).toBe(true);
+    expect(config.options?.layout?.padding).toEqual({ right: expect.any(Number) });
   });
 
   it('debería actualizar el gráfico existente cuando cambian los items', () => {
