@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { AUTH_ROLE } from '../../../core/auth/auth-context';
 import { ResenaDetailDTO, ResenaListDTO, ResenaRequestDTO } from '../models';
 import { ResenaService } from './resena.service';
 
@@ -47,7 +48,6 @@ describe('ResenaService', () => {
     const payload: ResenaRequestDTO = {
       comentario: 'Muy rico',
       calificacion: 5,
-      usuarioId: 3,
       restaurantId: 7,
     };
     const creada: ResenaDetailDTO = {
@@ -64,6 +64,8 @@ describe('ResenaService', () => {
     const req = httpMock.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
+    expect(req.request.context.get(AUTH_ROLE)).toBe('CLIENTE');
+    expect(service.saving()).toBe(true);
     req.flush(creada, { status: 201, statusText: 'Created' });
 
     expect(resultado).toEqual(creada);
@@ -71,8 +73,8 @@ describe('ResenaService', () => {
     expect(service.resenas()).toEqual([
       { id: 15, nombreUsuario: 'Ana', comentario: 'Muy rico', calificacion: 5 },
     ]);
-    expect(service.loading()).toBe(false);
-    expect(service.error()).toBeNull();
+    expect(service.saving()).toBe(false);
+    expect(service.mutationError()).toBeNull();
   });
 
   it('debería devolver una lista vacía cuando el backend responde 204', () => {
@@ -82,6 +84,7 @@ describe('ResenaService', () => {
 
     const req = httpMock.expectOne(`${apiUrl}/usuario/3`);
     expect(req.request.method).toBe('GET');
+    expect(req.request.context.get(AUTH_ROLE)).toBe('CLIENTE');
     req.flush(null, { status: 204, statusText: 'No Content' });
 
     expect(resultado).toEqual([]);
@@ -89,7 +92,7 @@ describe('ResenaService', () => {
     expect(service.loading()).toBe(false);
   });
 
-  it('debería exponer el mensaje de error enviado por el backend', () => {
+  it('debería exponer el mensaje de error de lectura enviado por el backend', () => {
     service.obtenerPorId(99).subscribe({ error: () => undefined });
 
     const req = httpMock.expectOne(`${apiUrl}/99`);
@@ -100,5 +103,39 @@ describe('ResenaService', () => {
 
     expect(service.error()).toBe('La reseña no existe.');
     expect(service.loading()).toBe(false);
+  });
+
+  it('debería separar el error de escritura del error del listado', () => {
+    service
+      .crear({ comentario: 'Otra experiencia', calificacion: 4, restaurantId: 7 })
+      .subscribe({ error: () => undefined });
+
+    const req = httpMock.expectOne(apiUrl);
+    req.flush(
+      { error: 'error de negocio', mensaje: 'Ya realizaste una reseña para este restaurante.' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(service.mutationError()).toBe('Ya realizaste una reseña para este restaurante.');
+    expect(service.error()).toBeNull();
+    expect(service.saving()).toBe(false);
+  });
+
+  it('debería unir los mensajes de validación del backend', () => {
+    service
+      .crear({ comentario: 'Corto', calificacion: 0, restaurantId: 7 })
+      .subscribe({ error: () => undefined });
+
+    const req = httpMock.expectOne(apiUrl);
+    req.flush(
+      {
+        comentario: 'El comentario debe tener entre 10 y 255 caracteres',
+        calificacion: 'La calificación mínima es 1',
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(service.mutationError()).toContain('El comentario debe tener entre 10 y 255 caracteres');
+    expect(service.mutationError()).toContain('La calificación mínima es 1');
   });
 });
