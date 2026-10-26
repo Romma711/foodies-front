@@ -18,6 +18,9 @@ Sprints 1 a 5, qué decisiones se tomaron y qué queda abierto para planificar l
 | 3      | Formulario de creación y edición con validaciones            | ✅     | `d037c46`, `083ca08`            |
 | 4      | Gráfico con Chart.js y protección de UI por roles            | ✅     | `d2dbfe6`, `b5b73ce`            |
 | 5      | Integración en la página del restaurante, skeletons y toasts | ✅     | `602a6fd`, `609c4b7`            |
+| 10     | Ordenar y filtrar reseñas por calificación                   | ✅     | `ebc62b7`                       |
+
+Los Sprints 6 a 9 (panel de administración) están documentados en `features/admin/README.md`.
 
 Estado de calidad al cierre del Sprint 5: **132 tests en verde** (Vitest) y build de producción sin
 errores ni warnings.
@@ -146,6 +149,16 @@ El backend responde `204` cuando una lista está vacía; el servicio lo normaliz
 
 ---
 
+### Sprint 10 — Ordenar y filtrar
+
+- Filtros por calificación ("Todas", 5★ … 1★) con la cantidad de reseñas de cada uno; el filtro
+  activo se marca con `aria-pressed`.
+- Orden "Más recientes" (por defecto), "Mejor puntuación" y "Peor puntuación" con un `<select>`
+  nativo. Como las reseñas no tienen fecha, "más recientes" usa el id autoincremental.
+- Un texto `aria-live` anuncia "Mostrando X de Y reseñas"; si un filtro no tiene resultados se
+  ofrece "Ver todas".
+- La lógica vive en `utils/ordenar-resenas.ts` como función pura y testeada.
+
 ## 5. Decisiones técnicas importantes
 
 | Decisión                                                   | Motivo                                                                                   |
@@ -208,15 +221,14 @@ borrar `pages/resena-list`.
 
 Ideas para analizar y priorizar; no son compromisos. Se marca si requieren cambios de backend.
 
-| Candidato                                                                       | Valor             | Backend                                         |
-| ------------------------------------------------------------------------------- | ----------------- | ----------------------------------------------- |
-| Página "Mis reseñas" del cliente con link a cada restaurante                    | Alto              | Sí (agregar `nombreRestaurant` al DTO de lista) |
-| Ordenar y filtrar reseñas (más recientes, mejor/peor puntuación, por estrellas) | Alto              | Opcional                                        |
-| Paginación o "cargar más"                                                       | Medio             | Sí                                              |
-| Respuesta del restaurante a una reseña (rol RESTAURANTE)                        | Alto              | Sí                                              |
-| Promedio y cantidad de reseñas en las cards del listado de restaurantes         | Alto              | Opcional                                        |
-| Fecha de publicación y "editada" en cada reseña                                 | Medio             | Sí                                              |
-| Auditoría de accesibilidad con axe y tests e2e (Playwright/Cypress)             | Alto para la nota | No                                              |
-| Usar los toasts de `shared/toast` también en Reservas                           | Medio             | No                                              |
-| Moderación del admin desde su panel (listado de reseñas reportadas)             | Medio             | Sí                                              |
-| Estado optimista al crear/editar/eliminar con rollback ante error               | Medio             | No                                              |
+| Candidato                                                               | Valor             | Backend                                         |
+| ----------------------------------------------------------------------- | ----------------- | ----------------------------------------------- |
+| Página "Mis reseñas" del cliente con link a cada restaurante            | Alto              | Sí (agregar `nombreRestaurant` al DTO de lista) |
+| Paginación o "cargar más"                                               | Medio             | Sí                                              |
+| Respuesta del restaurante a una reseña (rol RESTAURANTE)                | Alto              | Sí                                              |
+| Promedio y cantidad de reseñas en las cards del listado de restaurantes | Alto              | Opcional                                        |
+| Fecha de publicación y "editada" en cada reseña                         | Medio             | Sí                                              |
+| Auditoría de accesibilidad con axe y tests e2e (Playwright/Cypress)     | Alto para la nota | No                                              |
+| Usar los toasts de `shared/toast` también en Reservas                   | Medio             | No                                              |
+| Moderación del admin desde su panel (listado de reseñas reportadas)     | Medio             | Sí                                              |
+| Estado optimista al crear/editar/eliminar con rollback ante error       | Medio             | No                                              |
