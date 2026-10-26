@@ -29,10 +29,12 @@ Detalle técnico por módulo:
 | 9      | Moderación de reseñas (backend + tabla con borrado rápido)      | back `1e49c85` · `698282e`, `ae6416b` |
 | 10     | Ordenar y filtrar reseñas por calificación                      | `ebc62b7`                             |
 | 11     | Auditoría de accesibilidad con axe y arreglos de contraste      | `ea4a79f`, `5b31cfe`                  |
+| —      | Deseables: Swagger, CI, `npm audit` y environment de producción | ver "Deseables resueltos"             |
 
 Documentación: `d777f62`, `0e20878` (front) y `314463b` (README del backend con los endpoints de admin).
 
-**Calidad actual:** 195 tests de frontend y 25 de backend en verde; build de producción sin errores.
+**Calidad actual:** 195 tests de frontend y 27 de backend en verde; build de producción sin errores;
+`npm audit` sin vulnerabilidades.
 
 ### Sprint 11 — Accesibilidad (detalle)
 
@@ -84,13 +86,24 @@ Documentación: `d777f62`, `0e20878` (front) y `314463b` (README del backend con
 
 ### 🟢 Deseable
 
-10. Sin documentación interactiva de la API (Swagger / springdoc-openapi).
-11. Sin CI (GitHub Actions) ni script de lint.
-12. `npm audit`: 3 vulnerabilidades, **todas en dependencias de desarrollo** (0 en producción).
-13. Un solo `environment.ts` con `apiUrl: '/api'`: alcanza para local con proxy; un deploy necesita
-    configuración de producción.
-14. `Resena` no tiene fecha: "más recientes" usa el id. Una `fechaCreacion` permitiría mostrar
-    "hace 2 días" (requiere cambio de esquema).
+10. ✅ **Swagger** — `springdoc-openapi` 2.8.8. Swagger UI en `http://localhost:8080/swagger-ui.html`, con
+    el botón "Authorize" para pegar el JWT. Rutas públicas agregadas en `SecurityConfig`. Test
+    `OpenApiDocsTest`. Back `cfb8ed3`.
+11. ✅ **CI con GitHub Actions** en los dos repos (corre en cada push y PR):
+    - Front (`ac8a44d`): `npm ci` → `format:check` → `test:ci` → `build`.
+    - Back (`7c704f2`): `./mvnw verify` con H2, sin MySQL.
+    - `format:check` solo revisa `resenas`, `admin`, `shared` y `environments`: 32 archivos de otros
+      módulos no pasan Prettier hoy. Después del merge se puede ampliar a `src` con `npx prettier --write src`.
+    - No se agregó ESLint: sumaría dependencias y fallaría sobre código de otros módulos el día antes del merge.
+12. ✅ **`npm audit`: 0 vulnerabilidades** (`894b95f`). `@angular/build` 22.2.x (incluso la última, 22.2.4)
+    fija `vite` 8.3.0, así que se forzó `vite` 8.3.4 con `overrides` en `package.json`. Quitarlo
+    cuando Angular publique una versión que traiga vite parchado.
+13. ✅ **Environment de producción** (`02e7361`): `environment.prod.ts` reemplaza al de desarrollo en
+    `ng build`. Usa `apiUrl: '/api'`, así que el servidor del deploy tiene que redirigir `/api` al
+    backend (como hace `proxy.conf.json` en local).
+14. ⏸️ **Fecha en las reseñas: pospuesto a propósito.** Requiere tocar `Resena`, `ResenaListDTO` y
+    `ResenaMapper`, y esos archivos tienen hoy cambios sin commitear de compañeros. Hacerlo antes del
+    merge garantiza conflictos. Conviene hacerlo en el Sprint 12, después del merge.
 
 ---
 
