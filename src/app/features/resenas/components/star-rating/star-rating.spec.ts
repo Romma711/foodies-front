@@ -83,4 +83,32 @@ describe('StarRating', () => {
     expect(grupo.getAttribute('aria-invalid')).toBe('true');
     expect(radio.getAttribute('aria-invalid')).toBe('true');
   });
+
+  describe('valor visible (contraste WCAG 1.4.11)', () => {
+    it('no debería mostrar el número por defecto en modo lectura', () => {
+      const fixture = crear(3.5);
+
+      expect(fixture.nativeElement.querySelector('[data-testid="valor"]')).toBeNull();
+    });
+
+    it('debería mostrar el número oculto a lectores de pantalla cuando se pide', () => {
+      const fixture = crear(3.5);
+      fixture.componentRef.setInput('mostrarValor', true);
+      fixture.detectChanges();
+      const valor = fixture.nativeElement.querySelector('[data-testid="valor"]') as HTMLElement;
+
+      expect(valor.textContent?.trim()).toBe('3.5');
+      expect(valor.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('debería mostrar la elección en modo interactivo solo cuando hay una', () => {
+      const vacio = crearInteractivo(0);
+      expect(vacio.nativeElement.querySelector('[data-testid="valor"]')).toBeNull();
+
+      const elegido = crearInteractivo(4);
+      expect(
+        elegido.nativeElement.querySelector('[data-testid="valor"]')?.textContent?.trim(),
+      ).toBe('4 de 5');
+    });
+  });
 });

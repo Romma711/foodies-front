@@ -143,4 +143,14 @@ describe('ResenaCard', () => {
       expect(boton(fixture, 'Eliminando…')?.disabled).toBe(true);
     });
   });
+
+  it('debería mostrar la calificación también como número', () => {
+    const fixture = crear(resena);
+
+    expect(
+      fixture.nativeElement
+        .querySelector('app-star-rating [data-testid="valor"]')
+        ?.textContent?.trim(),
+    ).toBe('5.0');
+  });
 });

@@ -81,7 +81,11 @@ import { AdminModeracionService } from '../../services/admin-moderacion.service'
                     </p>
                   </td>
                   <td class="px-4 py-4">
-                    <app-star-rating [value]="resena.calificacion" size="sm" />
+                    <app-star-rating
+                      [value]="resena.calificacion"
+                      size="sm"
+                      [mostrarValor]="true"
+                    />
                   </td>
                   <td class="px-4 py-4 font-semibold text-ink-900">
                     {{ resena.nombreUsuario || 'Anónimo' }}

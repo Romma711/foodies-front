@@ -34,7 +34,7 @@ import { StarRating } from '../star-rating/star-rating';
             {{ nombre() }}
           </p>
           <div class="mt-1">
-            <app-star-rating [value]="resena().calificacion" size="sm" />
+            <app-star-rating [value]="resena().calificacion" size="sm" [mostrarValor]="true" />
           </div>
         </div>
         @if (editable()) {
