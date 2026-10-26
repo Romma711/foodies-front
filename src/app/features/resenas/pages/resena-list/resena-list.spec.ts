@@ -2,7 +2,7 @@ import { WritableSignal, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { BAR_CHART_FACTORY } from '../../components/rating-distribution/bar-chart-factory';
 import { ResenaForm } from '../../components/resena-form/resena-form';
@@ -38,6 +38,8 @@ describe('ResenaList', () => {
   let cargando: WritableSignal<boolean>;
   let error: WritableSignal<string | null>;
   let autenticado: WritableSignal<boolean>;
+  let admin: WritableSignal<boolean>;
+  let eliminar: ReturnType<typeof vi.fn>;
   let saving: WritableSignal<boolean>;
   let mutationError: WritableSignal<string | null>;
   let listarPorRestaurante: ReturnType<typeof vi.fn>;
@@ -50,6 +52,8 @@ describe('ResenaList', () => {
     cargando = signal(false);
     error = signal<string | null>(null);
     autenticado = signal(false);
+    admin = signal(false);
+    eliminar = vi.fn(() => of(undefined));
     saving = signal(false);
     mutationError = signal<string | null>(null);
     listarPorRestaurante = vi.fn(() => of(mock));
@@ -92,12 +96,13 @@ describe('ResenaList', () => {
             ),
             misResenaIds: misResenaIds.asReadonly(),
             cargarMisResenas,
+            eliminar,
           },
         },
         {
           provide: AuthService,
           useValue: {
-            isAuthenticated: () => autenticado(),
+            isAuthenticated: (rol: string) => (rol === 'ADMIN' ? admin() : autenticado()),
             userId: () => (autenticado() ? 3 : null),
           },
         },
@@ -254,6 +259,68 @@ describe('ResenaList', () => {
 
       expect(fixture.nativeElement.querySelector('app-resena-form')).toBeNull();
       expect(fixture.nativeElement.textContent).toContain('Tu reseña se actualizó.');
+    });
+  });
+
+  describe('eliminación por rol', () => {
+    function botonesEliminar(fixture: ReturnType<typeof crearComponente>) {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[aria-label="Eliminar reseña"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+    }
+
+    function confirmar(fixture: ReturnType<typeof crearComponente>, indice: number) {
+      botonesEliminar(fixture)[indice].click();
+      fixture.detectChanges();
+      const confirmacion = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((item) => item.textContent?.trim() === 'Eliminar');
+      confirmacion?.click();
+      fixture.detectChanges();
+    }
+
+    it('no debería ofrecer eliminar a los visitantes', () => {
+      const fixture = crearComponente('5');
+
+      expect(botonesEliminar(fixture).length).toBe(0);
+    });
+
+    it('debería permitir al cliente eliminar solo su reseña', () => {
+      autenticado.set(true);
+      misResenaIds.set(new Set([1]));
+      const fixture = crearComponente('5');
+
+      expect(botonesEliminar(fixture).length).toBe(1);
+      confirmar(fixture, 0);
+
+      expect(eliminar).toHaveBeenCalledWith(1, 'CLIENTE');
+      expect(fixture.nativeElement.textContent).toContain('Tu reseña se eliminó.');
+    });
+
+    it('debería permitir al administrador moderar cualquier reseña', () => {
+      admin.set(true);
+      const fixture = crearComponente('5');
+
+      expect(botonesEliminar(fixture).length).toBe(2);
+      confirmar(fixture, 1);
+
+      expect(eliminar).toHaveBeenCalledWith(2, 'ADMIN');
+      expect(fixture.nativeElement.textContent).toContain('La reseña se eliminó.');
+    });
+
+    it('debería mostrar el error si no se pudo eliminar', () => {
+      autenticado.set(true);
+      misResenaIds.set(new Set([1]));
+      eliminar.mockReturnValue(throwError(() => new Error('403')));
+      const fixture = crearComponente('5');
+      mutationError.set('No podés modificar una reseña de otro usuario.');
+
+      confirmar(fixture, 0);
+
+      const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
+      expect(alerta.textContent).toContain('No podés modificar una reseña de otro usuario.');
     });
   });
 });

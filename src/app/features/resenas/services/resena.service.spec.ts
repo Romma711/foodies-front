@@ -226,4 +226,50 @@ describe('ResenaService', () => {
       { estrellas: 1, cantidad: 0 },
     ]);
   });
+
+  it('debería eliminar con el token del cliente y quitarla del estado', () => {
+    service.listarPorRestaurante(7).subscribe();
+    httpMock
+      .expectOne((request) => request.url === apiUrl)
+      .flush([{ id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 }]);
+    service.cargarMisResenas(3).subscribe();
+    httpMock
+      .expectOne(`${apiUrl}/usuario/3`)
+      .flush([{ id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 }]);
+
+    service.eliminar(1).subscribe();
+    const req = httpMock.expectOne(`${apiUrl}/1`);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.context.get(AUTH_ROLE)).toBe('CLIENTE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(service.resenas()).toEqual([]);
+    expect(service.misResenaIds().has(1)).toBe(false);
+  });
+
+  it('debería eliminar con el token del administrador al moderar', () => {
+    service.eliminar(8, 'ADMIN').subscribe();
+    const req = httpMock.expectOne(`${apiUrl}/8`);
+
+    expect(req.request.context.get(AUTH_ROLE)).toBe('ADMIN');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('no debería quitar la reseña del estado si el backend la rechaza', () => {
+    service.listarPorRestaurante(7).subscribe();
+    httpMock
+      .expectOne((request) => request.url === apiUrl)
+      .flush([{ id: 1, nombreUsuario: 'Ana', comentario: 'Excelente', calificacion: 5 }]);
+
+    service.eliminar(1).subscribe({ error: () => undefined });
+    httpMock
+      .expectOne(`${apiUrl}/1`)
+      .flush(
+        { mensaje: 'No podés modificar una reseña de otro usuario.' },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+    expect(service.resenas().length).toBe(1);
+    expect(service.mutationError()).toBe('No podés modificar una reseña de otro usuario.');
+  });
 });

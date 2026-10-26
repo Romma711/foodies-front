@@ -30,6 +30,7 @@ export class ResenaList {
   readonly promedio = this.resenaService.promedioCalificacion;
   readonly distribucion = this.resenaService.distribucionCalificaciones;
   readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
+  readonly esAdmin = computed(() => this.auth.isAuthenticated('ADMIN'));
   readonly misResenaIds = this.resenaService.misResenaIds;
   readonly yaReseno = computed(() =>
     this.resenas().some((resena) => this.misResenaIds().has(resena.id)),
@@ -38,6 +39,8 @@ export class ResenaList {
   readonly mostrarFormulario = signal(false);
   readonly editandoId = signal<number | null>(null);
   readonly mensajeExito = signal<string | null>(null);
+  readonly eliminandoId = signal<number | null>(null);
+  readonly errorEliminacion = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -86,6 +89,41 @@ export class ResenaList {
   alActualizar(): void {
     this.editandoId.set(null);
     this.mensajeExito.set('Tu reseña se actualizó.');
+  }
+
+  esPropia(id: number): boolean {
+    return this.esCliente() && this.misResenaIds().has(id);
+  }
+
+  /** Owners delete their own review; admins can moderate any of them. */
+  puedeEliminar(id: number): boolean {
+    return this.esPropia(id) || this.esAdmin();
+  }
+
+  eliminar(id: number): void {
+    const propia = this.esPropia(id);
+    this.mensajeExito.set(null);
+    this.errorEliminacion.set(null);
+    this.eliminandoId.set(id);
+    this.resenaService
+      .eliminar(id, propia ? 'CLIENTE' : 'ADMIN')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.eliminandoId.set(null);
+          this.mensajeExito.set(propia ? 'Tu reseña se eliminó.' : 'La reseña se eliminó.');
+        },
+        error: () => {
+          this.eliminandoId.set(null);
+          this.errorEliminacion.set(
+            this.resenaService.mutationError() ?? 'No se pudo eliminar la reseña.',
+          );
+        },
+      });
+  }
+
+  cerrarErrorEliminacion(): void {
+    this.errorEliminacion.set(null);
   }
 
   cerrarFormulario(): void {

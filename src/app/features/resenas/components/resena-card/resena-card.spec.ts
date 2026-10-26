@@ -83,4 +83,64 @@ describe('ResenaCard', () => {
 
     expect(editar).toHaveBeenCalled();
   });
+
+  describe('al eliminar', () => {
+    function crearEliminable() {
+      const fixture = TestBed.createComponent(ResenaCard);
+      fixture.componentRef.setInput('resena', resena);
+      fixture.componentRef.setInput('eliminable', true);
+      fixture.detectChanges();
+      const eliminar = vi.fn();
+      fixture.componentInstance.eliminar.subscribe(eliminar);
+      return { fixture, eliminar };
+    }
+
+    function boton(fixture: { nativeElement: HTMLElement }, texto: string) {
+      return Array.from(fixture.nativeElement.querySelectorAll('button')).find(
+        (item) => item.textContent?.trim() === texto || item.getAttribute('aria-label') === texto,
+      );
+    }
+
+    it('no debería ofrecer eliminar por defecto', () => {
+      const fixture = crear(resena);
+
+      expect(boton(fixture, 'Eliminar reseña')).toBeUndefined();
+    });
+
+    it('debería pedir confirmación antes de emitir y enfocar Cancelar', async () => {
+      const { fixture, eliminar } = crearEliminable();
+
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(eliminar).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.textContent).toContain('¿Eliminar esta reseña?');
+      expect(document.activeElement).toBe(boton(fixture, 'Cancelar'));
+
+      boton(fixture, 'Eliminar')?.click();
+      expect(eliminar).toHaveBeenCalledTimes(1);
+    });
+
+    it('debería volver atrás al cancelar la confirmación', () => {
+      const { fixture, eliminar } = crearEliminable();
+
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.detectChanges();
+      boton(fixture, 'Cancelar')?.click();
+      fixture.detectChanges();
+
+      expect(eliminar).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.textContent).not.toContain('¿Eliminar esta reseña?');
+    });
+
+    it('debería deshabilitar la confirmación mientras se elimina', () => {
+      const { fixture } = crearEliminable();
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.componentRef.setInput('eliminando', true);
+      fixture.detectChanges();
+
+      expect(boton(fixture, 'Eliminando…')?.disabled).toBe(true);
+    });
+  });
 });

@@ -1,4 +1,15 @@
-import { Component, computed, input, output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ResenaListDTO } from '../../models';
 import { StarRating } from '../star-rating/star-rating';
 
@@ -47,6 +58,30 @@ import { StarRating } from '../star-rating/star-rating';
             </svg>
           </button>
         }
+        @if (eliminable() && !confirmando()) {
+          <button
+            #botonEliminar
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-red-50 hover:text-red-700"
+            aria-label="Eliminar reseña"
+            (click)="pedirConfirmacion()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"
+              />
+            </svg>
+          </button>
+        }
       </header>
 
       <blockquote class="mt-4 flex-1">
@@ -57,14 +92,53 @@ import { StarRating } from '../star-rating/star-rating';
           {{ resena().comentario }}
         </p>
       </blockquote>
+
+      @if (confirmando()) {
+        <div
+          class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-4"
+          role="group"
+          aria-label="Confirmar eliminación"
+        >
+          <p class="text-sm font-semibold text-ink-900">¿Eliminar esta reseña?</p>
+          <div class="flex gap-2">
+            <button
+              #botonCancelar
+              type="button"
+              class="inline-flex items-center justify-center rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
+              [disabled]="eliminando()"
+              (click)="cancelarEliminacion()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-60"
+              [disabled]="eliminando()"
+              (click)="eliminar.emit()"
+            >
+              {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          </div>
+        </div>
+      }
     </article>
   `,
 })
 export class ResenaCard {
   readonly resena = input.required<ResenaListDTO>();
   readonly editable = input(false);
+  readonly eliminable = input(false);
+  readonly eliminando = input(false);
 
   readonly editar = output<void>();
+  /** Emitted only after the user confirms the deletion inside the card. */
+  readonly eliminar = output<void>();
+
+  protected readonly confirmando = signal(false);
+
+  private readonly injector = inject(Injector);
+  private readonly botonEliminar = viewChild<ElementRef<HTMLButtonElement>>('botonEliminar');
+  private readonly botonCancelar = viewChild<ElementRef<HTMLButtonElement>>('botonCancelar');
 
   private readonly palette = ['#fde7dc', '#e7f0ff', '#e7f6ec', '#f3e8ff', '#fff4d6', '#ffe4e6'];
 
@@ -82,6 +156,20 @@ export class ResenaCard {
   readonly avatarStyle = computed(() => ({
     backgroundColor: this.palette[this.hash(this.nombre()) % this.palette.length] ?? '#fde7dc',
   }));
+
+  protected pedirConfirmacion(): void {
+    this.confirmando.set(true);
+    afterNextRender(() => this.botonCancelar()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
+  }
+
+  protected cancelarEliminacion(): void {
+    this.confirmando.set(false);
+    afterNextRender(() => this.botonEliminar()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
+  }
 
   private hash(value: string): number {
     return Array.from(value).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 997, 7);

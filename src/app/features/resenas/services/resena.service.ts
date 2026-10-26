@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Service, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
+import { Role } from '../../../core/auth/auth.models';
 import { environment } from '../../../../environments/environment';
 import {
   DistribucionCalificacion,
@@ -157,10 +158,11 @@ export class ResenaService {
     );
   }
 
-  eliminar(id: number): Observable<void> {
+  /** Owners delete with their client token; admins moderate any review with the admin token. */
+  eliminar(id: number, rol: Extract<Role, 'CLIENTE' | 'ADMIN'> = 'CLIENTE'): Observable<void> {
     return this.ejecutarEscritura(
       this.http.delete<void>(`${this.apiUrl}/${id}`, {
-        context: withRole('CLIENTE'),
+        context: withRole(rol),
       }),
     ).pipe(
       tap(() => {

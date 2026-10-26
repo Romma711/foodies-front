@@ -169,6 +169,33 @@
     <section class="mt-10 sm:mt-12" aria-labelledby="titulo-listado">
       <h2 id="titulo-listado" class="sr-only">Listado de reseñas</h2>
 
+      @if (errorEliminacion(); as mensaje) {
+        <div
+          class="mb-4 flex items-start justify-between gap-4 rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3"
+          role="alert"
+        >
+          <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
+          <button
+            type="button"
+            class="rounded-full p-1 text-red-800 transition hover:bg-red-100"
+            aria-label="Cerrar mensaje de error"
+            (click)="cerrarErrorEliminacion()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+      }
+
       @if (cargando()) {
         <div
           class="flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white/70 px-6 py-16 text-center"
@@ -242,8 +269,11 @@
               <li class="h-full">
                 <app-resena-card
                   [resena]="resena"
-                  [editable]="misResenaIds().has(resena.id) && editandoId() === null"
+                  [editable]="esPropia(resena.id) && editandoId() === null"
+                  [eliminable]="puedeEliminar(resena.id) && editandoId() === null"
+                  [eliminando]="eliminandoId() === resena.id"
                   (editar)="editar(resena.id)"
+                  (eliminar)="eliminar(resena.id)"
                 />
               </li>
             }
