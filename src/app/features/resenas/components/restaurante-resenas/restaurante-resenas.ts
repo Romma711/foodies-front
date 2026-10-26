@@ -4,12 +4,12 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
-import { ToastService } from '../../services/toast.service';
+import { ToastService } from '../../../../shared/toast/toast.service';
 import { RatingDistribution } from '../rating-distribution/rating-distribution';
 import { ResenaCard } from '../resena-card/resena-card';
 import { ResenaForm } from '../resena-form/resena-form';
 import { StarRating } from '../star-rating/star-rating';
-import { ToastOutlet } from '../toast-outlet/toast-outlet';
+import { ToastOutlet } from '../../../../shared/toast/toast-outlet';
 
 /** Reviews block of a restaurant: summary, chart, write/edit/delete flows and the review grid. */
 @Component({

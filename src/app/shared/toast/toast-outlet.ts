@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { ToastService } from '../../services/toast.service';
+import { ToastService } from './toast.service';
 
 @Component({
   selector: 'app-toast-outlet',

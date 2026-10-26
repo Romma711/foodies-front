@@ -46,17 +46,19 @@ errores ni warnings.
 features/resenas/
 ├── models/                      # DTOs espejo del backend + DistribucionCalificacion
 ├── services/
-│   ├── resena.service.ts        # HTTP + estado global de reseñas (signals)
-│   └── toast.service.ts         # Cola de notificaciones (provista por componente)
+│   └── resena.service.ts        # HTTP + estado global de reseñas (signals)
 ├── components/
 │   ├── star-rating/             # Estrellas: modo lectura y modo interactivo
 │   ├── resena-card/             # Card de una reseña (editar / eliminar con confirmación)
 │   ├── resena-form/             # Formulario de creación y edición
 │   ├── rating-distribution/     # Gráfico de barras (Chart.js) + tabla accesible
-│   ├── toast-outlet/            # Render de toasts con regiones aria-live
 │   └── restaurante-resenas/     # Bloque completo embebible en la página del restaurante
 └── pages/
     └── resena-list/             # Ruta legacy /resenas/:id (wrapper del bloque)
+
+shared/                          # Piezas genéricas que también usa el panel de admin
+├── charts/bar-chart-factory.ts  # Token BAR_CHART_FACTORY (Chart.js de barras)
+└── toast/                       # ToastService (provisto por componente) + ToastOutlet
 ```
 
 ### Flujo de datos
@@ -215,6 +217,6 @@ Ideas para analizar y priorizar; no son compromisos. Se marca si requieren cambi
 | Promedio y cantidad de reseñas en las cards del listado de restaurantes         | Alto              | Opcional                                        |
 | Fecha de publicación y "editada" en cada reseña                                 | Medio             | Sí                                              |
 | Auditoría de accesibilidad con axe y tests e2e (Playwright/Cypress)             | Alto para la nota | No                                              |
-| Toasts globales reutilizables por Reservas (mover a `shared/`)                  | Medio             | No                                              |
+| Usar los toasts de `shared/toast` también en Reservas                           | Medio             | No                                              |
 | Moderación del admin desde su panel (listado de reseñas reportadas)             | Medio             | Sí                                              |
 | Estado optimista al crear/editar/eliminar con rollback ante error               | Medio             | No                                              |
