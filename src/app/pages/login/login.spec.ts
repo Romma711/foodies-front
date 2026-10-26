@@ -37,14 +37,15 @@ describe('Login', () => {
   afterEach(() => http.verify());
 
   it('shows the portal title and hides register for admins', () => {
-    expect(element.querySelector('h1')?.textContent).toContain('Admin sign in');
-    expect(element.textContent).not.toContain('Create one');
+    expect(element.querySelector('h1')?.textContent).toContain('Iniciar sesión');
+    expect(element.textContent).toContain('Portal Admin');
+    expect(element.textContent).not.toContain('Creá una');
   });
 
   it('does not call the backend when the form is invalid', async () => {
     await submitForm();
 
-    expect(element.textContent).toContain('Email is required.');
+    expect(element.textContent).toContain('El email es obligatorio.');
     http.expectNone(() => true);
   });
 
@@ -61,7 +62,7 @@ describe('Login', () => {
     await fixture.whenStable();
 
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(
-      'This account does not belong to this portal.',
+      'Esta cuenta no pertenece a este portal.',
     );
     expect(localStorage.getItem('foodies.token.CLIENTE')).toBeNull();
   });

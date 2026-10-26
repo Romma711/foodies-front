@@ -28,10 +28,18 @@ interface RegisterFormModel {
   cupoMaximo: number;
 }
 
+const ESPECIALIDAD_LABELS: Record<EspecialidadDeComida, string> = {
+  PESCADOS: 'Pescados',
+  PARRILLA: 'Parrilla',
+  PASTAS: 'Pastas',
+  ASIATICA: 'Asiática',
+  MINUTAS: 'Minutas',
+  CAFE: 'Café',
+};
+
 @Component({
   imports: [FormField, RouterLink],
   selector: 'app-register',
-  styleUrl: './register.css',
   templateUrl: './register.html',
 })
 export class Register {
@@ -44,6 +52,7 @@ export class Register {
   protected readonly portal = computed(() => PORTALS[this.role()]);
   protected readonly isRestaurante = computed(() => this.role() === 'RESTAURANTE');
   protected readonly especialidades = ESPECIALIDADES;
+  protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   protected readonly errorMessage = signal<string | null>(null);
   /** Restaurant requests need admin approval, so they stay here with a confirmation. */
   protected readonly pendingApproval = signal(false);
@@ -62,24 +71,28 @@ export class Register {
   protected readonly registerForm = form(this.model, (path) => {
     const whenCliente = { when: () => !this.isRestaurante() };
     const whenRestaurante = { when: () => this.isRestaurante() };
-    required(path.nombre, { ...whenCliente, message: 'First name is required.' });
-    required(path.apellido, { ...whenCliente, message: 'Last name is required.' });
-    required(path.email, { message: 'Email is required.' });
-    email(path.email, { message: 'Enter a valid email.' });
-    required(path.password, { message: 'Password is required.' });
-    minLength(path.password, 6, { message: 'Password must have between 6 and 30 characters.' });
-    maxLength(path.password, 30, { message: 'Password must have between 6 and 30 characters.' });
-    required(path.telefono, { message: 'Phone is required.' });
+    required(path.nombre, { ...whenCliente, message: 'El nombre es obligatorio.' });
+    required(path.apellido, { ...whenCliente, message: 'El apellido es obligatorio.' });
+    required(path.email, { message: 'El email es obligatorio.' });
+    email(path.email, { message: 'Ingresá un email válido.' });
+    required(path.password, { message: 'La contraseña es obligatoria.' });
+    minLength(path.password, 6, {
+      message: 'La contraseña debe tener entre 6 y 30 caracteres.',
+    });
+    maxLength(path.password, 30, {
+      message: 'La contraseña debe tener entre 6 y 30 caracteres.',
+    });
+    required(path.telefono, { message: 'El teléfono es obligatorio.' });
     required(path.nombreRestaurante, {
       ...whenRestaurante,
-      message: 'Restaurant name is required.',
+      message: 'El nombre del restaurante es obligatorio.',
     });
-    required(path.direccion, { ...whenRestaurante, message: 'Address is required.' });
+    required(path.direccion, { ...whenRestaurante, message: 'La dirección es obligatoria.' });
     required(path.especialidadDeComida, {
       ...whenRestaurante,
-      message: 'Choose a food specialty.',
+      message: 'Elegí una especialidad.',
     });
-    min(path.cupoMaximo, 1, { message: 'Capacity must be at least 1.' });
+    min(path.cupoMaximo, 1, { message: 'La capacidad debe ser al menos 1.' });
   });
 
   protected async onSubmit(event: Event): Promise<void> {
@@ -125,10 +138,10 @@ export class Register {
 
 function toMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
-    return 'An account with this email already exists.';
+    return 'Ya existe una cuenta con este email.';
   }
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
-    return 'Some data is not valid. Please review the form.';
+    return 'Algunos datos no son válidos. Revisá el formulario.';
   }
-  return 'Something went wrong. Please try again.';
+  return 'Algo salió mal. Intentá de nuevo.';
 }

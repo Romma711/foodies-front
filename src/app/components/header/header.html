@@ -33,6 +33,7 @@
     <nav class="hidden items-center gap-1 md:flex" aria-label="Navegación principal">
       <a
         routerLink="/resenas/5"
+        routerLinkActive="bg-white/70"
         class="rounded-full px-3 py-2 text-sm font-semibold text-ink-700 transition hover:bg-white/70 hover:text-ink-900"
       >
         Reseñas
@@ -48,12 +49,12 @@
             [routerLink]="portals[role].homePath"
             class="text-sm font-semibold text-ink-700 transition hover:text-ink-900"
           >
-            {{ roleLabels[role] }}
+            {{ portals[role].title }}
           </a>
           <button
             type="button"
             class="grid size-8 place-items-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-            [attr.aria-label]="'Cerrar sesión de ' + roleLabels[role]"
+            [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
             (click)="logout(role)"
           >
             <svg
@@ -137,6 +138,7 @@
       >
         <a
           routerLink="/resenas/5"
+          routerLinkActive="bg-white/70"
           class="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-white/70"
           (click)="cerrarMenu()"
         >
@@ -152,12 +154,12 @@
               class="text-sm font-semibold text-ink-700"
               (click)="cerrarMenu()"
             >
-              {{ roleLabels[role] }}
+              {{ portals[role].title }}
             </a>
             <button
               type="button"
               class="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-              [attr.aria-label]="'Cerrar sesión de ' + roleLabels[role]"
+              [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
               (click)="logout(role)"
             >
               Cerrar sesión

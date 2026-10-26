@@ -107,6 +107,6 @@ describe('Register', () => {
 
     expect(
       (fixture.nativeElement as HTMLElement).querySelector('[role="status"]')?.textContent,
-    ).toContain('An admin must approve your restaurant');
+    ).toContain('Un administrador debe aprobar tu restaurante');
   });
 });

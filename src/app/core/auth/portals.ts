@@ -12,13 +12,13 @@ export const PORTALS: Record<Role, Portal> = {
     loginPath: '/login',
     homePath: '/',
     registerPath: '/register',
-    title: 'Customer',
+    title: 'Cliente',
   },
   RESTAURANTE: {
     loginPath: '/restaurante/login',
     homePath: '/restaurante',
     registerPath: '/restaurante/register',
-    title: 'Restaurant',
+    title: 'Restaurante',
   },
   ADMIN: {
     loginPath: '/admin/login',
