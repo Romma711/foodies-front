@@ -55,15 +55,7 @@ export const routes: Routes = [
     canMatch: [guestGuard],
     data: { role: 'CLIENTE' satisfies Role },
   },
-  {
-    path: 'restaurante',
-    pathMatch: 'full',
-    loadComponent: () =>
-      import('./pages/restaurante/restaurante-home/restaurante-home').then(
-        (m) => m.RestauranteHome,
-      ),
-    canMatch: [roleGuard('RESTAURANTE')],
-  },
+  // Login/register must come before the panel: its roleGuard would redirect them to the login again.
   {
     path: 'restaurante/login',
     loadComponent: loadLogin,
@@ -75,6 +67,11 @@ export const routes: Routes = [
     loadComponent: loadRegister,
     canMatch: [guestGuard],
     data: { role: 'RESTAURANTE' satisfies Role },
+  },
+  {
+    path: 'restaurante',
+    canMatch: [roleGuard('RESTAURANTE')],
+    loadChildren: () => import('./pages/restaurante/panel/panel.routes').then((m) => m.panelRoutes),
   },
   // Login goes first: the panel route below matches every `/admin/...` URL.
   {
