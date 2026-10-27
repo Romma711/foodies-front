@@ -15,6 +15,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
 
 interface RegisterFormModel {
   nombre: string;
@@ -27,15 +28,6 @@ interface RegisterFormModel {
   especialidadDeComida: EspecialidadDeComida | '';
   cupoMaximo: number;
 }
-
-const ESPECIALIDAD_LABELS: Record<EspecialidadDeComida, string> = {
-  PESCADOS: 'Pescados',
-  PARRILLA: 'Parrilla',
-  PASTAS: 'Pastas',
-  ASIATICA: 'Asiática',
-  MINUTAS: 'Minutas',
-  CAFE: 'Café',
-};
 
 @Component({
   imports: [FormField, RouterLink],

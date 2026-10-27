@@ -30,7 +30,12 @@ describe('AuthService', () => {
   afterEach(() => http.verify());
 
   it('stores the raw token, without the Bearer prefix, under its role', async () => {
-    const token = fakeJwt({ sub: 'ana@foodies.com', roles: ['ROLE_CLIENTE'], exp: futureExp() });
+    const token = fakeJwt({
+      sub: 'ana@foodies.com',
+      roles: ['ROLE_CLIENTE'],
+      usuarioId: 29,
+      exp: futureExp(),
+    });
     const session = login('CLIENTE');
 
     const req = http.expectOne(`${API}/auth/login`);
@@ -42,6 +47,8 @@ describe('AuthService', () => {
     expect(localStorage.getItem('foodies.token.CLIENTE')).toBe(token);
     expect(auth.isAuthenticated('CLIENTE')).toBe(true);
     expect(auth.isAuthenticated('ADMIN')).toBe(false);
+    expect(auth.userId('CLIENTE')).toBe(29);
+    expect(auth.userId('ADMIN')).toBeNull();
   });
 
   it('signs ROLE_ENCARGADO into the restaurant portal', async () => {
