@@ -1,1 +1,148 @@
-<p>reserva-form works!</p>
+<form [formRoot]="formulario" class="space-y-5" aria-label="Formulario de nueva reserva">
+  @if (errorVisible(); as mensaje) {
+    <div
+      class="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-700"
+      role="alert"
+    >
+      {{ mensaje }}
+    </div>
+  }
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    @if (restauranteId() === undefined) {
+      <div class="sm:col-span-2">
+        <label for="reserva-restaurante" class="block text-sm font-semibold text-ink-700">
+          Restaurante
+        </label>
+        <select
+          id="reserva-restaurante"
+          [formField]="formulario.idRestaurant"
+          [attr.aria-invalid]="mostrarError(formulario.idRestaurant)"
+          [attr.aria-describedby]="
+            mostrarError(formulario.idRestaurant) ? 'reserva-restaurante-error' : null
+          "
+          class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          [class.border-line]="!mostrarError(formulario.idRestaurant)"
+          [class.border-red-500]="mostrarError(formulario.idRestaurant)"
+        >
+          <option value="">Elegí un restaurante</option>
+          @for (restaurante of restaurantes(); track restaurante.id) {
+            <option [value]="restaurante.id">
+              {{ restaurante.nombre }} · {{ restaurante.ubicacion }}
+            </option>
+          }
+        </select>
+        @if (cargandoRestaurantes()) {
+          <p class="mt-2 text-sm text-ink-500">Cargando restaurantes…</p>
+        }
+        @if (errorRestaurantes(); as errorResto) {
+          <div class="mt-2 flex items-center gap-3 text-sm text-red-700" role="alert">
+            <span>{{ errorResto }}</span>
+            <button
+              type="button"
+              (click)="recargarRestaurantes()"
+              class="font-semibold underline underline-offset-4"
+            >
+              Reintentar
+            </button>
+          </div>
+        }
+        @if (mostrarError(formulario.idRestaurant)) {
+          <p
+            id="reserva-restaurante-error"
+            class="mt-2 text-sm font-medium text-red-700"
+            role="alert"
+          >
+            {{ mensajeDeError(formulario.idRestaurant) }}
+          </p>
+        }
+      </div>
+    }
+
+    <div>
+      <label for="reserva-fecha" class="block text-sm font-semibold text-ink-700">Fecha</label>
+      <input
+        id="reserva-fecha"
+        type="date"
+        [attr.min]="hoyIso"
+        [attr.max]="maximoIso"
+        [formField]="formulario.fechaReserva"
+        [attr.aria-invalid]="mostrarError(formulario.fechaReserva)"
+        [attr.aria-describedby]="
+          mostrarError(formulario.fechaReserva) ? 'reserva-fecha-error' : null
+        "
+        class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        [class.border-line]="!mostrarError(formulario.fechaReserva)"
+        [class.border-red-500]="mostrarError(formulario.fechaReserva)"
+      />
+      @if (mostrarError(formulario.fechaReserva)) {
+        <p id="reserva-fecha-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
+          {{ mensajeDeError(formulario.fechaReserva) }}
+        </p>
+      }
+    </div>
+
+    <div>
+      <label for="reserva-hora" class="block text-sm font-semibold text-ink-700">
+        Hora de llegada
+      </label>
+      <input
+        id="reserva-hora"
+        type="time"
+        [formField]="formulario.horarioLlegada"
+        [attr.aria-invalid]="mostrarError(formulario.horarioLlegada)"
+        [attr.aria-describedby]="
+          mostrarError(formulario.horarioLlegada) ? 'reserva-hora-error' : null
+        "
+        class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        [class.border-line]="!mostrarError(formulario.horarioLlegada)"
+        [class.border-red-500]="mostrarError(formulario.horarioLlegada)"
+      />
+      @if (mostrarError(formulario.horarioLlegada)) {
+        <p id="reserva-hora-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
+          {{ mensajeDeError(formulario.horarioLlegada) }}
+        </p>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="reserva-cantidad" class="block text-sm font-semibold text-ink-700">
+        Personas
+      </label>
+      <input
+        id="reserva-cantidad"
+        type="number"
+        inputmode="numeric"
+        [formField]="formulario.cantidad"
+        [attr.aria-invalid]="mostrarError(formulario.cantidad)"
+        [attr.aria-describedby]="
+          mostrarError(formulario.cantidad) ? 'reserva-cantidad-error' : null
+        "
+        class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        [class.border-line]="!mostrarError(formulario.cantidad)"
+        [class.border-red-500]="mostrarError(formulario.cantidad)"
+      />
+      @if (mostrarError(formulario.cantidad)) {
+        <p id="reserva-cantidad-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
+          {{ mensajeDeError(formulario.cantidad) }}
+        </p>
+      }
+    </div>
+  </div>
+
+  <button
+    type="submit"
+    [disabled]="enviando()"
+    class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+  >
+    @if (enviando()) {
+      <span
+        class="size-4 animate-spin rounded-full border-2 border-ink-500 border-t-white"
+        aria-hidden="true"
+      ></span>
+      Reservando…
+    } @else {
+      Confirmar reserva
+    }
+  </button>
+</form>

@@ -1,1 +1,128 @@
-<p>login works!</p>
+<main
+  class="relative isolate flex min-h-dvh items-center justify-center overflow-hidden px-4 py-12 sm:px-6"
+>
+  <div
+    class="pointer-events-none absolute inset-x-0 -top-48 -z-10 flex justify-center"
+    aria-hidden="true"
+  >
+    <div class="h-96 w-[48rem] max-w-full rounded-full bg-brand-100/80 blur-3xl"></div>
+  </div>
+
+  <div class="w-full max-w-md">
+    <p class="text-center text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Foodies</p>
+    <h1 class="mt-4 text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
+      ¡Qué bueno verte de nuevo!
+    </h1>
+    <p class="mt-3 text-center text-base leading-7 text-ink-500">
+      Ingresá para reservar tu próxima mesa favorita.
+    </p>
+
+    <section
+      class="mt-8 rounded-2xl border border-line/70 bg-white/90 p-6 shadow-soft backdrop-blur sm:p-8"
+      aria-labelledby="titulo-formulario"
+    >
+      <h2 id="titulo-formulario" class="sr-only">Formulario de ingreso</h2>
+
+      @if (avisoRegistro) {
+        <div
+          class="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-800"
+          role="status"
+        >
+          ¡Cuenta creada! Ingresá con tu email y contraseña para empezar a reservar.
+        </div>
+      }
+
+      @if (error(); as mensaje) {
+        <div
+          class="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-700"
+          role="alert"
+        >
+          {{ mensaje }}
+        </div>
+      }
+
+      <form [formRoot]="formulario" class="mt-6 space-y-5">
+        <div>
+          <label for="email" class="block text-sm font-semibold text-ink-700">Email</label>
+          <input
+            id="email"
+            type="email"
+            autocomplete="email"
+            placeholder="vos@ejemplo.com"
+            [formField]="formulario.email"
+            [attr.aria-invalid]="mostrarError(formulario.email)"
+            [attr.aria-describedby]="mostrarError(formulario.email) ? 'email-error' : null"
+            class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            [class.border-line]="!mostrarError(formulario.email)"
+            [class.border-red-500]="mostrarError(formulario.email)"
+          />
+          @if (mostrarError(formulario.email)) {
+            <p id="email-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
+              {{ mensajeDeError(formulario.email) }}
+            </p>
+          }
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="password" class="block text-sm font-semibold text-ink-700"
+              >Contraseña</label
+            >
+          </div>
+          <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            [formField]="formulario.password"
+            [attr.aria-invalid]="mostrarError(formulario.password)"
+            [attr.aria-describedby]="mostrarError(formulario.password) ? 'password-error' : null"
+            class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            [class.border-line]="!mostrarError(formulario.password)"
+            [class.border-red-500]="mostrarError(formulario.password)"
+          />
+          @if (mostrarError(formulario.password)) {
+            <p id="password-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
+              {{ mensajeDeError(formulario.password) }}
+            </p>
+          }
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="cargando()"
+          class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          @if (cargando()) {
+            <span
+              class="size-4 animate-spin rounded-full border-2 border-ink-500 border-t-white"
+              aria-hidden="true"
+            ></span>
+            Ingresando…
+          } @else {
+            Ingresar
+          }
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-ink-500">
+        ¿No tenés cuenta?
+        <a
+          routerLink="/register"
+          class="ml-1 font-semibold text-brand-700 underline underline-offset-4 transition hover:text-brand-600"
+        >
+          Creala acá
+        </a>
+      </p>
+    </section>
+
+    <p class="mt-6 text-center text-sm text-ink-500">
+      <a
+        routerLink="/"
+        class="font-semibold text-ink-700 underline underline-offset-4 transition hover:text-ink-900"
+      >
+        Volver a Foodies
+      </a>
+    </p>
+  </div>
+</main>
