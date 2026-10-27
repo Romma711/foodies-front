@@ -52,7 +52,7 @@ features/admin/
 ├── admin.routes.ts              # Hijas lazy de /admin (dashboard y moderación)
 ├── guards/admin.guard.ts        # Token vigente + claim de rol ADMIN; si no, limpia y va al login
 ├── layout/admin-layout.ts       # Sidebar WOKI, menú mobile, cerrar sesión
-├── components/ranking-chart/    # Barras horizontales (Chart.js) + tabla accesible + estado vacío
+├── components/ranking-chart/    # Barras horizontales/verticales o torta (Chart.js), tabla o leyenda accesible, estado vacío
 ├── services/
 │   ├── admin-metricas.service.ts
 │   └── admin-moderacion.service.ts

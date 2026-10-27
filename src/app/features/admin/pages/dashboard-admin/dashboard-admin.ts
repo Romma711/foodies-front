@@ -95,14 +95,16 @@ const COLOR_INK_700 = '#3f3a33';
             titulo="Restaurantes mejor calificados"
             descripcion="Promedio de calificación de 1 a 5 estrellas. Solo restaurantes aprobados."
             unidad="de 5"
+            tipo="vertical"
             [items]="mejorCalificados()"
             [maximo]="5"
             [color]="colorEstrella"
           />
           <app-ranking-chart
             titulo="Restaurantes con más reservas"
-            descripcion="Cantidad de reservas recibidas, sin contar las canceladas."
+            descripcion="Reservas recibidas, sin contar las canceladas. El porcentaje es sobre estos restaurantes."
             unidad="reservas"
+            tipo="torta"
             [items]="masReservados()"
             [color]="colorBrand"
           />

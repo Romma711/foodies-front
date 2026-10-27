@@ -10,6 +10,8 @@ import { DashboardAdmin } from './dashboard-admin';
 @Component({ selector: 'app-ranking-chart', template: '' })
 class RankingChartStub {
   readonly titulo = input('');
+  readonly descripcion = input('');
+  readonly tipo = input('horizontal');
   readonly items = input<readonly ItemRanking[]>([]);
   readonly unidad = input('');
   readonly maximo = input<number | null>(null);
@@ -97,6 +99,9 @@ describe('DashboardAdmin', () => {
     expect(calificados.titulo()).toBe('Restaurantes mejor calificados');
     expect(calificados.items()).toEqual([{ etiqueta: 'Ochiwan', valor: 4.5 }]);
     expect(calificados.maximo()).toBe(5);
+    expect(calificados.tipo()).toBe('vertical');
+    expect(reservas.tipo()).toBe('torta');
+    expect(usuarios.tipo()).toBe('horizontal');
     expect(reservas.items()).toEqual([{ etiqueta: 'La Casona', valor: 7 }]);
     expect(usuarios.items()).toEqual([{ etiqueta: 'Ana Gómez', valor: 4 }]);
   });

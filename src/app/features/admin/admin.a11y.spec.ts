@@ -5,6 +5,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { BAR_CHART_FACTORY } from '../../shared/charts/bar-chart-factory';
+import { PIE_CHART_FACTORY } from '../../shared/charts/pie-chart-factory';
 import { violacionesAxe } from '../../shared/testing/axe';
 import { AdminLayout } from './layout/admin-layout';
 import { MetricasAdmin } from './models/metricas-admin';
@@ -24,7 +25,7 @@ describe('Accesibilidad del panel de administración', () => {
     topRestaurantesMejorCalificados: [
       { id: 5, nombre: 'Ochiwan', promedio: 4.5, cantidadResenas: 2 },
     ],
-    topRestaurantesConMasReservas: [],
+    topRestaurantesConMasReservas: [{ id: 5, nombre: 'Ochiwan', cantidadReservas: 7 }],
     topUsuariosConMasResenas: [{ id: 3, nombre: 'Ana', apellido: 'Gómez', cantidadResenas: 4 }],
     usuariosRegistradosEsteMes: 12,
   };
@@ -61,6 +62,10 @@ describe('Accesibilidad del panel de administración', () => {
         ]),
         {
           provide: BAR_CHART_FACTORY,
+          useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
+        },
+        {
+          provide: PIE_CHART_FACTORY,
           useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
         },
         { provide: AuthService, useValue: { logout: vi.fn() } },
@@ -103,7 +108,8 @@ describe('Accesibilidad del panel de administración', () => {
     expect(await violacionesAxe(elemento)).toEqual([]);
   });
 
-  it('DashboardAdmin con métricas, incluido un ranking vacío', async () => {
+  it('DashboardAdmin con métricas: barras verticales, torta con leyenda y ranking vacío', async () => {
+    datos.set({ ...metricas, topUsuariosConMasResenas: [] });
     await sinViolaciones(TestBed.createComponent(DashboardAdmin));
   });
 
