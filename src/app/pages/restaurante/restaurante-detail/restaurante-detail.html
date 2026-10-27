@@ -1,1 +1,275 @@
-<p>restaurante-detail works!</p>
+<main class="relative isolate overflow-hidden">
+  <div
+    class="pointer-events-none absolute inset-x-0 -top-48 -z-10 flex justify-center"
+    aria-hidden="true"
+  >
+    <div class="h-96 w-[48rem] max-w-full rounded-full bg-brand-100/80 blur-3xl"></div>
+  </div>
+
+  <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+    <a
+      routerLink="/restaurantes"
+      class="inline-flex items-center gap-2 rounded-full text-sm font-semibold text-ink-500 transition hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+    >
+      <svg
+        class="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
+      </svg>
+      Volver a restaurantes
+    </a>
+
+    @if (!idValido()) {
+      <div
+        class="mt-8 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
+        role="alert"
+      >
+        <h1 class="text-lg font-bold text-ink-900">El restaurante solicitado no es válido</h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">
+          Revisá el enlace o volvé al listado para elegir un restaurante.
+        </p>
+        <a
+          routerLink="/restaurantes"
+          class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+        >
+          Ver restaurantes
+        </a>
+      </div>
+    } @else if (cargando() && !restaurante()) {
+      <div
+        class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white/70 px-6 py-16 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="size-10 animate-spin rounded-full border-2 border-brand-100 border-t-brand-500"
+          aria-hidden="true"
+        ></span>
+        <p class="mt-4 text-sm font-medium text-ink-500">Cargando restaurante…</p>
+      </div>
+    } @else if (error()) {
+      <div
+        class="mt-8 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
+        role="alert"
+      >
+        <h1 class="text-lg font-bold text-ink-900">No pudimos cargar el restaurante</h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error() }}</p>
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+            (click)="recargar()"
+          >
+            Reintentar
+          </button>
+          <a
+            routerLink="/restaurantes"
+            class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-white"
+          >
+            Ver restaurantes
+          </a>
+        </div>
+      </div>
+    } @else if (restaurante(); as resto) {
+      <div class="mt-6 grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:items-start">
+        <section
+          class="rounded-3xl border border-line/70 bg-white/90 p-6 shadow-soft backdrop-blur sm:p-8"
+        >
+          <span
+            class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold tracking-wide text-brand-700 uppercase ring-1 ring-brand-100"
+          >
+            {{ especialidadLabels[resto.especialidad] }}
+          </span>
+
+          <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
+            {{ resto.nombre }}
+          </h1>
+
+          <p class="mt-3 flex items-center gap-2 text-sm font-medium text-ink-500">
+            <svg
+              class="size-4 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
+            {{ resto.ubicacion }}
+          </p>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
+              <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Capacidad</p>
+              <p class="mt-1 text-2xl font-extrabold tracking-tight text-ink-900">
+                {{ resto.cupoMaximo }}
+                <span class="text-sm font-semibold text-ink-500">personas</span>
+              </p>
+            </div>
+            <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
+              <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Especialidad</p>
+              <p class="mt-1 text-lg font-extrabold tracking-tight text-ink-900">
+                {{ especialidadLabels[resto.especialidad] }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+              (click)="verResenas()"
+            >
+              Ver reseñas
+            </button>
+
+            @if (esCliente()) {
+              @if (usuarioId() !== null) {
+                @if (!mostrarFormulario() && !reservaCreada()) {
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
+                    (click)="abrirFormulario()"
+                  >
+                    Reservar mesa
+                  </button>
+                }
+              } @else {
+                <a
+                  routerLink="/login"
+                  class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+                >
+                  Volvé a iniciar sesión para reservar
+                </a>
+              }
+            } @else {
+              <a
+                routerLink="/login"
+                class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
+              >
+                Iniciá sesión para reservar
+              </a>
+            }
+          </div>
+
+          <p class="mt-6 text-sm leading-6 text-ink-500">
+            Las reservas quedan pendientes de confirmación por parte del restaurante.
+          </p>
+        </section>
+
+        <div class="space-y-4">
+          @if (reservaCreada(); as reserva) {
+            <div
+              class="rounded-3xl border border-emerald-100 bg-emerald-50/80 p-6 shadow-card sm:p-7"
+              role="status"
+            >
+              <span
+                class="grid size-12 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"
+                aria-hidden="true"
+              >
+                <svg
+                  class="size-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+
+              <h2 class="mt-4 text-xl font-extrabold tracking-tight text-emerald-950">
+                Reserva enviada
+              </h2>
+              <p class="mt-2 text-sm leading-6 text-emerald-900">
+                {{ formatearFecha(reserva.fecha) }} a las
+                {{ formatearHora(reserva.horariollegada) }} · {{ reserva.cantidad }}
+                {{ reserva.cantidad === 1 ? 'persona' : 'personas' }}
+              </p>
+              <p class="mt-2 text-sm leading-6 text-emerald-800">
+                Queda pendiente de confirmación por el restaurante.
+              </p>
+
+              <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+                <a
+                  routerLink="/mis-reservas"
+                  class="inline-flex items-center justify-center rounded-full bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                >
+                  Ver mis reservas
+                </a>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-emerald-900 ring-1 ring-emerald-200 transition hover:bg-emerald-100"
+                  (click)="nuevaReserva()"
+                >
+                  Hacer otra reserva
+                </button>
+              </div>
+            </div>
+          } @else if (mostrarFormulario() && usuarioId(); as userId) {
+            <app-reserva-form
+              [restauranteId]="id()"
+              [cupoMaximo]="resto.cupoMaximo"
+              [usuarioId]="userId"
+              (creada)="alCrear($event)"
+              (cancelada)="cerrarFormulario()"
+            />
+          } @else {
+            <aside class="rounded-3xl border border-line/70 bg-white/90 p-6 shadow-card sm:p-7">
+              <h2 class="text-lg font-extrabold tracking-tight text-ink-900">Reservá en 3 pasos</h2>
+              <ol class="mt-4 space-y-3 text-sm leading-6 text-ink-600">
+                <li class="flex gap-3">
+                  <span
+                    class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
+                    >1</span
+                  >
+                  Elegí fecha, horario y cantidad de personas.
+                </li>
+                <li class="flex gap-3">
+                  <span
+                    class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
+                    >2</span
+                  >
+                  Enviá la solicitud y esperá la confirmación.
+                </li>
+                <li class="flex gap-3">
+                  <span
+                    class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
+                    >3</span
+                  >
+                  Seguí el estado desde “Mis reservas”.
+                </li>
+              </ol>
+
+              @if (!esCliente()) {
+                <a
+                  routerLink="/login"
+                  class="mt-5 inline-flex w-full items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+                >
+                  Iniciar sesión
+                </a>
+              }
+            </aside>
+          }
+        </div>
+      </div>
+
+      <div class="mt-14 border-t border-line/60 pt-12">
+        <app-restaurante-resenas [restauranteId]="id()" [nombreRestaurante]="resto.nombre" />
+      </div>
+    }
+  </div>
+</main>
