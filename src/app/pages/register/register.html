@@ -1,0 +1,193 @@
+<main class="auth-page">
+  <h1>Create a {{ portal().title.toLowerCase() }} account</h1>
+
+  @if (pendingApproval()) {
+    <p class="form-success" role="status">
+      Request sent. An admin must approve your restaurant before you can sign in.
+    </p>
+    <p><a [routerLink]="portal().loginPath">Go to sign in</a></p>
+  } @else {
+    <form novalidate (submit)="onSubmit($event)">
+      @if (errorMessage(); as message) {
+        <p class="form-error" role="alert">{{ message }}</p>
+      }
+
+      @if (isRestaurante()) {
+        <div class="field">
+          <label for="register-restaurant-name">Restaurant name</label>
+          <input
+            id="register-restaurant-name"
+            type="text"
+            autocomplete="organization"
+            [formField]="registerForm.nombreRestaurante"
+            [attr.aria-invalid]="
+              registerForm.nombreRestaurante().touched() &&
+              registerForm.nombreRestaurante().invalid()
+            "
+            aria-describedby="register-restaurant-name-error"
+          />
+          @if (
+            registerForm.nombreRestaurante().touched() &&
+              registerForm.nombreRestaurante().errors()[0];
+            as error
+          ) {
+            <p id="register-restaurant-name-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      } @else {
+        <div class="field">
+          <label for="register-first-name">First name</label>
+          <input
+            id="register-first-name"
+            type="text"
+            autocomplete="given-name"
+            [formField]="registerForm.nombre"
+            [attr.aria-invalid]="registerForm.nombre().touched() && registerForm.nombre().invalid()"
+            aria-describedby="register-first-name-error"
+          />
+          @if (registerForm.nombre().touched() && registerForm.nombre().errors()[0]; as error) {
+            <p id="register-first-name-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="register-last-name">Last name</label>
+          <input
+            id="register-last-name"
+            type="text"
+            autocomplete="family-name"
+            [formField]="registerForm.apellido"
+            [attr.aria-invalid]="
+              registerForm.apellido().touched() && registerForm.apellido().invalid()
+            "
+            aria-describedby="register-last-name-error"
+          />
+          @if (registerForm.apellido().touched() && registerForm.apellido().errors()[0]; as error) {
+            <p id="register-last-name-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      }
+
+      <div class="field">
+        <label for="register-email">Email</label>
+        <input
+          id="register-email"
+          type="email"
+          autocomplete="email"
+          [formField]="registerForm.email"
+          [attr.aria-invalid]="registerForm.email().touched() && registerForm.email().invalid()"
+          aria-describedby="register-email-error"
+        />
+        @if (registerForm.email().touched() && registerForm.email().errors()[0]; as error) {
+          <p id="register-email-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="register-password">Password</label>
+        <input
+          id="register-password"
+          type="password"
+          autocomplete="new-password"
+          [formField]="registerForm.password"
+          [attr.aria-invalid]="
+            registerForm.password().touched() && registerForm.password().invalid()
+          "
+          aria-describedby="register-password-error"
+        />
+        @if (registerForm.password().touched() && registerForm.password().errors()[0]; as error) {
+          <p id="register-password-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="register-phone">Phone</label>
+        <input
+          id="register-phone"
+          type="tel"
+          autocomplete="tel"
+          [formField]="registerForm.telefono"
+          [attr.aria-invalid]="
+            registerForm.telefono().touched() && registerForm.telefono().invalid()
+          "
+          aria-describedby="register-phone-error"
+        />
+        @if (registerForm.telefono().touched() && registerForm.telefono().errors()[0]; as error) {
+          <p id="register-phone-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      @if (isRestaurante()) {
+        <div class="field">
+          <label for="register-address">Address</label>
+          <input
+            id="register-address"
+            type="text"
+            autocomplete="street-address"
+            [formField]="registerForm.direccion"
+            [attr.aria-invalid]="
+              registerForm.direccion().touched() && registerForm.direccion().invalid()
+            "
+            aria-describedby="register-address-error"
+          />
+          @if (
+            registerForm.direccion().touched() && registerForm.direccion().errors()[0];
+            as error
+          ) {
+            <p id="register-address-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="register-specialty">Food specialty</label>
+          <select
+            id="register-specialty"
+            [formField]="registerForm.especialidadDeComida"
+            [attr.aria-invalid]="
+              registerForm.especialidadDeComida().touched() &&
+              registerForm.especialidadDeComida().invalid()
+            "
+            aria-describedby="register-specialty-error"
+          >
+            <option value="">Choose one</option>
+            @for (especialidad of especialidades; track especialidad) {
+              <option [value]="especialidad">{{ especialidad }}</option>
+            }
+          </select>
+          @if (
+            registerForm.especialidadDeComida().touched() &&
+              registerForm.especialidadDeComida().errors()[0];
+            as error
+          ) {
+            <p id="register-specialty-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="register-capacity">Maximum capacity</label>
+          <input
+            id="register-capacity"
+            type="number"
+            [formField]="registerForm.cupoMaximo"
+            [attr.aria-invalid]="
+              registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().invalid()
+            "
+            aria-describedby="register-capacity-error"
+          />
+          @if (
+            registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().errors()[0];
+            as error
+          ) {
+            <p id="register-capacity-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      }
+
+      <button type="submit" [disabled]="registerForm().submitting()">
+        {{ registerForm().submitting() ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p>Already have an account? <a [routerLink]="portal().loginPath">Sign in</a></p>
+  }
+</main>

@@ -1,0 +1,94 @@
+<header class="page-header">
+  <h1>Profile</h1>
+  <p class="subtitle">What customers see about your restaurant.</p>
+</header>
+
+@if (loading()) {
+  <p role="status">Loading your restaurant…</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Try again</button></div>
+  </div>
+} @else {
+  <form class="card stack" novalidate (submit)="onSubmit($event)">
+    @if (saveError(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    @if (saved()) {
+      <p class="alert alert-success" role="status">Changes saved.</p>
+    }
+
+    <div class="field">
+      <label for="perfil-nombre">Restaurant name</label>
+      <input
+        id="perfil-nombre"
+        type="text"
+        autocomplete="organization"
+        [formField]="perfilForm.nombre"
+        [attr.aria-invalid]="perfilForm.nombre().touched() && perfilForm.nombre().invalid()"
+        aria-describedby="perfil-nombre-error"
+      />
+      @if (perfilForm.nombre().touched() && perfilForm.nombre().errors()[0]; as error) {
+        <p id="perfil-nombre-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="perfil-ubicacion">Address</label>
+      <input
+        id="perfil-ubicacion"
+        type="text"
+        autocomplete="street-address"
+        [formField]="perfilForm.ubicacion"
+        [attr.aria-invalid]="perfilForm.ubicacion().touched() && perfilForm.ubicacion().invalid()"
+        aria-describedby="perfil-ubicacion-error"
+      />
+      @if (perfilForm.ubicacion().touched() && perfilForm.ubicacion().errors()[0]; as error) {
+        <p id="perfil-ubicacion-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="perfil-especialidad">Food specialty</label>
+      <select
+        id="perfil-especialidad"
+        [formField]="perfilForm.especialidad"
+        [attr.aria-invalid]="
+          perfilForm.especialidad().touched() && perfilForm.especialidad().invalid()
+        "
+        aria-describedby="perfil-especialidad-error"
+      >
+        <option value="">Choose one</option>
+        @for (especialidad of especialidades; track especialidad) {
+          <option [value]="especialidad">{{ especialidad }}</option>
+        }
+      </select>
+      @if (perfilForm.especialidad().touched() && perfilForm.especialidad().errors()[0]; as error) {
+        <p id="perfil-especialidad-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="perfil-cupo">Maximum capacity per day</label>
+      <input
+        id="perfil-cupo"
+        type="number"
+        inputmode="numeric"
+        [formField]="perfilForm.cupoMaximo"
+        [attr.aria-invalid]="perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().invalid()"
+        aria-describedby="perfil-cupo-hint perfil-cupo-error"
+      />
+      <p id="perfil-cupo-hint" class="muted">Total people you can host in one day.</p>
+      @if (perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().errors()[0]; as error) {
+        <p id="perfil-cupo-error" class="field-error">{{ error.message }}</p>
+      }
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="perfilForm().submitting()">
+        {{ perfilForm().submitting() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </div>
+  </form>
+}

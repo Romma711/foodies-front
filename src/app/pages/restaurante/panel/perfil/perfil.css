@@ -1,0 +1,10 @@
+@import '../panel-page.css';
+
+form {
+  max-width: 36rem;
+}
+
+.muted {
+  margin: 0;
+  font-size: var(--text-sm);
+}

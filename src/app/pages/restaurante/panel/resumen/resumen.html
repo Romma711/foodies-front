@@ -1,0 +1,32 @@
+@if (loading()) {
+  <p role="status">Loading your restaurant…</p>
+} @else if (error(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Try again</button></div>
+  </div>
+} @else if (restaurante(); as resto) {
+  <header class="page-header">
+    <h1>{{ resto.nombre }}</h1>
+    <p class="subtitle">
+      {{ resto.ubicacion }} · {{ resto.especialidad }} · Capacity {{ resto.cupoMaximo }}
+    </p>
+  </header>
+
+  <ul class="stats">
+    <li class="card stat">
+      <span class="stat-value">{{ pendientes() }}</span>
+      <span class="stat-label">Reservations waiting for your answer</span>
+      <a routerLink="/restaurante/reservas">Review reservations</a>
+    </li>
+    <li class="card stat">
+      <span class="stat-value">{{ hoy().length }}</span>
+      <span class="stat-label">Reservations today · {{ personasHoy() }} people</span>
+    </li>
+    <li class="card stat">
+      <span class="stat-value">{{ resto.carta ? 'Online' : 'Missing' }}</span>
+      <span class="stat-label">Menu PDF</span>
+      <a routerLink="/restaurante/carta">{{ resto.carta ? 'Manage menu' : 'Upload your menu' }}</a>
+    </li>
+  </ul>
+}
