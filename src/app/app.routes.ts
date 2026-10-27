@@ -2,25 +2,46 @@ import { Routes } from '@angular/router';
 import { Role } from './core/auth/auth.models';
 import { guestGuard } from './core/auth/guest.guard';
 import { roleGuard } from './core/auth/role.guard';
+import { adminGuard } from './features/admin/guards/admin.guard';
 
 const loadLogin = () => import('./pages/login/login').then((m) => m.Login);
 const loadRegister = () => import('./pages/register/register').then((m) => m.Register);
-
-const RESTAURANTE_DEMO_ID = 5;
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: `resenas/${RESTAURANTE_DEMO_ID}`,
+    redirectTo: 'restaurantes',
   },
   {
-    path: 'resenas/:restauranteId',
-    title: 'Reseñas | Foodies',
+    path: 'restaurantes',
+    title: 'Restaurantes | Foodies',
     loadComponent: () =>
-      import('./features/resenas/pages/resena-list/resena-list').then(
-        (module) => module.ResenaList,
+      import('./pages/restaurante/restaurante-list/restaurante-list').then(
+        (module) => module.RestauranteList,
       ),
+  },
+  {
+    path: 'restaurantes/:restauranteId',
+    title: 'Restaurante | Foodies',
+    loadComponent: () =>
+      import('./pages/restaurante/restaurante-detail/restaurante-detail').then(
+        (module) => module.RestauranteDetail,
+      ),
+  },
+  {
+    path: 'mis-reservas',
+    title: 'Mis reservas | Foodies',
+    loadComponent: () =>
+      import('./features/reservas/pages/mis-reservas/mis-reservas').then(
+        (module) => module.MisReservas,
+      ),
+    canMatch: [roleGuard('CLIENTE')],
+  },
+  {
+    // Reviews live inside the restaurant page now; keep old links working.
+    path: 'resenas/:restauranteId',
+    redirectTo: 'restaurantes/:restauranteId',
   },
   {
     path: 'login',
@@ -55,17 +76,17 @@ export const routes: Routes = [
     canMatch: [guestGuard],
     data: { role: 'RESTAURANTE' satisfies Role },
   },
-  {
-    path: 'admin',
-    pathMatch: 'full',
-    loadComponent: () => import('./pages/admin/admin-home/admin-home').then((m) => m.AdminHome),
-    canMatch: [roleGuard('ADMIN')],
-  },
+  // Login goes first: the panel route below matches every `/admin/...` URL.
   {
     path: 'admin/login',
     loadComponent: loadLogin,
     canMatch: [guestGuard],
     data: { role: 'ADMIN' satisfies Role },
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    canMatch: [adminGuard],
   },
   { path: '**', redirectTo: '' },
 ];

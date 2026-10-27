@@ -32,12 +32,23 @@
 
     <nav class="hidden items-center gap-1 md:flex" aria-label="Navegación principal">
       <a
-        routerLink="/resenas/5"
+        routerLink="/restaurantes"
         routerLinkActive="bg-white/70"
+        ariaCurrentWhenActive="page"
         class="rounded-full px-3 py-2 text-sm font-semibold text-ink-700 transition hover:bg-white/70 hover:text-ink-900"
       >
-        Reseñas
+        Restaurantes
       </a>
+      @if (esCliente()) {
+        <a
+          routerLink="/mis-reservas"
+          routerLinkActive="bg-white/70"
+          ariaCurrentWhenActive="page"
+          class="rounded-full px-3 py-2 text-sm font-semibold text-ink-700 transition hover:bg-white/70 hover:text-ink-900"
+        >
+          Mis reservas
+        </a>
+      }
     </nav>
 
     <div class="hidden items-center gap-2 md:flex">
@@ -137,13 +148,25 @@
         aria-label="Navegación móvil"
       >
         <a
-          routerLink="/resenas/5"
+          routerLink="/restaurantes"
           routerLinkActive="bg-white/70"
+          ariaCurrentWhenActive="page"
           class="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-white/70"
           (click)="cerrarMenu()"
         >
-          Reseñas
+          Restaurantes
         </a>
+        @if (esCliente()) {
+          <a
+            routerLink="/mis-reservas"
+            routerLinkActive="bg-white/70"
+            ariaCurrentWhenActive="page"
+            class="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-white/70"
+            (click)="cerrarMenu()"
+          >
+            Mis reservas
+          </a>
+        }
 
         @for (role of activeRoles(); track role) {
           <div

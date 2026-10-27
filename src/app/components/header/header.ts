@@ -21,6 +21,8 @@ export class Header {
     ROLES.filter((role) => this.auth.isAuthenticated(role)),
   );
 
+  protected readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
+
   protected toggleMenu(): void {
     this.menuAbierto.update((abierto) => !abierto);
   }
