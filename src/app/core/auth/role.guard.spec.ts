@@ -1,9 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   PartialMatchRouteSnapshot,
   provideRouter,
   Route,
+  Router,
   UrlSegment,
   UrlTree,
 } from '@angular/router';
@@ -41,4 +43,25 @@ describe('roleGuard', () => {
 
     expect(String(run('RESTAURANTE'))).toBe('/restaurante/login');
   });
+
+  it('remembers the requested URL so the login can return to it', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideRouter([
+          { path: 'mis-reservas', canMatch: [roleGuard('CLIENTE')], component: Blank },
+          { path: 'login', component: Blank },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/mis-reservas?page=2');
+
+    expect(router.url).toBe('/login?returnUrl=%2Fmis-reservas%3Fpage%3D2');
+  });
 });
+
+@Component({ template: '' })
+class Blank {}

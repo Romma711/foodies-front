@@ -16,6 +16,11 @@ import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../cor
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
 import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
+import {
+  backendMessage,
+  CONNECTION_ERROR_MESSAGE,
+  isConnectionError,
+} from '../../core/http/api-error';
 
 interface RegisterFormModel {
   nombre: string;
@@ -133,7 +138,10 @@ function toMessage(error: unknown): string {
     return 'Ya existe una cuenta con este email.';
   }
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
-    return 'Algunos datos no son válidos. Revisá el formulario.';
+    return backendMessage(error) ?? 'Algunos datos no son válidos. Revisá el formulario.';
+  }
+  if (isConnectionError(error)) {
+    return CONNECTION_ERROR_MESSAGE;
   }
   return 'Algo salió mal. Intentá de nuevo.';
 }

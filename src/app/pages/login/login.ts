@@ -11,6 +11,8 @@ import {
 } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { safeReturnUrl } from '../../core/auth/return-url';
+import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../core/http/api-error';
 
 @Component({
   imports: [FormField, RouterLink],
@@ -23,8 +25,13 @@ export class Login {
 
   /** Bound from the route `data.role`. */
   readonly role = input.required<Role>();
+  /** Bound from the `?returnUrl=` query param a guard adds when it sends the user here. */
+  readonly returnUrl = input<string>();
 
   protected readonly portal = computed(() => PORTALS[this.role()]);
+  private readonly destination = computed(
+    () => safeReturnUrl(this.returnUrl()) ?? this.portal().homePath,
+  );
   protected readonly errorMessage = signal<string | null>(null);
 
   private readonly model = signal<LoginRequest>({ email: '', password: '' });
@@ -45,8 +52,9 @@ export class Login {
         return undefined;
       }
       // Navigation failures are routing problems, not login failures: the session is already stored.
-      await this.router.navigateByUrl(this.portal().homePath).catch((error: unknown) => {
-        console.error(`Could not open ${this.portal().homePath} after login`, error);
+      const destination = this.destination();
+      await this.router.navigateByUrl(destination).catch((error: unknown) => {
+        console.error(`Could not open ${destination} after login`, error);
       });
       return undefined;
     });
@@ -68,6 +76,9 @@ function toMessage(error: unknown): string {
       error.status === HttpStatusCode.Forbidden)
   ) {
     return 'Email o contraseña incorrectos.';
+  }
+  if (isConnectionError(error)) {
+    return CONNECTION_ERROR_MESSAGE;
   }
   return 'Algo salió mal. Intentá de nuevo.';
 }

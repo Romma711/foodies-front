@@ -3,6 +3,7 @@ import { CanMatchFn, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { decodeJwt, extractRole } from '../../../core/auth/jwt';
 import { PORTALS } from '../../../core/auth/portals';
+import { loginRedirect } from '../../../core/auth/return-url';
 
 /**
  * Lets the admin panel match only with a live admin session.
@@ -21,5 +22,5 @@ export const adminGuard: CanMatchFn = () => {
     return true;
   }
   auth.logout('ADMIN');
-  return inject(Router).parseUrl(PORTALS.ADMIN.loginPath);
+  return loginRedirect(inject(Router), PORTALS.ADMIN.loginPath);
 };

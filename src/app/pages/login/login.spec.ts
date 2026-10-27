@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { fakeJwt, futureExp } from '../../core/auth/testing';
 import { Login } from './login';
 
@@ -81,5 +81,72 @@ describe('Login', () => {
 
     expect(localStorage.getItem('foodies.token.ADMIN')).not.toBeNull();
     expect(element.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  describe('when the backend rejects the login', () => {
+    const loginAndFail = async (status: number, body: object | null) => {
+      type('#login-email', 'admin@foodies.com');
+      type('#login-password', 'wrong-pass');
+      await submitForm();
+      const req = http.expectOne(() => true);
+      if (status === 0) {
+        req.error(new ProgressEvent('error'), { status: 0 });
+      } else {
+        req.flush(body, { status, statusText: 'Error' });
+      }
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+      return element.querySelector('[role="alert"]')?.textContent;
+    };
+
+    it('keeps the credentials message instead of the backend detail', async () => {
+      const alert = await loginAndFail(400, {
+        error: 'error de negocio',
+        mensaje: 'Bad credentials',
+      });
+
+      expect(alert).toContain('Email o contraseña incorrectos.');
+      expect(alert).not.toContain('Bad credentials');
+    });
+
+    it('tells the user the server could not be reached', async () => {
+      const alert = await loginAndFail(0, null);
+
+      expect(alert).toContain('No se pudo conectar con el servidor.');
+    });
+  });
+
+  describe('after a successful login', () => {
+    const loginAsAdmin = async (returnUrl: string | undefined) => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      fixture.componentRef.setInput('returnUrl', returnUrl);
+      type('#login-email', 'admin@foodies.com');
+      type('#login-password', 'admin123');
+      await submitForm();
+      http
+        .expectOne(() => true)
+        .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_ADMIN'], exp: futureExp() })}` });
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+      return navigate;
+    };
+
+    it('returns to the page the guard sent the user away from', async () => {
+      const navigate = await loginAsAdmin('/admin/resenas?page=2');
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/admin/resenas?page=2');
+    });
+
+    it('opens the portal home without a return URL', async () => {
+      const navigate = await loginAsAdmin(undefined);
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/admin');
+    });
+
+    it('ignores a return URL that points outside the app', async () => {
+      const navigate = await loginAsAdmin('https://evil.com');
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/admin');
+    });
   });
 });

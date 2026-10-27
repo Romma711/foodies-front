@@ -109,4 +109,65 @@ describe('Register', () => {
       (fixture.nativeElement as HTMLElement).querySelector('[role="status"]')?.textContent,
     ).toContain('Un administrador debe aprobar tu restaurante');
   });
+
+  describe('when the backend rejects the registration', () => {
+    const registerClienteAndFail = async (status: number, body: object | null) => {
+      const fixture = await render('CLIENTE');
+      fill(fixture, {
+        '#register-first-name': 'Ana',
+        '#register-last-name': 'Pérez',
+        '#register-email': 'ana@foodies.com',
+        '#register-password': 'secret123',
+        '#register-phone': '2235550000',
+      });
+      await submitForm(fixture);
+      const req = http.expectOne('/api/auth/register/cliente');
+      if (status === 0) {
+        req.error(new ProgressEvent('error'), { status: 0 });
+      } else {
+        req.flush(body, { status, statusText: 'Error' });
+      }
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+      return (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent;
+    };
+
+    it('shows the validation message the backend sent', async () => {
+      const alert = await registerClienteAndFail(400, {
+        telefono: 'El teléfono debe tener 10 dígitos',
+      });
+
+      expect(alert).toContain('El teléfono debe tener 10 dígitos');
+    });
+
+    it('shows the business rule message the backend sent', async () => {
+      const alert = await registerClienteAndFail(400, {
+        error: 'error de negocio',
+        mensaje: 'El email no es válido para este portal.',
+      });
+
+      expect(alert).toContain('El email no es válido para este portal.');
+    });
+
+    it('keeps the generic invalid data message when the backend sends no detail', async () => {
+      const alert = await registerClienteAndFail(400, null);
+
+      expect(alert).toContain('Algunos datos no son válidos. Revisá el formulario.');
+    });
+
+    it('keeps the duplicate email message', async () => {
+      const alert = await registerClienteAndFail(409, {
+        error: 'conflicto',
+        mensaje: 'Email duplicado',
+      });
+
+      expect(alert).toContain('Ya existe una cuenta con este email.');
+    });
+
+    it('tells the user the server could not be reached', async () => {
+      const alert = await registerClienteAndFail(0, null);
+
+      expect(alert).toContain('No se pudo conectar con el servidor.');
+    });
+  });
 });

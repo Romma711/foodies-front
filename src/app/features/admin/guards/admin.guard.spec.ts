@@ -1,9 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   PartialMatchRouteSnapshot,
   provideRouter,
   Route,
+  Router,
   UrlSegment,
   UrlTree,
 } from '@angular/router';
@@ -63,4 +65,29 @@ describe('adminGuard', () => {
     expect(String(run())).toBe('/admin/login');
     expect(localStorage.getItem('foodies.token.CLIENTE')).not.toBeNull();
   });
+
+  it('recuerda la URL pedida para volver a ella después del login', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideRouter([
+          { path: 'admin/login', component: Blank },
+          {
+            path: 'admin',
+            canMatch: [adminGuard],
+            children: [{ path: 'resenas', component: Blank }],
+          },
+        ]),
+      ],
+    });
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/admin/resenas');
+
+    expect(router.url).toBe('/admin/login?returnUrl=%2Fadmin%2Fresenas');
+  });
 });
+
+@Component({ template: '' })
+class Blank {}

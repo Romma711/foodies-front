@@ -31,7 +31,9 @@ describe('restaurant panel routes', () => {
 
     await harness.navigateByUrl('/restaurante/reservas');
 
-    expect(TestBed.inject(Router).url).toBe('/restaurante/login');
+    expect(TestBed.inject(Router).url).toBe(
+      '/restaurante/login?returnUrl=%2Frestaurante%2Freservas',
+    );
   });
 
   it('opens panel sections for a signed in manager', async () => {
