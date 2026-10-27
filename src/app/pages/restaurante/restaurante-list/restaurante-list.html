@@ -1,1 +1,148 @@
-<p>restaurante-list works!</p>
+<main class="relative isolate min-h-dvh overflow-hidden">
+  <div
+    class="pointer-events-none absolute inset-x-0 -top-48 -z-10 flex justify-center"
+    aria-hidden="true"
+  >
+    <div class="h-96 w-[48rem] max-w-full rounded-full bg-brand-100/80 blur-3xl"></div>
+  </div>
+
+  <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+    <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Foodies</p>
+
+    <header class="mt-5 max-w-2xl">
+      <span
+        class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line"
+      >
+        <span class="size-1.5 rounded-full bg-brand-500"></span>
+        Carta de restaurantes
+      </span>
+
+      <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
+        Elegí dónde <span class="text-brand-600">comer</span>
+      </h1>
+
+      <p class="mt-4 max-w-xl text-base leading-7 text-ink-500 sm:text-lg">
+        Explorá los restaurantes aprobados de Foodies y reservá tu mesa en un par de clicks.
+      </p>
+    </header>
+
+    <section class="mt-10 sm:mt-12" aria-labelledby="titulo-listado">
+      <h2 id="titulo-listado" class="sr-only">Listado de restaurantes</h2>
+
+      @if (cargando() && restaurantes().length === 0) {
+        <div
+          class="flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white/70 px-6 py-16 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="size-10 animate-spin rounded-full border-2 border-brand-100 border-t-brand-500"
+            aria-hidden="true"
+          ></span>
+          <p class="mt-4 text-sm font-medium text-ink-500">Cargando restaurantes…</p>
+        </div>
+      } @else if (error(); as mensaje) {
+        <div
+          class="rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
+          role="alert"
+        >
+          <h3 class="text-lg font-bold text-ink-900">No pudimos cargar los restaurantes</h3>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ mensaje }}</p>
+          <button
+            type="button"
+            (click)="recargar()"
+            class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      } @else if (restaurantes().length === 0) {
+        <div
+          class="flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white/80 px-6 py-16 text-center shadow-card"
+        >
+          <h3 class="text-lg font-bold text-ink-900">No hay restaurantes por ahora</h3>
+          <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
+            Volvé más tarde: estamos sumando nuevos lugares a la comunidad.
+          </p>
+        </div>
+      } @else {
+        <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (restaurante of restaurantes(); track restaurante.id) {
+            <li class="h-full">
+              <a
+                [routerLink]="['/restaurantes', restaurante.id]"
+                class="group flex h-full flex-col rounded-2xl border border-line/60 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:border-brand-100 hover:shadow-soft"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <span
+                    class="grid size-12 place-items-center rounded-xl bg-brand-50 text-brand-500"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      class="size-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                      <path d="M7 2v20" />
+                      <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+                    </svg>
+                  </span>
+                  <span
+                    class="rounded-full bg-cream-100 px-2.5 py-1 text-xs font-bold text-ink-700 ring-1 ring-line"
+                  >
+                    {{ especialidad(restaurante.especialidad) }}
+                  </span>
+                </div>
+
+                <h2 class="mt-5 text-lg font-bold text-ink-900 group-hover:text-brand-600">
+                  {{ restaurante.nombre }}
+                </h2>
+
+                <p class="mt-2 flex items-start gap-1.5 text-sm text-ink-500">
+                  <svg
+                    class="mt-0.5 size-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  {{ restaurante.ubicacion }}
+                </p>
+
+                <span
+                  class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700"
+                >
+                  Ver detalle y reservar
+                  <svg
+                    class="size-4 transition group-hover:translate-x-0.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+</main>

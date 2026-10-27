@@ -1,5 +1,6 @@
 import { WritableSignal, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
@@ -35,6 +36,7 @@ describe('ResenaList', () => {
     await TestBed.configureTestingModule({
       imports: [ResenaList],
       providers: [
+        provideRouter([]),
         {
           provide: ResenaService,
           useValue: {

@@ -1,12 +1,13 @@
 import { Component, DestroyRef, computed, effect, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { ResenaCard } from '../../components/resena-card/resena-card';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { ResenaService } from '../../services/resena.service';
 
 @Component({
   selector: 'app-resena-list',
-  imports: [ResenaCard, StarRating],
+  imports: [ResenaCard, RouterLink, StarRating],
   templateUrl: './resena-list.html',
 })
 export class ResenaList {

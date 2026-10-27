@@ -27,6 +27,26 @@
           Descubrí qué opina la comunidad sobre este restaurante. Cada experiencia cuenta y ayuda a
           elegir mejor.
         </p>
+
+        <a
+          routerLink="/restaurantes"
+          class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 underline underline-offset-4 transition hover:text-brand-600"
+        >
+          Explorar todos los restaurantes
+          <svg
+            class="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </a>
       </div>
 
       @if (!cargando() && !error() && total() > 0) {
