@@ -1,42 +1,84 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { fakeJwt, futureExp } from '../../core/auth/testing';
 import { Login } from './login';
 
 describe('Login', () => {
-  let component: Login;
   let fixture: ComponentFixture<Login>;
+  let http: HttpTestingController;
+  let element: HTMLElement;
+
+  const type = (selector: string, value: string) => {
+    const input = element.querySelector<HTMLInputElement>(selector)!;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+  };
+  const submitForm = async () => {
+    element.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+  };
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [Login],
-      providers: [provideHttpClient(), provideRouter([])],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Login);
-    component = fixture.componentInstance;
+    fixture.componentRef.setInput('role', 'ADMIN');
+    http = TestBed.inject(HttpTestingController);
+    element = fixture.nativeElement;
     await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => http.verify());
+
+  it('shows the portal title and hides register for admins', () => {
+    expect(element.querySelector('h1')?.textContent).toContain('Admin sign in');
+    expect(element.textContent).not.toContain('Create one');
   });
 
-  it('debería iniciar inválido', () => {
-    expect(component.formulario().valid()).toBe(false);
+  it('does not call the backend when the form is invalid', async () => {
+    await submitForm();
+
+    expect(element.textContent).toContain('Email is required.');
+    http.expectNone(() => true);
   });
 
-  it('debería ser válido con email y contraseña correctos', () => {
-    component.formulario.email().value.set('foodies@ejemplo.com');
-    component.formulario.password().value.set('secreto123');
+  it('shows an error when the account belongs to another portal', async () => {
+    type('#login-email', 'ana@foodies.com');
+    type('#login-password', 'secret123');
+    await submitForm();
 
-    expect(component.formulario().valid()).toBe(true);
+    http
+      .expectOne(() => true)
+      .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_CLIENTE'], exp: futureExp() })}` });
+    // Let the rejected login settle inside the async submit action before rendering.
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'This account does not belong to this portal.',
+    );
+    expect(localStorage.getItem('foodies.token.CLIENTE')).toBeNull();
   });
 
-  it('debería ser inválido con un email mal formado', () => {
-    component.formulario.email().value.set('no-es-un-email');
-    component.formulario.password().value.set('secreto123');
+  it('does not report a successful login as failed when navigation fails', async () => {
+    // The test router has no `/admin` route, so the post-login navigation is rejected.
+    type('#login-email', 'admin@foodies.com');
+    type('#login-password', 'admin123');
+    await submitForm();
 
-    expect(component.formulario().valid()).toBe(false);
+    http
+      .expectOne(() => true)
+      .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_ADMIN'], exp: futureExp() })}` });
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+
+    expect(localStorage.getItem('foodies.token.ADMIN')).not.toBeNull();
+    expect(element.querySelector('[role="alert"]')).toBeNull();
   });
 });

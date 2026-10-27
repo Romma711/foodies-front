@@ -1,83 +1,74 @@
-import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  FieldTree,
-  FormField,
-  FormRoot,
-  TreeValidationResult,
-  email,
-  form,
-  required,
-} from '@angular/forms/signals';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { LoginRequest } from '../../models/user';
-import { Auth } from '../../services/auth-service';
+import {
+  LoginRequest,
+  PendingApprovalError,
+  Role,
+  RoleMismatchError,
+} from '../../core/auth/auth.models';
+import { AuthService } from '../../core/auth/auth.service';
+import { PORTALS } from '../../core/auth/portals';
 
 @Component({
+  imports: [FormField, RouterLink],
   selector: 'app-login',
-  imports: [FormField, FormRoot, RouterLink],
   styleUrl: './login.css',
   templateUrl: './login.html',
 })
 export class Login {
-  private readonly auth = inject(Auth);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
 
-  /** Aviso de registro exitoso, enviado como query param desde la página de registro. */
-  readonly avisoRegistro = this.route.snapshot.queryParamMap.get('registro') === 'exitoso';
-  readonly cargando = this.auth.cargando;
-  readonly error = this.auth.error;
+  /** Bound from the route `data.role`. */
+  readonly role = input.required<Role>();
 
-  private readonly modelo = signal<LoginRequest>({ email: '', password: '' });
+  protected readonly portal = computed(() => PORTALS[this.role()]);
+  protected readonly errorMessage = signal<string | null>(null);
 
-  readonly formulario = form(
-    this.modelo,
-    (login) => {
-      required(login.email, { message: 'Ingresá tu email.' });
-      email(login.email, { message: 'Ingresá un email válido.' });
-      required(login.password, { message: 'Ingresá tu contraseña.' });
-    },
-    {
-      submission: {
-        action: () => this.enviar(),
-        onInvalid: () => this.enfocarPrimerCampoInvalido(),
-      },
-    },
-  );
+  private readonly model = signal<LoginRequest>({ email: '', password: '' });
+  protected readonly loginForm = form(this.model, (path) => {
+    required(path.email, { message: 'Email is required.' });
+    email(path.email, { message: 'Enter a valid email.' });
+    required(path.password, { message: 'Password is required.' });
+  });
 
-  /** El error de un campo se muestra recién cuando el usuario lo tocó o intentó enviar. */
-  mostrarError(campo: FieldTree<string>): boolean {
-    return campo().invalid() && campo().touched();
-  }
-
-  mensajeDeError(campo: FieldTree<string>): string | null {
-    return campo().errors()[0]?.message ?? null;
-  }
-
-  private async enviar(): Promise<TreeValidationResult> {
-    try {
-      await firstValueFrom(this.auth.iniciarSesion(this.modelo()));
-      await this.router.navigateByUrl(this.destinoPostLogin());
-    } catch {
-      // El error ya quedó expuesto en `auth.error()`.
-    }
-    return undefined;
-  }
-
-  /** Vuelve a la ruta que intentaba acceder (returnUrl) o al perfil por defecto. */
-  private destinoPostLogin(): string {
-    const retorno = this.route.snapshot.queryParamMap.get('returnUrl');
-    const esRutaLocal = retorno !== null && retorno.startsWith('/') && !retorno.startsWith('//');
-    return esRutaLocal ? retorno : '/usuario/info';
-  }
-
-  private enfocarPrimerCampoInvalido(): void {
-    for (const campo of [this.formulario.email, this.formulario.password]) {
-      if (campo().invalid()) {
-        campo().focusBoundControl();
-        return;
+  protected async onSubmit(event: Event): Promise<void> {
+    event.preventDefault();
+    this.errorMessage.set(null);
+    await submit(this.loginForm, async () => {
+      try {
+        await firstValueFrom(this.auth.login(this.model(), this.role()));
+      } catch (error) {
+        this.errorMessage.set(toMessage(error));
+        return undefined;
       }
-    }
+      // Navigation failures are routing problems, not login failures: the session is already stored.
+      await this.router.navigateByUrl(this.portal().homePath).catch((error: unknown) => {
+        console.error(`Could not open ${this.portal().homePath} after login`, error);
+      });
+      return undefined;
+    });
   }
+}
+
+function toMessage(error: unknown): string {
+  if (error instanceof PendingApprovalError) {
+    return 'Your restaurant is pending approval. You can sign in once an admin approves it.';
+  }
+  if (error instanceof RoleMismatchError) {
+    return 'This account does not belong to this portal.';
+  }
+  // The backend answers 400 for a wrong password.
+  if (
+    error instanceof HttpErrorResponse &&
+    (error.status === HttpStatusCode.BadRequest ||
+      error.status === HttpStatusCode.Unauthorized ||
+      error.status === HttpStatusCode.Forbidden)
+  ) {
+    return 'Invalid email or password.';
+  }
+  return 'Something went wrong. Please try again.';
 }

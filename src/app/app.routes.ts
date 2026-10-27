@@ -1,56 +1,58 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth-guard';
+import { Role } from './core/auth/auth.models';
+import { guestGuard } from './core/auth/guest.guard';
+import { roleGuard } from './core/auth/role.guard';
 
-const RESTAURANTE_DEMO_ID = 5;
+const loadLogin = () => import('./pages/login/login').then((m) => m.Login);
+const loadRegister = () => import('./pages/register/register').then((m) => m.Register);
 
 export const routes: Routes = [
   {
-    path: 'resenas/:restauranteId',
-    title: 'Reseñas | Foodies',
-    loadComponent: () =>
-      import('./features/resenas/pages/resena-list/resena-list').then(
-        (module) => module.ResenaList,
-      ),
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
   },
   {
     path: 'login',
-    title: 'Ingresá | Foodies',
-    loadComponent: () => import('./pages/login/login').then((module) => module.Login),
+    loadComponent: loadLogin,
+    canMatch: [guestGuard],
+    data: { role: 'CLIENTE' satisfies Role },
   },
   {
     path: 'register',
-    title: 'Creá tu cuenta | Foodies',
-    loadComponent: () => import('./pages/register/register').then((module) => module.Register),
+    loadComponent: loadRegister,
+    canMatch: [guestGuard],
+    data: { role: 'CLIENTE' satisfies Role },
+  },
+  // Login/register must come before the panel: its roleGuard would redirect them to the login again.
+  {
+    path: 'restaurante/login',
+    loadComponent: loadLogin,
+    canMatch: [guestGuard],
+    data: { role: 'RESTAURANTE' satisfies Role },
   },
   {
-    path: 'restaurantes',
-    title: 'Restaurantes | Foodies',
-    loadComponent: () =>
-      import('./pages/restaurante/restaurante-list/restaurante-list').then(
-        (module) => module.RestauranteList,
-      ),
+    path: 'restaurante/register',
+    loadComponent: loadRegister,
+    canMatch: [guestGuard],
+    data: { role: 'RESTAURANTE' satisfies Role },
   },
   {
-    path: 'restaurantes/:restauranteId',
-    title: 'Restaurante | Foodies',
-    loadComponent: () =>
-      import('./pages/restaurante/restaurante-detail/restaurante-detail').then(
-        (module) => module.RestauranteDetail,
-      ),
+    path: 'restaurante',
+    canMatch: [roleGuard('RESTAURANTE')],
+    loadChildren: () => import('./pages/restaurante/panel/panel.routes').then((m) => m.panelRoutes),
   },
   {
-    path: 'usuario/info',
-    title: 'Mi perfil | Foodies',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/user-info/user-info').then((module) => module.UserInfo),
+    path: 'admin',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/admin/admin-home/admin-home').then((m) => m.AdminHome),
+    canMatch: [roleGuard('ADMIN')],
   },
   {
-    path: 'usuario/reservas',
-    title: 'Mis reservas | Foodies',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./pages/reservas-list/reservas-list').then((module) => module.ReservasList),
+    path: 'admin/login',
+    loadComponent: loadLogin,
+    canMatch: [guestGuard],
+    data: { role: 'ADMIN' satisfies Role },
   },
-  { path: '', pathMatch: 'full', redirectTo: `resenas/${RESTAURANTE_DEMO_ID}` },
-  { path: '**', redirectTo: `resenas/${RESTAURANTE_DEMO_ID}` },
+  { path: '**', redirectTo: '' },
 ];

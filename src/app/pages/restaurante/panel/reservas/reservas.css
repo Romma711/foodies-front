@@ -1,0 +1,125 @@
+@import '../panel-page.css';
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-fg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-input-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.filter[aria-pressed='true'] {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+}
+
+.toggle {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--touch-target);
+  font-weight: 400;
+}
+
+.toggle input {
+  width: 1.25rem;
+  min-height: 0;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+}
+
+.day h2 {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+.today {
+  padding: 0.125rem var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reserva {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+}
+
+.time {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.who p {
+  margin: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.reserva .actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-muted-fg);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .reserva {
+    grid-template-columns: 4rem 1fr auto auto;
+  }
+
+  .reserva .actions {
+    grid-column: auto;
+  }
+}

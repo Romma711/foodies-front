@@ -1,102 +1,134 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import {
-  FieldTree,
-  FormField,
-  FormRoot,
-  TreeValidationResult,
   email,
   form,
+  FormField,
   maxLength,
+  min,
   minLength,
-  pattern,
   required,
+  submit,
 } from '@angular/forms/signals';
-import { firstValueFrom } from 'rxjs';
-import { RegistroClienteRequest } from '../../models/user';
-import { Auth } from '../../services/auth-service';
+import { Router, RouterLink } from '@angular/router';
+import { firstValueFrom, Observable } from 'rxjs';
+import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../core/auth/auth.models';
+import { AuthService } from '../../core/auth/auth.service';
+import { PORTALS } from '../../core/auth/portals';
+
+interface RegisterFormModel {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  telefono: string;
+  nombreRestaurante: string;
+  direccion: string;
+  especialidadDeComida: EspecialidadDeComida | '';
+  cupoMaximo: number;
+}
 
 @Component({
+  imports: [FormField, RouterLink],
   selector: 'app-register',
-  imports: [FormField, FormRoot, RouterLink],
   styleUrl: './register.css',
   templateUrl: './register.html',
 })
 export class Register {
-  private readonly auth = inject(Auth);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly cargando = this.auth.cargando;
-  readonly error = this.auth.error;
+  /** Bound from the route `data.role`. ADMIN accounts are never created from the front. */
+  readonly role = input.required<RegistrableRole>();
 
-  private readonly modelo = signal<RegistroClienteRequest>({
+  protected readonly portal = computed(() => PORTALS[this.role()]);
+  protected readonly isRestaurante = computed(() => this.role() === 'RESTAURANTE');
+  protected readonly especialidades = ESPECIALIDADES;
+  protected readonly errorMessage = signal<string | null>(null);
+  /** Restaurant requests need admin approval, so they stay here with a confirmation. */
+  protected readonly pendingApproval = signal(false);
+
+  private readonly model = signal<RegisterFormModel>({
     nombre: '',
     apellido: '',
     email: '',
     password: '',
     telefono: '',
+    nombreRestaurante: '',
+    direccion: '',
+    especialidadDeComida: '',
+    cupoMaximo: 1,
+  });
+  protected readonly registerForm = form(this.model, (path) => {
+    const whenCliente = { when: () => !this.isRestaurante() };
+    const whenRestaurante = { when: () => this.isRestaurante() };
+    required(path.nombre, { ...whenCliente, message: 'First name is required.' });
+    required(path.apellido, { ...whenCliente, message: 'Last name is required.' });
+    required(path.email, { message: 'Email is required.' });
+    email(path.email, { message: 'Enter a valid email.' });
+    required(path.password, { message: 'Password is required.' });
+    minLength(path.password, 6, { message: 'Password must have between 6 and 30 characters.' });
+    maxLength(path.password, 30, { message: 'Password must have between 6 and 30 characters.' });
+    required(path.telefono, { message: 'Phone is required.' });
+    required(path.nombreRestaurante, {
+      ...whenRestaurante,
+      message: 'Restaurant name is required.',
+    });
+    required(path.direccion, { ...whenRestaurante, message: 'Address is required.' });
+    required(path.especialidadDeComida, {
+      ...whenRestaurante,
+      message: 'Choose a food specialty.',
+    });
+    min(path.cupoMaximo, 1, { message: 'Capacity must be at least 1.' });
   });
 
-  readonly formulario = form(
-    this.modelo,
-    (registro) => {
-      required(registro.nombre, { message: 'Ingresá tu nombre.' });
-      minLength(registro.nombre, 2, { message: 'El nombre debe tener al menos 2 caracteres.' });
-      required(registro.apellido, { message: 'Ingresá tu apellido.' });
-      minLength(registro.apellido, 2, { message: 'El apellido debe tener al menos 2 caracteres.' });
-      required(registro.email, { message: 'Ingresá tu email.' });
-      email(registro.email, { message: 'Ingresá un email válido.' });
-      required(registro.password, { message: 'Creá una contraseña.' });
-      minLength(registro.password, 6, {
-        message: 'La contraseña debe tener al menos 6 caracteres.',
-      });
-      maxLength(registro.password, 30, {
-        message: 'La contraseña no puede superar los 30 caracteres.',
-      });
-      required(registro.telefono, { message: 'Ingresá tu teléfono.' });
-      pattern(registro.telefono, /^\+?[\d\s-]{6,20}$/, {
-        message: 'Ingresá un teléfono válido (solo números, espacios o guiones).',
-      });
-    },
-    {
-      submission: {
-        action: () => this.enviar(),
-        onInvalid: () => this.enfocarPrimerCampoInvalido(),
-      },
-    },
-  );
-
-  /** El error de un campo se muestra recién cuando el usuario lo tocó o intentó enviar. */
-  mostrarError(campo: FieldTree<string>): boolean {
-    return campo().invalid() && campo().touched();
-  }
-
-  mensajeDeError(campo: FieldTree<string>): string | null {
-    return campo().errors()[0]?.message ?? null;
-  }
-
-  private async enviar(): Promise<TreeValidationResult> {
-    try {
-      await firstValueFrom(this.auth.registrar(this.modelo()));
-      await this.router.navigate(['/login'], { queryParams: { registro: 'exitoso' } });
-    } catch {
-      // El error ya quedó expuesto en `auth.error()`.
-    }
-    return undefined;
-  }
-
-  private enfocarPrimerCampoInvalido(): void {
-    for (const campo of [
-      this.formulario.nombre,
-      this.formulario.apellido,
-      this.formulario.email,
-      this.formulario.password,
-      this.formulario.telefono,
-    ]) {
-      if (campo().invalid()) {
-        campo().focusBoundControl();
-        return;
+  protected async onSubmit(event: Event): Promise<void> {
+    event.preventDefault();
+    this.errorMessage.set(null);
+    await submit(this.registerForm, async () => {
+      try {
+        await firstValueFrom(this.register());
+        if (this.isRestaurante()) {
+          this.pendingApproval.set(true);
+        } else {
+          await this.router.navigateByUrl(this.portal().loginPath);
+        }
+      } catch (error) {
+        this.errorMessage.set(toMessage(error));
       }
-    }
+      return undefined;
+    });
   }
+
+  private register(): Observable<unknown> {
+    const value = this.model();
+    if (this.isRestaurante() && value.especialidadDeComida !== '') {
+      return this.auth.registerRestaurante({
+        email: value.email,
+        password: value.password,
+        telefono: value.telefono,
+        nombreRestaurante: value.nombreRestaurante,
+        direccion: value.direccion,
+        especialidadDeComida: value.especialidadDeComida,
+        cupoMaximo: value.cupoMaximo,
+      });
+    }
+    return this.auth.registerCliente({
+      nombre: value.nombre,
+      apellido: value.apellido,
+      email: value.email,
+      password: value.password,
+      telefono: value.telefono,
+    });
+  }
+}
+
+function toMessage(error: unknown): string {
+  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
+    return 'An account with this email already exists.';
+  }
+  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
+    return 'Some data is not valid. Please review the form.';
+  }
+  return 'Something went wrong. Please try again.';
 }

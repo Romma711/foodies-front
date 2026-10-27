@@ -1,171 +1,193 @@
-<main
-  class="relative isolate flex min-h-dvh items-center justify-center overflow-hidden px-4 py-12 sm:px-6"
->
-  <div
-    class="pointer-events-none absolute inset-x-0 -top-48 -z-10 flex justify-center"
-    aria-hidden="true"
-  >
-    <div class="h-96 w-[48rem] max-w-full rounded-full bg-brand-100/80 blur-3xl"></div>
-  </div>
+<main class="auth-page">
+  <h1>Create a {{ portal().title.toLowerCase() }} account</h1>
 
-  <div class="w-full max-w-md">
-    <p class="text-center text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Foodies</p>
-    <h1 class="mt-4 text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-      Unite a la mesa
-    </h1>
-    <p class="mt-3 text-center text-base leading-7 text-ink-500">
-      Creá tu cuenta gratis y reservá en los mejores restaurantes.
+  @if (pendingApproval()) {
+    <p class="form-success" role="status">
+      Request sent. An admin must approve your restaurant before you can sign in.
     </p>
+    <p><a [routerLink]="portal().loginPath">Go to sign in</a></p>
+  } @else {
+    <form novalidate (submit)="onSubmit($event)">
+      @if (errorMessage(); as message) {
+        <p class="form-error" role="alert">{{ message }}</p>
+      }
 
-    <section
-      class="mt-8 rounded-2xl border border-line/70 bg-white/90 p-6 shadow-soft backdrop-blur sm:p-8"
-      aria-labelledby="titulo-formulario"
-    >
-      <h2 id="titulo-formulario" class="sr-only">Formulario de registro</h2>
+      @if (isRestaurante()) {
+        <div class="field">
+          <label for="register-restaurant-name">Restaurant name</label>
+          <input
+            id="register-restaurant-name"
+            type="text"
+            autocomplete="organization"
+            [formField]="registerForm.nombreRestaurante"
+            [attr.aria-invalid]="
+              registerForm.nombreRestaurante().touched() &&
+              registerForm.nombreRestaurante().invalid()
+            "
+            aria-describedby="register-restaurant-name-error"
+          />
+          @if (
+            registerForm.nombreRestaurante().touched() &&
+              registerForm.nombreRestaurante().errors()[0];
+            as error
+          ) {
+            <p id="register-restaurant-name-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      } @else {
+        <div class="field">
+          <label for="register-first-name">First name</label>
+          <input
+            id="register-first-name"
+            type="text"
+            autocomplete="given-name"
+            [formField]="registerForm.nombre"
+            [attr.aria-invalid]="registerForm.nombre().touched() && registerForm.nombre().invalid()"
+            aria-describedby="register-first-name-error"
+          />
+          @if (registerForm.nombre().touched() && registerForm.nombre().errors()[0]; as error) {
+            <p id="register-first-name-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
 
-      @if (error(); as mensaje) {
-        <div
-          class="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-700"
-          role="alert"
-        >
-          {{ mensaje }}
+        <div class="field">
+          <label for="register-last-name">Last name</label>
+          <input
+            id="register-last-name"
+            type="text"
+            autocomplete="family-name"
+            [formField]="registerForm.apellido"
+            [attr.aria-invalid]="
+              registerForm.apellido().touched() && registerForm.apellido().invalid()
+            "
+            aria-describedby="register-last-name-error"
+          />
+          @if (registerForm.apellido().touched() && registerForm.apellido().errors()[0]; as error) {
+            <p id="register-last-name-error" class="field-error">{{ error.message }}</p>
+          }
         </div>
       }
 
-      <form [formRoot]="formulario" class="mt-6 space-y-5">
-        <div class="grid gap-5 sm:grid-cols-2">
-          <div>
-            <label for="nombre" class="block text-sm font-semibold text-ink-700">Nombre</label>
-            <input
-              id="nombre"
-              type="text"
-              autocomplete="given-name"
-              placeholder="Ada"
-              [formField]="formulario.nombre"
-              [attr.aria-invalid]="mostrarError(formulario.nombre)"
-              [attr.aria-describedby]="mostrarError(formulario.nombre) ? 'nombre-error' : null"
-              class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-              [class.border-line]="!mostrarError(formulario.nombre)"
-              [class.border-red-500]="mostrarError(formulario.nombre)"
-            />
-            @if (mostrarError(formulario.nombre)) {
-              <p id="nombre-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
-                {{ mensajeDeError(formulario.nombre) }}
-              </p>
+      <div class="field">
+        <label for="register-email">Email</label>
+        <input
+          id="register-email"
+          type="email"
+          autocomplete="email"
+          [formField]="registerForm.email"
+          [attr.aria-invalid]="registerForm.email().touched() && registerForm.email().invalid()"
+          aria-describedby="register-email-error"
+        />
+        @if (registerForm.email().touched() && registerForm.email().errors()[0]; as error) {
+          <p id="register-email-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="register-password">Password</label>
+        <input
+          id="register-password"
+          type="password"
+          autocomplete="new-password"
+          [formField]="registerForm.password"
+          [attr.aria-invalid]="
+            registerForm.password().touched() && registerForm.password().invalid()
+          "
+          aria-describedby="register-password-error"
+        />
+        @if (registerForm.password().touched() && registerForm.password().errors()[0]; as error) {
+          <p id="register-password-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="register-phone">Phone</label>
+        <input
+          id="register-phone"
+          type="tel"
+          autocomplete="tel"
+          [formField]="registerForm.telefono"
+          [attr.aria-invalid]="
+            registerForm.telefono().touched() && registerForm.telefono().invalid()
+          "
+          aria-describedby="register-phone-error"
+        />
+        @if (registerForm.telefono().touched() && registerForm.telefono().errors()[0]; as error) {
+          <p id="register-phone-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      @if (isRestaurante()) {
+        <div class="field">
+          <label for="register-address">Address</label>
+          <input
+            id="register-address"
+            type="text"
+            autocomplete="street-address"
+            [formField]="registerForm.direccion"
+            [attr.aria-invalid]="
+              registerForm.direccion().touched() && registerForm.direccion().invalid()
+            "
+            aria-describedby="register-address-error"
+          />
+          @if (
+            registerForm.direccion().touched() && registerForm.direccion().errors()[0];
+            as error
+          ) {
+            <p id="register-address-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="register-specialty">Food specialty</label>
+          <select
+            id="register-specialty"
+            [formField]="registerForm.especialidadDeComida"
+            [attr.aria-invalid]="
+              registerForm.especialidadDeComida().touched() &&
+              registerForm.especialidadDeComida().invalid()
+            "
+            aria-describedby="register-specialty-error"
+          >
+            <option value="">Choose one</option>
+            @for (especialidad of especialidades; track especialidad) {
+              <option [value]="especialidad">{{ especialidad }}</option>
             }
-          </div>
-
-          <div>
-            <label for="apellido" class="block text-sm font-semibold text-ink-700">Apellido</label>
-            <input
-              id="apellido"
-              type="text"
-              autocomplete="family-name"
-              placeholder="Lovelace"
-              [formField]="formulario.apellido"
-              [attr.aria-invalid]="mostrarError(formulario.apellido)"
-              [attr.aria-describedby]="mostrarError(formulario.apellido) ? 'apellido-error' : null"
-              class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-              [class.border-line]="!mostrarError(formulario.apellido)"
-              [class.border-red-500]="mostrarError(formulario.apellido)"
-            />
-            @if (mostrarError(formulario.apellido)) {
-              <p id="apellido-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
-                {{ mensajeDeError(formulario.apellido) }}
-              </p>
-            }
-          </div>
+          </select>
+          @if (
+            registerForm.especialidadDeComida().touched() &&
+              registerForm.especialidadDeComida().errors()[0];
+            as error
+          ) {
+            <p id="register-specialty-error" class="field-error">{{ error.message }}</p>
+          }
         </div>
 
-        <div>
-          <label for="email" class="block text-sm font-semibold text-ink-700">Email</label>
+        <div class="field">
+          <label for="register-capacity">Maximum capacity</label>
           <input
-            id="email"
-            type="email"
-            autocomplete="email"
-            placeholder="vos@ejemplo.com"
-            [formField]="formulario.email"
-            [attr.aria-invalid]="mostrarError(formulario.email)"
-            [attr.aria-describedby]="mostrarError(formulario.email) ? 'email-error' : null"
-            class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            [class.border-line]="!mostrarError(formulario.email)"
-            [class.border-red-500]="mostrarError(formulario.email)"
+            id="register-capacity"
+            type="number"
+            [formField]="registerForm.cupoMaximo"
+            [attr.aria-invalid]="
+              registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().invalid()
+            "
+            aria-describedby="register-capacity-error"
           />
-          @if (mostrarError(formulario.email)) {
-            <p id="email-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
-              {{ mensajeDeError(formulario.email) }}
-            </p>
+          @if (
+            registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().errors()[0];
+            as error
+          ) {
+            <p id="register-capacity-error" class="field-error">{{ error.message }}</p>
           }
         </div>
+      }
 
-        <div>
-          <label for="password" class="block text-sm font-semibold text-ink-700">Contraseña</label>
-          <input
-            id="password"
-            type="password"
-            autocomplete="new-password"
-            placeholder="Mínimo 6 caracteres"
-            [formField]="formulario.password"
-            [attr.aria-invalid]="mostrarError(formulario.password)"
-            [attr.aria-describedby]="mostrarError(formulario.password) ? 'password-error' : null"
-            class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            [class.border-line]="!mostrarError(formulario.password)"
-            [class.border-red-500]="mostrarError(formulario.password)"
-          />
-          @if (mostrarError(formulario.password)) {
-            <p id="password-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
-              {{ mensajeDeError(formulario.password) }}
-            </p>
-          }
-        </div>
+      <button type="submit" [disabled]="registerForm().submitting()">
+        {{ registerForm().submitting() ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
 
-        <div>
-          <label for="telefono" class="block text-sm font-semibold text-ink-700">Teléfono</label>
-          <input
-            id="telefono"
-            type="tel"
-            autocomplete="tel"
-            placeholder="11 5555-5555"
-            [formField]="formulario.telefono"
-            [attr.aria-invalid]="mostrarError(formulario.telefono)"
-            [attr.aria-describedby]="mostrarError(formulario.telefono) ? 'telefono-error' : null"
-            class="mt-2 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            [class.border-line]="!mostrarError(formulario.telefono)"
-            [class.border-red-500]="mostrarError(formulario.telefono)"
-          />
-          @if (mostrarError(formulario.telefono)) {
-            <p id="telefono-error" class="mt-2 text-sm font-medium text-red-700" role="alert">
-              {{ mensajeDeError(formulario.telefono) }}
-            </p>
-          }
-        </div>
-
-        <button
-          type="submit"
-          [disabled]="cargando()"
-          class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          @if (cargando()) {
-            <span
-              class="size-4 animate-spin rounded-full border-2 border-ink-500 border-t-white"
-              aria-hidden="true"
-            ></span>
-            Creando tu cuenta…
-          } @else {
-            Crear cuenta
-          }
-        </button>
-      </form>
-
-      <p class="mt-6 text-center text-sm text-ink-500">
-        ¿Ya tenés cuenta?
-        <a
-          routerLink="/login"
-          class="ml-1 font-semibold text-brand-700 underline underline-offset-4 transition hover:text-brand-600"
-        >
-          Ingresá acá
-        </a>
-      </p>
-    </section>
-  </div>
+    <p>Already have an account? <a [routerLink]="portal().loginPath">Sign in</a></p>
+  }
 </main>

@@ -1,0 +1,24 @@
+<dialog
+  #dialog
+  class="confirm"
+  [attr.aria-labelledby]="ids.heading"
+  [attr.aria-describedby]="ids.message"
+  (close)="onClose()"
+>
+  <h2 [id]="ids.heading">{{ options().heading }}</h2>
+  <p [id]="ids.message">{{ options().message }}</p>
+  <div class="actions">
+    <button type="button" class="btn btn-secondary" autofocus (click)="choose(false)">
+      Go back
+    </button>
+    <button
+      type="button"
+      class="btn"
+      [class.btn-danger]="options().tone === 'danger'"
+      [class.btn-primary]="options().tone !== 'danger'"
+      (click)="choose(true)"
+    >
+      {{ options().confirmLabel }}
+    </button>
+  </div>
+</dialog>
