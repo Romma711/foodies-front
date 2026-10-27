@@ -50,7 +50,7 @@ No se modificó ningún controlador existente. Todo es nuevo salvo un campo en `
 ```
 features/admin/
 ├── admin.routes.ts              # Hijas lazy de /admin (dashboard y moderación)
-├── guards/admin.guard.ts        # Token vigente + claim de rol ADMIN; si no, limpia y va al login
+├── guards/admin.guard.ts        # Token vigente + claim de rol ADMIN; si no, limpia y va al login con returnUrl
 ├── layout/admin-layout.ts       # Sidebar WOKI, menú mobile, cerrar sesión
 ├── components/ranking-chart/    # Barras horizontales/verticales o torta (Chart.js), tabla o leyenda accesible, estado vacío
 ├── services/
@@ -86,7 +86,9 @@ Piezas compartidas con reseñas, movidas a `shared/`: `charts/bar-chart-factory.
    no borrar datos).
 5. Registrar un usuario nuevo y ver que "Usuarios nuevos" del dashboard pase de 0 a 1 (los usuarios
    anteriores tienen `fecha_registro` en `NULL` y no cuentan).
-6. Entrar a `/admin` con sesión de cliente: debe redirigir a `/admin/login`.
+6. Entrar a `/admin/moderacion` con sesión de cliente: debe redirigir a
+   `/admin/login?returnUrl=%2Fadmin%2Fmoderacion` y, después de ingresar como admin, volver a
+   `/admin/moderacion`.
 
 ### Decisiones tomadas sin consulta (revisar si están bien)
 
