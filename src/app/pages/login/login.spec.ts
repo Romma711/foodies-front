@@ -83,6 +83,39 @@ describe('Login', () => {
     expect(element.querySelector('[role="alert"]')).toBeNull();
   });
 
+  describe('when the backend rejects the login', () => {
+    const loginAndFail = async (status: number, body: object | null) => {
+      type('#login-email', 'admin@foodies.com');
+      type('#login-password', 'wrong-pass');
+      await submitForm();
+      const req = http.expectOne(() => true);
+      if (status === 0) {
+        req.error(new ProgressEvent('error'), { status: 0 });
+      } else {
+        req.flush(body, { status, statusText: 'Error' });
+      }
+      await new Promise((resolve) => setTimeout(resolve));
+      await fixture.whenStable();
+      return element.querySelector('[role="alert"]')?.textContent;
+    };
+
+    it('keeps the credentials message instead of the backend detail', async () => {
+      const alert = await loginAndFail(400, {
+        error: 'error de negocio',
+        mensaje: 'Bad credentials',
+      });
+
+      expect(alert).toContain('Email o contraseña incorrectos.');
+      expect(alert).not.toContain('Bad credentials');
+    });
+
+    it('tells the user the server could not be reached', async () => {
+      const alert = await loginAndFail(0, null);
+
+      expect(alert).toContain('No se pudo conectar con el servidor.');
+    });
+  });
+
   describe('after a successful login', () => {
     const loginAsAdmin = async (returnUrl: string | undefined) => {
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

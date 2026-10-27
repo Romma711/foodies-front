@@ -12,6 +12,7 @@ import {
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
 import { safeReturnUrl } from '../../core/auth/return-url';
+import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../core/http/api-error';
 
 @Component({
   imports: [FormField, RouterLink],
@@ -75,6 +76,9 @@ function toMessage(error: unknown): string {
       error.status === HttpStatusCode.Forbidden)
   ) {
     return 'Email o contraseña incorrectos.';
+  }
+  if (isConnectionError(error)) {
+    return CONNECTION_ERROR_MESSAGE;
   }
   return 'Algo salió mal. Intentá de nuevo.';
 }
