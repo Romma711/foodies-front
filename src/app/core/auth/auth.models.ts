@@ -52,6 +52,7 @@ export interface AuthResponse {
 export interface JwtPayload {
   sub?: string;
   exp?: number;
+  usuarioId?: number;
   [claim: string]: unknown;
 }
 

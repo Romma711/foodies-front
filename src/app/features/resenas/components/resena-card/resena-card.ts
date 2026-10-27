@@ -1,4 +1,15 @@
-import { Component, computed, input } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ResenaListDTO } from '../../models';
 import { StarRating } from '../star-rating/star-rating';
 
@@ -7,20 +18,9 @@ import { StarRating } from '../star-rating/star-rating';
   imports: [StarRating],
   template: `
     <article
-      class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line/60 bg-white p-5 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft sm:p-6"
+      class="flex h-full flex-col rounded-2xl border border-line/60 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
     >
-      <svg
-        class="pointer-events-none absolute -top-2 right-2 size-16 text-brand-50"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          d="M7.17 6A5.17 5.17 0 0 0 2 11.17V18h6.83v-6.83H5.5A1.67 1.67 0 0 1 7.17 9.5V6Zm10 0A5.17 5.17 0 0 0 12 11.17V18h6.83v-6.83H15.5a1.67 1.67 0 0 1 1.67-1.67V6Z"
-        />
-      </svg>
-
-      <header class="relative flex items-start gap-3">
+      <header class="flex items-start gap-3">
         <span
           class="grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold text-ink-900 ring-1 ring-black/5"
           [style]="avatarStyle()"
@@ -29,38 +29,116 @@ import { StarRating } from '../star-rating/star-rating';
         >
           {{ iniciales() }}
         </span>
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-bold text-ink-900" data-testid="nombre">
             {{ nombre() }}
           </p>
           <div class="mt-1">
-            <app-star-rating [value]="resena().calificacion" size="sm" />
+            <app-star-rating [value]="resena().calificacion" size="sm" [mostrarValor]="true" />
           </div>
         </div>
+        @if (editable()) {
+          <button
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
+            aria-label="Editar tu reseña"
+            (click)="editar.emit()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+            </svg>
+          </button>
+        }
+        @if (eliminable() && !confirmando()) {
+          <button
+            #botonEliminar
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-red-50 hover:text-red-700"
+            aria-label="Eliminar reseña"
+            (click)="pedirConfirmacion()"
+          >
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"
+              />
+            </svg>
+          </button>
+        }
       </header>
 
-      <blockquote class="relative mt-4 flex-1">
-        <p class="text-[0.95rem] leading-7 text-ink-700" data-testid="comentario">
+      <blockquote class="mt-4 flex-1">
+        <p
+          class="whitespace-pre-line break-words text-[0.95rem] leading-7 text-ink-700"
+          data-testid="comentario"
+        >
           {{ resena().comentario }}
         </p>
       </blockquote>
 
-      <footer
-        class="relative mt-5 flex items-center justify-between gap-3 border-t border-line/60 pt-4"
-      >
-        <span class="text-xs font-medium text-ink-500">Reseña #{{ resena().id }}</span>
-        <span
-          class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-100"
-          data-testid="calificacion"
+      @if (confirmando()) {
+        <div
+          class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-4"
+          role="group"
+          aria-label="Confirmar eliminación"
         >
-          {{ resena().calificacion }}.0
-        </span>
-      </footer>
+          <p class="text-sm font-semibold text-ink-900">¿Eliminar esta reseña?</p>
+          <div class="flex gap-2">
+            <button
+              #botonCancelar
+              type="button"
+              class="inline-flex items-center justify-center rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
+              [disabled]="eliminando()"
+              (click)="cancelarEliminacion()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-60"
+              [disabled]="eliminando()"
+              (click)="eliminar.emit()"
+            >
+              {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          </div>
+        </div>
+      }
     </article>
   `,
 })
 export class ResenaCard {
   readonly resena = input.required<ResenaListDTO>();
+  readonly editable = input(false);
+  readonly eliminable = input(false);
+  readonly eliminando = input(false);
+
+  readonly editar = output<void>();
+  /** Emitted only after the user confirms the deletion inside the card. */
+  readonly eliminar = output<void>();
+
+  protected readonly confirmando = signal(false);
+
+  private readonly injector = inject(Injector);
+  private readonly botonEliminar = viewChild<ElementRef<HTMLButtonElement>>('botonEliminar');
+  private readonly botonCancelar = viewChild<ElementRef<HTMLButtonElement>>('botonCancelar');
 
   private readonly palette = ['#fde7dc', '#e7f0ff', '#e7f6ec', '#f3e8ff', '#fff4d6', '#ffe4e6'];
 
@@ -78,6 +156,20 @@ export class ResenaCard {
   readonly avatarStyle = computed(() => ({
     backgroundColor: this.palette[this.hash(this.nombre()) % this.palette.length] ?? '#fde7dc',
   }));
+
+  protected pedirConfirmacion(): void {
+    this.confirmando.set(true);
+    afterNextRender(() => this.botonCancelar()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
+  }
+
+  protected cancelarEliminacion(): void {
+    this.confirmando.set(false);
+    afterNextRender(() => this.botonEliminar()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
+  }
 
   private hash(value: string): number {
     return Array.from(value).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 997, 7);

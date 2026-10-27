@@ -11,6 +11,12 @@ describe('App', () => {
     }).compileComponents();
   });
 
+  it('should create the app', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+
   it('renders the header, the router outlet and the footer', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();

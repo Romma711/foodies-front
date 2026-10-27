@@ -42,7 +42,13 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -62,8 +68,7 @@
               "buildTarget": "foodies-front:build:production"
             },
             "development": {
-              "buildTarget": "foodies-front:build:development",
-              "proxyConfig": "proxy.conf.json"
+              "buildTarget": "foodies-front:build:development"
             }
           },
           "defaultConfiguration": "development"

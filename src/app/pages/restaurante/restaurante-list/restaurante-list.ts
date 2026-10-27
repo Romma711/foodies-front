@@ -1,37 +1,37 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { nombreEspecialidad } from '../../../models/restaurante';
-import { RestaurantService } from '../../../services/restaurant-service';
+import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
+import { RestauranteService } from '../services/restaurante.service';
 
 @Component({
-  selector: 'app-restaurante-list',
   imports: [RouterLink],
-  styleUrl: './restaurante-list.css',
+  selector: 'app-restaurante-list',
   templateUrl: './restaurante-list.html',
 })
 export class RestauranteList {
-  private readonly restaurantService = inject(RestaurantService);
+  private readonly restauranteService = inject(RestauranteService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly restaurantes = this.restaurantService.restaurantes;
-  readonly cargando = this.restaurantService.cargando;
-  readonly error = this.restaurantService.error;
+  protected readonly restaurantes = this.restauranteService.restaurantes;
+  protected readonly cargando = this.restauranteService.loading;
+  protected readonly error = this.restauranteService.error;
+  protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
 
   constructor() {
     this.cargar();
   }
 
-  recargar(): void {
+  protected inicial(nombre: string): string {
+    return nombre.trim().charAt(0).toUpperCase() || 'F';
+  }
+
+  protected recargar(): void {
     this.cargar();
   }
 
-  especialidad(valor: string): string {
-    return nombreEspecialidad(valor);
-  }
-
   private cargar(): void {
-    this.restaurantService
+    this.restauranteService
       .listar()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });

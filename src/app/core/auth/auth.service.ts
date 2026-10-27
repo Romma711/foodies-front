@@ -77,4 +77,14 @@ export class AuthService {
   isAuthenticated(role: Role): boolean {
     return this.token(role) !== null;
   }
+
+  /** Backend user id from the role's token, used when creating reservations. */
+  userId(role: Role): number | null {
+    const token = this.token(role);
+    if (!token) {
+      return null;
+    }
+    const payload = decodeJwt(token);
+    return typeof payload?.usuarioId === 'number' ? payload.usuarioId : null;
+  }
 }

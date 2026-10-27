@@ -3,9 +3,12 @@ import { fakeJwt } from './testing';
 
 describe('jwt', () => {
   it('decodes the payload of a well formed token', () => {
-    expect(decodeJwt(fakeJwt({ sub: 'ana@foodies.com', role: 'CLIENTE' }))).toEqual({
+    expect(
+      decodeJwt(fakeJwt({ sub: 'ana@foodies.com', role: 'CLIENTE', usuarioId: 7 })),
+    ).toEqual({
       sub: 'ana@foodies.com',
       role: 'CLIENTE',
+      usuarioId: 7,
     });
   });
 

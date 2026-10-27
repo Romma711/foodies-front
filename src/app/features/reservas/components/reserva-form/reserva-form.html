@@ -1,0 +1,149 @@
+<div class="rounded-2xl border border-line/70 bg-white/90 p-5 shadow-card sm:p-6">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h2 class="text-lg font-extrabold tracking-tight text-ink-900">Reservá tu mesa</h2>
+      <p class="mt-1 text-sm leading-6 text-ink-500">
+        La reserva queda pendiente hasta que el restaurante la confirme.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="grid size-8 shrink-0 place-items-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+      aria-label="Cerrar formulario de reserva"
+      (click)="cancelada.emit()"
+    >
+      <svg
+        class="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M6 6l12 12M18 6 6 18" />
+      </svg>
+    </button>
+  </div>
+
+  <form class="mt-5 space-y-5" novalidate (submit)="onSubmit($event)">
+    @if (mutationError(); as message) {
+      <div
+        role="alert"
+        class="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-800"
+      >
+        {{ message }}
+      </div>
+    }
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="reserva-fecha" class="text-sm font-bold text-ink-900">Fecha</label>
+        <input
+          id="reserva-fecha"
+          type="date"
+          [formField]="reservaForm.fechaReserva"
+          [attr.aria-invalid]="
+            reservaForm.fechaReserva().touched() && reservaForm.fechaReserva().invalid()
+          "
+          [attr.aria-describedby]="
+            reservaForm.fechaReserva().touched() && reservaForm.fechaReserva().errors()[0]
+              ? 'reserva-fecha-error reserva-fecha-hint'
+              : 'reserva-fecha-hint'
+          "
+          class="mt-2 block w-full rounded-xl border border-line bg-cream-50/60 px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+        />
+        <p id="reserva-fecha-hint" class="mt-1.5 text-xs text-ink-500">
+          Podés reservar con hasta 3 meses de anticipación.
+        </p>
+        @if (
+          reservaForm.fechaReserva().touched() && reservaForm.fechaReserva().errors()[0];
+          as error
+        ) {
+          <p id="reserva-fecha-error" class="mt-1.5 text-xs font-medium text-red-700">
+            {{ error.message }}
+          </p>
+        }
+      </div>
+
+      <div>
+        <label for="reserva-horario" class="text-sm font-bold text-ink-900">Horario</label>
+        <select
+          id="reserva-horario"
+          [formField]="reservaForm.horarioLlegada"
+          [attr.aria-invalid]="
+            reservaForm.horarioLlegada().touched() && reservaForm.horarioLlegada().invalid()
+          "
+          [attr.aria-describedby]="
+            reservaForm.horarioLlegada().touched() && reservaForm.horarioLlegada().errors()[0]
+              ? 'reserva-horario-error'
+              : null
+          "
+          class="mt-2 block w-full rounded-xl border border-line bg-cream-50/60 px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+        >
+          @for (horario of horarios; track horario) {
+            <option [value]="horario">{{ horario }} hs</option>
+          }
+        </select>
+        @if (
+          reservaForm.horarioLlegada().touched() && reservaForm.horarioLlegada().errors()[0];
+          as error
+        ) {
+          <p id="reserva-horario-error" class="mt-1.5 text-xs font-medium text-red-700">
+            {{ error.message }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <div>
+      <label for="reserva-cantidad" class="text-sm font-bold text-ink-900">Personas</label>
+      <input
+        id="reserva-cantidad"
+        type="number"
+        inputmode="numeric"
+        [formField]="reservaForm.cantidad"
+        [attr.aria-invalid]="reservaForm.cantidad().touched() && reservaForm.cantidad().invalid()"
+        [attr.aria-describedby]="
+          reservaForm.cantidad().touched() && reservaForm.cantidad().errors()[0]
+            ? 'reserva-cantidad-error reserva-cantidad-hint'
+            : 'reserva-cantidad-hint'
+        "
+        class="mt-2 block w-full rounded-xl border border-line bg-cream-50/60 px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+      />
+      <p id="reserva-cantidad-hint" class="mt-1.5 text-xs text-ink-500">
+        Capacidad máxima: {{ cupoMaximo() }} personas.
+      </p>
+      @if (reservaForm.cantidad().touched() && reservaForm.cantidad().errors()[0]; as error) {
+        <p id="reserva-cantidad-error" class="mt-1.5 text-xs font-medium text-red-700">
+          {{ error.message }}
+        </p>
+      }
+    </div>
+
+    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+        (click)="cancelada.emit()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="saving()"
+        class="inline-flex items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:cursor-progress disabled:opacity-60"
+      >
+        @if (saving()) {
+          <span
+            class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+            aria-hidden="true"
+          ></span>
+          Reservando…
+        } @else {
+          Confirmar reserva
+        }
+      </button>
+    </div>
+  </form>
+</div>

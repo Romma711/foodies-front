@@ -15,7 +15,6 @@ import { PORTALS } from '../../core/auth/portals';
 @Component({
   imports: [FormField, RouterLink],
   selector: 'app-login',
-  styleUrl: './login.css',
   templateUrl: './login.html',
 })
 export class Login {
@@ -30,9 +29,9 @@ export class Login {
 
   private readonly model = signal<LoginRequest>({ email: '', password: '' });
   protected readonly loginForm = form(this.model, (path) => {
-    required(path.email, { message: 'Email is required.' });
-    email(path.email, { message: 'Enter a valid email.' });
-    required(path.password, { message: 'Password is required.' });
+    required(path.email, { message: 'El email es obligatorio.' });
+    email(path.email, { message: 'Ingresá un email válido.' });
+    required(path.password, { message: 'La contraseña es obligatoria.' });
   });
 
   protected async onSubmit(event: Event): Promise<void> {
@@ -56,10 +55,10 @@ export class Login {
 
 function toMessage(error: unknown): string {
   if (error instanceof PendingApprovalError) {
-    return 'Your restaurant is pending approval. You can sign in once an admin approves it.';
+    return 'Tu restaurante está pendiente de aprobación. Podrás ingresar cuando un administrador lo apruebe.';
   }
   if (error instanceof RoleMismatchError) {
-    return 'This account does not belong to this portal.';
+    return 'Esta cuenta no pertenece a este portal.';
   }
   // The backend answers 400 for a wrong password.
   if (
@@ -68,7 +67,7 @@ function toMessage(error: unknown): string {
       error.status === HttpStatusCode.Unauthorized ||
       error.status === HttpStatusCode.Forbidden)
   ) {
-    return 'Invalid email or password.';
+    return 'Email o contraseña incorrectos.';
   }
-  return 'Something went wrong. Please try again.';
+  return 'Algo salió mal. Intentá de nuevo.';
 }

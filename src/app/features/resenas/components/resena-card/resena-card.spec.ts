@@ -45,10 +45,112 @@ describe('ResenaCard', () => {
     expect(elemento.querySelector('[data-testid="avatar"]')?.textContent).toContain('A');
   });
 
-  it('debería mostrar la calificación numérica', () => {
+  it('debería exponer la calificación accesible mediante las estrellas', () => {
     const fixture = crear(resena);
     const elemento = fixture.nativeElement as HTMLElement;
 
-    expect(elemento.querySelector('[data-testid="calificacion"]')?.textContent).toContain('5.0');
+    expect(elemento.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
+      'Calificación: 5.0 de 5 estrellas',
+    );
+  });
+
+  it('no debería mostrar el ID interno ni una nota duplicada', () => {
+    const fixture = crear(resena);
+    const elemento = fixture.nativeElement as HTMLElement;
+
+    expect(elemento.textContent).not.toContain('Reseña #');
+    expect(elemento.querySelector('[data-testid="calificacion"]')).toBeNull();
+  });
+
+  it('no debería ofrecer editar una reseña ajena', () => {
+    const fixture = crear(resena);
+
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+
+  it('debería emitir editar cuando la reseña es editable', () => {
+    const fixture = TestBed.createComponent(ResenaCard);
+    fixture.componentRef.setInput('resena', resena);
+    fixture.componentRef.setInput('editable', true);
+    fixture.detectChanges();
+    const editar = vi.fn();
+    fixture.componentInstance.editar.subscribe(editar);
+
+    const boton = fixture.nativeElement.querySelector(
+      'button[aria-label="Editar tu reseña"]',
+    ) as HTMLButtonElement;
+    boton.click();
+
+    expect(editar).toHaveBeenCalled();
+  });
+
+  describe('al eliminar', () => {
+    function crearEliminable() {
+      const fixture = TestBed.createComponent(ResenaCard);
+      fixture.componentRef.setInput('resena', resena);
+      fixture.componentRef.setInput('eliminable', true);
+      fixture.detectChanges();
+      const eliminar = vi.fn();
+      fixture.componentInstance.eliminar.subscribe(eliminar);
+      return { fixture, eliminar };
+    }
+
+    function boton(fixture: { nativeElement: HTMLElement }, texto: string) {
+      return Array.from(fixture.nativeElement.querySelectorAll('button')).find(
+        (item) => item.textContent?.trim() === texto || item.getAttribute('aria-label') === texto,
+      );
+    }
+
+    it('no debería ofrecer eliminar por defecto', () => {
+      const fixture = crear(resena);
+
+      expect(boton(fixture, 'Eliminar reseña')).toBeUndefined();
+    });
+
+    it('debería pedir confirmación antes de emitir y enfocar Cancelar', async () => {
+      const { fixture, eliminar } = crearEliminable();
+
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(eliminar).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.textContent).toContain('¿Eliminar esta reseña?');
+      expect(document.activeElement).toBe(boton(fixture, 'Cancelar'));
+
+      boton(fixture, 'Eliminar')?.click();
+      expect(eliminar).toHaveBeenCalledTimes(1);
+    });
+
+    it('debería volver atrás al cancelar la confirmación', () => {
+      const { fixture, eliminar } = crearEliminable();
+
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.detectChanges();
+      boton(fixture, 'Cancelar')?.click();
+      fixture.detectChanges();
+
+      expect(eliminar).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.textContent).not.toContain('¿Eliminar esta reseña?');
+    });
+
+    it('debería deshabilitar la confirmación mientras se elimina', () => {
+      const { fixture } = crearEliminable();
+      boton(fixture, 'Eliminar reseña')?.click();
+      fixture.componentRef.setInput('eliminando', true);
+      fixture.detectChanges();
+
+      expect(boton(fixture, 'Eliminando…')?.disabled).toBe(true);
+    });
+  });
+
+  it('debería mostrar la calificación también como número', () => {
+    const fixture = crear(resena);
+
+    expect(
+      fixture.nativeElement
+        .querySelector('app-star-rating [data-testid="valor"]')
+        ?.textContent?.trim(),
+    ).toBe('5.0');
   });
 });
