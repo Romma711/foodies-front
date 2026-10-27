@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 
 export const CONNECTION_ERROR_MESSAGE = 'No se pudo conectar con el servidor.';
 
@@ -27,10 +27,20 @@ export function backendMessage(error: unknown): string | null {
   );
 }
 
-/** True when the request never reached the server (offline, CORS, server down). */
+/**
+ * True when the request never reached the backend: offline, CORS, or a proxy in front of it (the
+ * dev server proxy, nginx) answering 502/503/504 because the backend is down.
+ */
 export function isConnectionError(error: unknown): boolean {
-  return error instanceof HttpErrorResponse && error.status === 0;
+  return error instanceof HttpErrorResponse && UNREACHABLE_STATUSES.has(error.status);
 }
+
+const UNREACHABLE_STATUSES = new Set<number>([
+  0,
+  HttpStatusCode.BadGateway,
+  HttpStatusCode.ServiceUnavailable,
+  HttpStatusCode.GatewayTimeout,
+]);
 
 function nonBlank(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;

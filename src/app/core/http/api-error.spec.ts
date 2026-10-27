@@ -32,6 +32,15 @@ describe('backendMessage', () => {
 describe('isConnectionError', () => {
   it('detects a request that never reached the server', () => {
     expect(isConnectionError(response(0, new ProgressEvent('error')))).toBe(true);
+  });
+
+  it('treats a proxy that cannot reach the backend as a connection error', () => {
+    expect(isConnectionError(response(502, null))).toBe(true);
+    expect(isConnectionError(response(503, null))).toBe(true);
+    expect(isConnectionError(response(504, null))).toBe(true);
+  });
+
+  it('does not hide real server errors', () => {
     expect(isConnectionError(response(500, null))).toBe(false);
     expect(isConnectionError(new Error('boom'))).toBe(false);
   });
