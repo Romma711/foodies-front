@@ -6,6 +6,20 @@ import { environment } from '../../../../environments/environment';
 import { EntidadCliente, EntidadRestaurante } from '../models/entidades-admin';
 import { mensajeErrorAdmin } from './mensaje-error-admin';
 
+/** `StrikeResultadoDTO` */
+export interface StrikeResultado {
+  id: number;
+  nombre: string;
+  email: string;
+  strikes: number;
+  /** True from the third strike on: the panel suggests deactivating. */
+  sugerirBaja: boolean;
+  /** False when the warning email could not be sent; the strike is saved anyway. */
+  emailEnviado: boolean;
+}
+
+export type TipoEntidad = 'cliente' | 'restaurante';
+
 interface EstadoActivo {
   id: number;
   nombre: string;
@@ -79,6 +93,38 @@ export class AdminEntidadesService {
         ),
       ),
     );
+  }
+
+  /**
+   * Adds a strike and makes the backend email the warning (to the client, or to the restaurant's
+   * manager). Errors come back as an `Error` whose message is ready to show to the admin.
+   */
+  aplicarStrike(tipo: TipoEntidad, id: number, motivo: string): Observable<StrikeResultado> {
+    const ruta = tipo === 'cliente' ? 'usuarios' : 'restaurantes';
+    return this.http
+      .post<StrikeResultado>(
+        `${this.apiUrl}/${ruta}/${id}/strikes`,
+        { motivo },
+        { context: withRole('ADMIN') },
+      )
+      .pipe(
+        tap(({ strikes }) => {
+          if (tipo === 'cliente') {
+            this._clientes.update((clientes) =>
+              clientes.map((cliente) => (cliente.id === id ? { ...cliente, strikes } : cliente)),
+            );
+          } else {
+            this._restaurantes.update((restaurantes) =>
+              restaurantes.map((restaurante) =>
+                restaurante.id === id ? { ...restaurante, strikes } : restaurante,
+              ),
+            );
+          }
+        }),
+        catchError((error: unknown) =>
+          throwError(() => new Error(mensajeErrorAdmin(error, 'No se pudo aplicar el strike.'))),
+        ),
+      );
   }
 
   /** Errors come back as an `Error` whose message is ready to show to the admin. */
