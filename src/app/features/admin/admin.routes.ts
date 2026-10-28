@@ -22,6 +22,20 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/moderacion-resenas/moderacion-resenas').then((m) => m.ModeracionResenas),
       },
+      {
+        path: 'solicitudes',
+        title: 'Solicitudes | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/solicitudes-restaurantes/solicitudes-restaurantes').then(
+            (m) => m.SolicitudesRestaurantes,
+          ),
+      },
+      {
+        path: 'entidades',
+        title: 'Entidades | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/gestion-entidades/gestion-entidades').then((m) => m.GestionEntidades),
+      },
     ],
   },
 ];

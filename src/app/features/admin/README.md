@@ -8,12 +8,13 @@ antes de dar la fase por cerrada.
 
 ## 1. Resumen por sprint
 
-| Sprint | Objetivo                                                                | Repo                                   | Commits                          |
-| ------ | ----------------------------------------------------------------------- | -------------------------------------- | -------------------------------- |
-| 6      | `MetricasAdminDTO`, `AdminService`, `AdminController` (solo ROLE_ADMIN) | backend, rama `feature/admin-metricas` | `824ca5d`, `19f87c0`             |
-| 7      | `adminGuard` + `AdminLayout` con sidebar                                | frontend                               | `c4a4ead`                        |
-| 8      | Dashboard con Chart.js                                                  | frontend                               | `bf0b411`, `af17b8b`             |
-| 9      | Moderación: reseñas recientes + borrado rápido                          | backend + frontend                     | `1e49c85` · `698282e`, `ae6416b` |
+| Sprint | Objetivo                                                                    | Repo                                                           | Commits                          |
+| ------ | --------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------- |
+| 6      | `MetricasAdminDTO`, `AdminService`, `AdminController` (solo ROLE_ADMIN)     | backend, rama `feature/admin-metricas`                         | `824ca5d`, `19f87c0`             |
+| 7      | `adminGuard` + `AdminLayout` con sidebar                                    | frontend                                                       | `c4a4ead`                        |
+| 8      | Dashboard con Chart.js                                                      | frontend                                                       | `bf0b411`, `af17b8b`             |
+| 9      | Moderación: reseñas recientes + borrado rápido                              | backend + frontend                                             | `1e49c85` · `698282e`, `ae6416b` |
+| 19     | Fase 3: Solicitudes (aprobar/rechazar) y Gestión de Entidades (baja lógica) | backend + frontend, rama `feature/admin-solicitudes-entidades` | ver `git log`                    |
 
 Calidad al cierre: **25 tests de backend** (JUnit + H2) y **175 tests de frontend** (Vitest) en
 verde; build de producción sin errores.
@@ -106,3 +107,20 @@ Piezas compartidas con reseñas, movidas a `shared/`: `charts/bar-chart-factory.
 - Item 1 (esquema): columna nueva `usuario.fecha_registro`, nullable, sin pérdida de datos.
 - Item 2 (permisos): guard nuevo y endpoints solo ADMIN; el backend autoriza cada llamada.
 - No se corrió un revisor independiente.
+
+---
+
+## Fase 3 · Sprint 19: Solicitudes y Gestión de Entidades
+
+- **Solicitudes** (`/admin/solicitudes`): restaurantes en estado `PENDIENTE` con los datos de contacto
+  del encargado. _Aprobar_ lo publica y le da `ROLE_ENCARGADO`; _Rechazar_ pide confirmación.
+  Servicio: `AdminSolicitudesService` (`GET /api/admin/restaurantes/pendientes`,
+  `PUT .../{id}/aprobar|rechazar`).
+- **Entidades** (`/admin/entidades`): pestañas Clientes / Restaurantes (patrón WAI-ARIA tabs, se
+  recorren con las flechas) con strikes, estado y un interruptor `role="switch"` de baja lógica.
+  Servicio: `AdminEntidadesService` (`GET /api/admin/entidades/*`, `PATCH .../{id}/activo`).
+- Baja lógica: un cliente dado de baja recibe 403 al loguearse (el login muestra el mensaje del
+  backend) y pierde el acceso con tokens anteriores; un restaurante dado de baja deja de aparecer en
+  el catálogo público. Nada se borra y todo se puede reactivar.
+- Los errores de las acciones se muestran con `mensajeErrorAdmin`, que usa el `mensaje` del backend
+  en los 400 (por ejemplo, "No se puede dar de baja a un administrador").

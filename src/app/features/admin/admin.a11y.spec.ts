@@ -14,6 +14,10 @@ import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
 import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
 import { AdminMetricasService } from './services/admin-metricas.service';
 import { AdminModeracionService } from './services/admin-moderacion.service';
+import { AdminEntidadesService } from './services/admin-entidades.service';
+import { AdminSolicitudesService } from './services/admin-solicitudes.service';
+import { GestionEntidades } from './pages/gestion-entidades/gestion-entidades';
+import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
 
 @Component({ template: '<h1>Contenido</h1>' })
 class PaginaFalsa {}
@@ -88,6 +92,65 @@ describe('Accesibilidad del panel de administración', () => {
             eliminar: vi.fn(() => of(undefined)),
           },
         },
+        {
+          provide: AdminSolicitudesService,
+          useValue: {
+            solicitudes: signal([
+              {
+                restaurantId: 7,
+                nombre: 'Pasta Nostra',
+                ubicacion: 'Av. Colón 1200',
+                especialidad: 'PASTAS',
+                cupoMaximo: 40,
+                estado: 'PENDIENTE',
+                usuarioId: 12,
+                email: 'pasta@mail.com',
+                telefono: '2234000000',
+                fechaRegistro: null,
+              },
+            ]).asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of([])),
+            aprobar: vi.fn(() => of(undefined)),
+            rechazar: vi.fn(() => of(undefined)),
+          },
+        },
+        {
+          provide: AdminEntidadesService,
+          useValue: {
+            clientes: signal([
+              {
+                id: 4,
+                nombre: 'Ana',
+                apellido: 'Gómez',
+                email: 'ana@mail.com',
+                telefono: '2231111111',
+                strikes: 1,
+                activo: true,
+                fechaRegistro: null,
+              },
+            ]).asReadonly(),
+            restaurantes: signal([
+              {
+                id: 2,
+                nombre: 'Ochiwan',
+                ubicacion: 'San Juan 229',
+                especialidad: 'ASIATICA',
+                estado: 'APROBADO',
+                strikes: 0,
+                activo: false,
+                usuarioId: 9,
+                email: 'ochiwan@mail.com',
+              },
+            ]).asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of(undefined)),
+            cambiarActivoCliente: vi.fn(() => of(undefined)),
+            cambiarActivoRestaurante: vi.fn(() => of(undefined)),
+          },
+        },
       ],
     }).compileComponents();
   });
@@ -135,5 +198,20 @@ describe('Accesibilidad del panel de administración', () => {
   it('ModeracionResenas vacía', async () => {
     lista.set([]);
     await sinViolaciones(TestBed.createComponent(ModeracionResenas));
+  });
+  it('SolicitudesRestaurantes con una solicitud y con el rechazo por confirmar', async () => {
+    const fixture = TestBed.createComponent(SolicitudesRestaurantes);
+    await sinViolaciones(fixture);
+
+    (fixture.nativeElement.querySelector('button[id="rechazar-7"]') as HTMLButtonElement).click();
+    await sinViolaciones(fixture);
+  });
+
+  it('GestionEntidades en la pestaña de clientes y en la de restaurantes', async () => {
+    const fixture = TestBed.createComponent(GestionEntidades);
+    await sinViolaciones(fixture);
+
+    (fixture.nativeElement.querySelector('#tab-restaurantes') as HTMLButtonElement).click();
+    await sinViolaciones(fixture);
   });
 });

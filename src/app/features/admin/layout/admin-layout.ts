@@ -156,6 +156,19 @@ export class AdminLayout {
       exacto: false,
       icono: 'M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3ZM9 12l2 2 4-4',
     },
+    {
+      label: 'Solicitudes',
+      path: '/admin/solicitudes',
+      exacto: false,
+      icono: 'M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1ZM6 6h12v14H6zM9 12l2 2 4-4',
+    },
+    {
+      label: 'Entidades',
+      path: '/admin/entidades',
+      exacto: false,
+      icono:
+        'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 20a6 6 0 0 1 12 0M16 11a3 3 0 1 0 0-6M22 20a6 6 0 0 0-5-5.9',
+    },
   ];
 
   /** Only matters below `lg`; on desktop the sidebar is always visible. */
