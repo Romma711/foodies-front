@@ -68,6 +68,15 @@ function toMessage(error: unknown): string {
   if (error instanceof RoleMismatchError) {
     return 'Esta cuenta no pertenece a este portal.';
   }
+  // An admin deactivated the account; only sent when the password was right (Phase 3).
+  if (
+    error instanceof HttpErrorResponse &&
+    error.status === HttpStatusCode.Forbidden &&
+    error.error?.error === 'cuenta dada de baja' &&
+    typeof error.error?.mensaje === 'string'
+  ) {
+    return error.error.mensaje;
+  }
   // The backend answers 400 for a wrong password.
   if (
     error instanceof HttpErrorResponse &&

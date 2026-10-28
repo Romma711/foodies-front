@@ -109,6 +109,22 @@ describe('Login', () => {
       expect(alert).not.toContain('Bad credentials');
     });
 
+    it('explains that a deactivated account cannot sign in', async () => {
+      const alert = await loginAndFail(403, {
+        error: 'cuenta dada de baja',
+        mensaje: 'Tu cuenta fue dada de baja. Escribinos si creés que es un error.',
+      });
+
+      expect(alert).toContain('Tu cuenta fue dada de baja. Escribinos si creés que es un error.');
+      expect(alert).not.toContain('Email o contraseña incorrectos.');
+    });
+
+    it('keeps the credentials message for any other 403', async () => {
+      const alert = await loginAndFail(403, { error: 'acceso denegado', mensaje: 'Otro motivo' });
+
+      expect(alert).toContain('Email o contraseña incorrectos.');
+    });
+
     it('tells the user the server could not be reached', async () => {
       const alert = await loginAndFail(0, null);
 
