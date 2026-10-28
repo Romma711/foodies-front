@@ -1,5 +1,13 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  Injector,
+  afterNextRender,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { especialidadLabel } from '../../../../core/catalog/especialidades';
@@ -10,7 +18,8 @@ import {
   EntidadRestaurante,
   EstadoRestaurante,
 } from '../../models/entidades-admin';
-import { AdminEntidadesService } from '../../services/admin-entidades.service';
+import { LIMITE_STRIKES, StrikeModal } from '../../components/strike-modal/strike-modal';
+import { AdminEntidadesService, TipoEntidad } from '../../services/admin-entidades.service';
 
 type Pestana = 'clientes' | 'restaurantes';
 
@@ -26,7 +35,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
  */
 @Component({
   selector: 'app-gestion-entidades',
-  imports: [NgTemplateOutlet, ToastOutlet],
+  imports: [NgTemplateOutlet, StrikeModal, ToastOutlet],
   providers: [ToastService],
   template: `
     <section aria-labelledby="titulo-entidades">
@@ -102,7 +111,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         [attr.aria-labelledby]="'tab-' + pestana()"
       >
         @if (pestana() === 'clientes') {
-          <table class="w-full min-w-[40rem] text-left text-sm">
+          <table class="w-full min-w-[46rem] text-left text-sm">
             <caption class="sr-only">
               Clientes registrados
             </caption>
@@ -112,7 +121,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               <tr>
                 <th scope="col" class="px-4 py-3">Cliente</th>
                 <th scope="col" class="px-4 py-3">Teléfono</th>
-                <th scope="col" class="px-4 py-3 text-center">Strikes</th>
+                <th scope="col" class="px-4 py-3">Strikes</th>
                 <th scope="col" class="px-4 py-3 text-right">Activo</th>
               </tr>
             </thead>
@@ -124,11 +133,22 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                     <p class="text-xs text-ink-500">{{ cliente.email }}</p>
                   </td>
                   <td class="px-4 py-3 text-ink-700">{{ cliente.telefono }}</td>
-                  <td
-                    class="px-4 py-3 text-center font-semibold tabular-nums text-ink-900"
-                    data-testid="strikes"
-                  >
-                    {{ cliente.strikes }}
+                  <td class="px-4 py-3">
+                    <ng-container
+                      *ngTemplateOutlet="
+                        celdaStrikes;
+                        context: {
+                          strikes: cliente.strikes,
+                          nombre: nombreCliente(cliente),
+                          abrir: abrirStrike(
+                            'cliente',
+                            cliente.id,
+                            nombreCliente(cliente),
+                            cliente.strikes
+                          ),
+                        }
+                      "
+                    />
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex justify-end">
@@ -156,7 +176,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
             </tbody>
           </table>
         } @else {
-          <table class="w-full min-w-[44rem] text-left text-sm">
+          <table class="w-full min-w-[52rem] text-left text-sm">
             <caption class="sr-only">
               Restaurantes registrados
             </caption>
@@ -167,7 +187,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 <th scope="col" class="px-4 py-3">Restaurante</th>
                 <th scope="col" class="px-4 py-3">Estado</th>
                 <th scope="col" class="px-4 py-3">Encargado</th>
-                <th scope="col" class="px-4 py-3 text-center">Strikes</th>
+                <th scope="col" class="px-4 py-3">Strikes</th>
                 <th scope="col" class="px-4 py-3 text-right">Activo</th>
               </tr>
             </thead>
@@ -189,11 +209,22 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                     </span>
                   </td>
                   <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
-                  <td
-                    class="px-4 py-3 text-center font-semibold tabular-nums text-ink-900"
-                    data-testid="strikes"
-                  >
-                    {{ restaurante.strikes }}
+                  <td class="px-4 py-3">
+                    <ng-container
+                      *ngTemplateOutlet="
+                        celdaStrikes;
+                        context: {
+                          strikes: restaurante.strikes,
+                          nombre: restaurante.nombre,
+                          abrir: abrirStrike(
+                            'restaurante',
+                            restaurante.id,
+                            restaurante.nombre,
+                            restaurante.strikes
+                          ),
+                        }
+                      "
+                    />
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex justify-end">
@@ -257,6 +288,42 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
       </button>
     </ng-template>
 
+    <ng-template #celdaStrikes let-strikes="strikes" let-nombre="nombre" let-abrir="abrir">
+      <div class="flex flex-col items-start gap-1.5">
+        <div class="flex items-center gap-2">
+          <span class="min-w-4 font-semibold tabular-nums text-ink-900" data-testid="strikes">
+            {{ strikes }}
+          </span>
+          <button
+            type="button"
+            class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100"
+            data-testid="aplicar-strike"
+            [attr.aria-label]="'Aplicar strike a ' + nombre"
+            (click)="abrir()"
+          >
+            + Strike
+          </button>
+        </div>
+        @if (strikes >= limiteStrikes) {
+          <span
+            class="whitespace-nowrap rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-800 ring-1 ring-red-200"
+            data-testid="sugerir-baja"
+          >
+            Sugerir penalización / dar de baja
+          </span>
+        }
+      </div>
+    </ng-template>
+
+    <app-strike-modal
+      [nombre]="objetivoStrike()?.nombre ?? ''"
+      [strikesActuales]="objetivoStrike()?.strikes ?? 0"
+      [enviando]="enviandoStrike()"
+      [error]="errorStrike()"
+      (enviar)="aplicarStrike($event)"
+      (cancelar)="objetivoStrike.set(null)"
+    />
+
     <app-toast-outlet />
   `,
 })
@@ -276,6 +343,17 @@ export class GestionEntidades {
   /** Keys of the switches whose request is in flight ("c4", "r2"), each disabled until its own ends. */
   protected readonly procesando = signal<ReadonlySet<string>>(new Set());
   protected readonly estados = ESTADOS;
+  protected readonly limiteStrikes = LIMITE_STRIKES;
+  /** Row the strike dialog is open for. */
+  protected readonly objetivoStrike = signal<{
+    tipo: TipoEntidad;
+    id: number;
+    nombre: string;
+    strikes: number;
+  } | null>(null);
+  protected readonly enviandoStrike = signal(false);
+  protected readonly errorStrike = signal<string | null>(null);
+  private readonly modalStrike = viewChild.required(StrikeModal);
   protected readonly pestanas = [
     { id: 'clientes' as const, texto: 'Clientes', cantidad: () => this.clientes().length },
     {
@@ -322,6 +400,49 @@ export class GestionEntidades {
         !restaurante.activo,
         this.servicio.cambiarActivoRestaurante(restaurante.id, !restaurante.activo),
       );
+  }
+
+  protected abrirStrike(
+    tipo: TipoEntidad,
+    id: number,
+    nombre: string,
+    strikes: number,
+  ): () => void {
+    return () => {
+      this.objetivoStrike.set({ tipo, id, nombre, strikes });
+      this.errorStrike.set(null);
+      this.modalStrike().abrir();
+    };
+  }
+
+  /** Sends the strike; the backend emails the warning. The dialog stays open on errors. */
+  protected aplicarStrike(motivo: string): void {
+    const objetivo = this.objetivoStrike();
+    if (!objetivo) {
+      return;
+    }
+    this.enviandoStrike.set(true);
+    this.errorStrike.set(null);
+    this.servicio
+      .aplicarStrike(objetivo.tipo, objetivo.id, motivo)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (resultado) => {
+          this.enviandoStrike.set(false);
+          this.objetivoStrike.set(null);
+          this.modalStrike().cerrar();
+          const base = `Strike aplicado a ${objetivo.nombre} (${resultado.strikes} de ${LIMITE_STRIKES})`;
+          if (resultado.emailEnviado) {
+            this.toasts.exito(`${base}. Le enviamos el aviso a ${resultado.email}.`);
+          } else {
+            this.toasts.error(`${base}, pero no se pudo enviar el email de aviso.`);
+          }
+        },
+        error: (error: Error) => {
+          this.enviandoStrike.set(false);
+          this.errorStrike.set(error.message);
+        },
+      });
   }
 
   /** Arrow keys move between tabs, as in the WAI-ARIA tabs pattern. */

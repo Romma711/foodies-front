@@ -34,12 +34,26 @@ describe('GestionEntidades', () => {
     cargar: ReturnType<typeof vi.fn>;
     cambiarActivoCliente: ReturnType<typeof vi.fn>;
     cambiarActivoRestaurante: ReturnType<typeof vi.fn>;
+    aplicarStrike: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
     clientes = signal([ANA]);
     restaurantes = signal([OCHIWAN]);
     servicio = {
+      aplicarStrike: vi.fn((tipo: string, id: number) => {
+        clientes.update((lista) =>
+          lista.map((c) => (c.id === id ? { ...c, strikes: c.strikes + 1 } : c)),
+        );
+        return of({
+          id,
+          nombre: 'Ana Gómez',
+          email: 'ana@mail.com',
+          strikes: 3,
+          sugerirBaja: true,
+          emailEnviado: true,
+        });
+      }),
       cargar: vi.fn(() => of(undefined)),
       cambiarActivoCliente: vi.fn((id: number, activo: boolean) => {
         clientes.update((lista) => lista.map((c) => (c.id === id ? { ...c, activo } : c)));
@@ -182,5 +196,132 @@ describe('GestionEntidades', () => {
 
     expect(pestana(host, 'Restaurantes').getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(pestana(host, 'Restaurantes'));
+  });
+
+  function botonStrike(host: HTMLElement): HTMLButtonElement {
+    return host.querySelector<HTMLButtonElement>('tbody [data-testid="aplicar-strike"]')!;
+  }
+
+  function enviarMotivo(fixture: { detectChanges(): void }, host: HTMLElement, motivo: string) {
+    const area = host.querySelector<HTMLTextAreaElement>('dialog textarea')!;
+    area.value = motivo;
+    area.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    Array.from(host.querySelectorAll<HTMLButtonElement>('dialog button'))
+      .find((b) => b.textContent?.trim() === 'Aplicar strike')!
+      .click();
+    fixture.detectChanges();
+  }
+
+  it('cada fila tiene un botón para aplicar un strike con nombre accesible', () => {
+    const { host } = crear();
+
+    expect(botonStrike(host).getAttribute('aria-label')).toBe('Aplicar strike a Ana Gómez');
+  });
+
+  it('el botón abre el modal del cliente elegido', () => {
+    const { fixture, host } = crear();
+
+    botonStrike(host).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+    expect(host.querySelector('dialog h2')?.textContent).toContain('Ana Gómez');
+  });
+
+  it('aplica el strike, cierra el modal y confirma que se envió el email', () => {
+    const { fixture, host } = crear();
+    botonStrike(host).click();
+    fixture.detectChanges();
+
+    enviarMotivo(fixture, host, 'Lenguaje ofensivo en una reseña');
+
+    expect(servicio.aplicarStrike).toHaveBeenCalledWith(
+      'cliente',
+      4,
+      'Lenguaje ofensivo en una reseña',
+    );
+    expect(host.querySelector('dialog')?.hasAttribute('open')).toBe(false);
+    expect(host.textContent).toContain(
+      'Strike aplicado a Ana Gómez (3 de 3). Le enviamos el aviso a ana@mail.com.',
+    );
+  });
+
+  it('avisa si el strike se guardó pero el email no salió', () => {
+    servicio.aplicarStrike.mockReturnValue(
+      of({
+        id: 4,
+        nombre: 'Ana Gómez',
+        email: 'ana@mail.com',
+        strikes: 3,
+        sugerirBaja: true,
+        emailEnviado: false,
+      }),
+    );
+    const { fixture, host } = crear();
+    botonStrike(host).click();
+    fixture.detectChanges();
+
+    enviarMotivo(fixture, host, 'Spam en reseñas');
+
+    expect(host.textContent).toContain(
+      'Strike aplicado a Ana Gómez (3 de 3), pero no se pudo enviar el email de aviso.',
+    );
+  });
+
+  it('si falla deja el modal abierto con el error', () => {
+    servicio.aplicarStrike.mockReturnValue(
+      throwError(() => new Error('No se puede sancionar a un administrador')),
+    );
+    const { fixture, host } = crear();
+    botonStrike(host).click();
+    fixture.detectChanges();
+
+    enviarMotivo(fixture, host, 'Motivo de prueba');
+
+    expect(host.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+    expect(host.querySelector('dialog [role="alert"]')?.textContent?.trim()).toBe(
+      'No se puede sancionar a un administrador',
+    );
+  });
+
+  it('con 3 strikes muestra el badge que sugiere la baja', () => {
+    clientes.set([{ ...ANA, strikes: 3 }]);
+    const { host } = crear();
+
+    const badge = host.querySelector('tbody [data-testid="sugerir-baja"]');
+    expect(badge?.textContent?.trim()).toBe('Sugerir penalización / dar de baja');
+  });
+
+  it('con menos de 3 strikes no muestra el badge', () => {
+    const { host } = crear();
+
+    expect(host.querySelector('[data-testid="sugerir-baja"]')).toBeNull();
+  });
+
+  it('en restaurantes el strike va al restaurante', () => {
+    servicio.aplicarStrike.mockReturnValue(
+      of({
+        id: 2,
+        nombre: 'Ochiwan',
+        email: 'ochiwan@mail.com',
+        strikes: 1,
+        sugerirBaja: false,
+        emailEnviado: true,
+      }),
+    );
+    const { fixture, host } = crear();
+    pestana(host, 'Restaurantes').click();
+    fixture.detectChanges();
+    botonStrike(host).click();
+    fixture.detectChanges();
+
+    enviarMotivo(fixture, host, 'Reservas canceladas sin aviso');
+
+    expect(servicio.aplicarStrike).toHaveBeenCalledWith(
+      'restaurante',
+      2,
+      'Reservas canceladas sin aviso',
+    );
   });
 });

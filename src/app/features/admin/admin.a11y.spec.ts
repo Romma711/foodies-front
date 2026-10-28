@@ -149,6 +149,7 @@ describe('Accesibilidad del panel de administración', () => {
             cargar: vi.fn(() => of(undefined)),
             cambiarActivoCliente: vi.fn(() => of(undefined)),
             cambiarActivoRestaurante: vi.fn(() => of(undefined)),
+            aplicarStrike: vi.fn(() => of(undefined)),
           },
         },
       ],
@@ -212,6 +213,21 @@ describe('Accesibilidad del panel de administración', () => {
     await sinViolaciones(fixture);
 
     (fixture.nativeElement.querySelector('#tab-restaurantes') as HTMLButtonElement).click();
+    await sinViolaciones(fixture);
+  });
+
+  it('GestionEntidades con el modal de strike abierto y el error de motivo visible', async () => {
+    const fixture = TestBed.createComponent(GestionEntidades);
+    await sinViolaciones(fixture);
+
+    (
+      fixture.nativeElement.querySelector('[data-testid="aplicar-strike"]') as HTMLButtonElement
+    ).click();
+    await sinViolaciones(fixture);
+
+    (
+      fixture.nativeElement.querySelector('dialog button[type="submit"]') as HTMLButtonElement
+    ).click();
     await sinViolaciones(fixture);
   });
 });

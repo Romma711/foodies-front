@@ -124,3 +124,14 @@ Piezas compartidas con reseñas, movidas a `shared/`: `charts/bar-chart-factory.
   el catálogo público. Nada se borra y todo se puede reactivar.
 - Los errores de las acciones se muestran con `mensajeErrorAdmin`, que usa el `mensaje` del backend
   en los 400 (por ejemplo, "No se puede dar de baja a un administrador").
+
+## Fase 3 · Sprint 20: Strikes con email de aviso
+
+- En **Entidades**, cada fila tiene **+ Strike**, que abre `StrikeModal` (`<dialog>` nativo,
+  presentacional): motivo obligatorio de 5 a 255 caracteres, contador y aviso cuando el strike llega
+  al límite. La página llama a `AdminEntidadesService.aplicarStrike` (`POST
+/api/admin/{usuarios|restaurantes}/{id}/strikes`) y el backend envía el email.
+- Si el email no sale (por ejemplo, sin credenciales de Mailtrap), el strike igual se guarda y el
+  toast lo aclara: "…, pero no se pudo enviar el email de aviso."
+- Con 3 strikes o más la fila muestra el badge **"Sugerir penalización / dar de baja"**; la baja
+  sigue siendo una decisión del admin con el interruptor de la misma fila.
