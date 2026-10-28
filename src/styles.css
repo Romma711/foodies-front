@@ -188,3 +188,65 @@ app-panel-layout {
     animation-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Leaflet map pins and popups (features/mapa). Leaflet renders them outside component views,
+ * so they are styled globally. Ring colors keep >= 3:1 against the map tiles.
+ */
+.marcador {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px 9999px 9999px 0.25rem;
+  background: #ffffff;
+  border: 3px solid var(--marcador-color, var(--color-brand-600));
+  box-shadow: 0 8px 18px -8px rgb(31 27 22 / 0.45);
+  transform: rotate(-45deg);
+  transition: transform 150ms ease-out;
+}
+
+.marcador:hover,
+.marcador:focus-visible {
+  transform: rotate(-45deg) scale(1.1);
+}
+
+.marcador .marcador-glifo {
+  font-size: 1.15rem;
+  line-height: 1;
+  transform: rotate(45deg);
+}
+
+.marcador-parrilla {
+  --marcador-color: #b93f17;
+}
+.marcador-pastas {
+  --marcador-color: #c2410c;
+}
+.marcador-pescados {
+  --marcador-color: #1d4ed8;
+}
+.marcador-asiatica {
+  --marcador-color: #b91c1c;
+}
+.marcador-minutas {
+  --marcador-color: #a16207;
+}
+.marcador-cafe {
+  --marcador-color: #3f3a33;
+}
+
+.popup-restaurante .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.popup-restaurante .leaflet-popup-content {
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.popup-restaurante .leaflet-popup-close-button {
+  top: 0.4rem;
+  right: 0.4rem;
+}
