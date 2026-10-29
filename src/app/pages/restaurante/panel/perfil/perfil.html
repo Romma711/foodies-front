@@ -1,14 +1,14 @@
 <header class="page-header">
-  <h1>Profile</h1>
-  <p class="subtitle">What customers see about your restaurant.</p>
+  <h1>Perfil</h1>
+  <p class="subtitle">Lo que ven los clientes sobre tu restaurante.</p>
 </header>
 
 @if (loading()) {
-  <p role="status">Loading your restaurant…</p>
+  <p role="status">Cargando tu restaurante…</p>
 } @else if (loadError(); as message) {
   <div class="stack">
     <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Try again</button></div>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
   </div>
 } @else {
   <form class="card stack" novalidate (submit)="onSubmit($event)">
@@ -16,11 +16,11 @@
       <p class="alert alert-error" role="alert">{{ message }}</p>
     }
     @if (saved()) {
-      <p class="alert alert-success" role="status">Changes saved.</p>
+      <p class="alert alert-success" role="status">Cambios guardados.</p>
     }
 
     <div class="field">
-      <label for="perfil-nombre">Restaurant name</label>
+      <label for="perfil-nombre">Nombre del restaurante</label>
       <input
         id="perfil-nombre"
         type="text"
@@ -35,7 +35,7 @@
     </div>
 
     <div class="field">
-      <label for="perfil-ubicacion">Address</label>
+      <label for="perfil-ubicacion">Dirección</label>
       <input
         id="perfil-ubicacion"
         type="text"
@@ -50,7 +50,7 @@
     </div>
 
     <div class="field">
-      <label for="perfil-especialidad">Food specialty</label>
+      <label for="perfil-especialidad">Especialidad</label>
       <select
         id="perfil-especialidad"
         [formField]="perfilForm.especialidad"
@@ -59,9 +59,9 @@
         "
         aria-describedby="perfil-especialidad-error"
       >
-        <option value="">Choose one</option>
+        <option value="">Elegí una</option>
         @for (especialidad of especialidades; track especialidad) {
-          <option [value]="especialidad">{{ especialidad }}</option>
+          <option [value]="especialidad">{{ especialidadLabels[especialidad] }}</option>
         }
       </select>
       @if (perfilForm.especialidad().touched() && perfilForm.especialidad().errors()[0]; as error) {
@@ -70,7 +70,7 @@
     </div>
 
     <div class="field">
-      <label for="perfil-cupo">Maximum capacity per day</label>
+      <label for="perfil-cupo">Capacidad máxima por día</label>
       <input
         id="perfil-cupo"
         type="number"
@@ -79,7 +79,7 @@
         [attr.aria-invalid]="perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().invalid()"
         aria-describedby="perfil-cupo-hint perfil-cupo-error"
       />
-      <p id="perfil-cupo-hint" class="muted">Total people you can host in one day.</p>
+      <p id="perfil-cupo-hint" class="muted">Total de personas que podés recibir en un día.</p>
       @if (perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().errors()[0]; as error) {
         <p id="perfil-cupo-error" class="field-error">{{ error.message }}</p>
       }
@@ -87,7 +87,7 @@
 
     <div class="actions">
       <button type="submit" class="btn btn-primary" [disabled]="perfilForm().submitting()">
-        {{ perfilForm().submitting() ? 'Saving…' : 'Save changes' }}
+        {{ perfilForm().submitting() ? 'Guardando…' : 'Guardar cambios' }}
       </button>
     </div>
   </form>

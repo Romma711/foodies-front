@@ -1,14 +1,16 @@
 <header class="page-header">
-  <h1>Menu</h1>
-  <p class="subtitle">Upload your menu as a PDF (up to 10 MB). Customers see the latest version.</p>
+  <h1>Carta</h1>
+  <p class="subtitle">
+    Subí tu carta en PDF (hasta 10 MB). Los clientes ven siempre la última versión.
+  </p>
 </header>
 
 @if (loading()) {
-  <p role="status">Loading your menu…</p>
+  <p role="status">Cargando tu carta…</p>
 } @else if (loadError(); as message) {
   <div class="stack">
     <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Try again</button></div>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
   </div>
 } @else {
   <div class="stack">
@@ -22,28 +24,28 @@
 
     @if (carta(); as current) {
       <section class="card stack" aria-labelledby="carta-actual">
-        <h2 id="carta-actual">Current menu</h2>
+        <h2 id="carta-actual">Carta actual</h2>
         <dl class="details">
           <div>
-            <dt>File</dt>
+            <dt>Archivo</dt>
             <dd>{{ current.nombreArchivo }}</dd>
           </div>
           @if (current.tamanioBytes !== null) {
             <div>
-              <dt>Size</dt>
+              <dt>Tamaño</dt>
               <dd>{{ formatSize(current.tamanioBytes) }}</dd>
             </div>
           }
           @if (current.actualizadaEn) {
             <div>
-              <dt>Updated</dt>
-              <dd>{{ current.actualizadaEn | date: 'medium' }}</dd>
+              <dt>Actualizada</dt>
+              <dd>{{ formatearFechaHora(current.actualizadaEn) }}</dd>
             </div>
           }
         </dl>
         <div class="actions">
           <a class="btn btn-secondary" [href]="current.url" target="_blank" rel="noopener">
-            Open PDF<span class="visually-hidden"> (opens in a new tab)</span>
+            Abrir PDF<span class="visually-hidden"> (se abre en una pestaña nueva)</span>
           </a>
           <button
             type="button"
@@ -51,20 +53,20 @@
             [disabled]="busy()"
             (click)="chooseFile()"
           >
-            Replace
+            Reemplazar
           </button>
           <button type="button" class="btn btn-danger" [disabled]="busy()" (click)="remove()">
-            Delete
+            Eliminar
           </button>
         </div>
         @if (previewUrl(); as url) {
-          <iframe class="preview" [src]="url" title="Preview of the current menu"></iframe>
+          <iframe class="preview" [src]="url" title="Vista previa de la carta actual"></iframe>
         }
       </section>
     }
 
     <section class="stack" aria-labelledby="carta-subir">
-      <h2 id="carta-subir">{{ carta() ? 'Upload a new version' : 'Upload your menu' }}</h2>
+      <h2 id="carta-subir">{{ carta() ? 'Subir una nueva versión' : 'Subí tu carta' }}</h2>
       <div
         class="dropzone"
         [class.active]="dragActive()"
@@ -72,9 +74,9 @@
         (dragleave)="dragActive.set(false)"
         (drop)="onDrop($event)"
       >
-        <p>Drag a PDF here, or</p>
+        <p>Arrastrá un PDF acá, o</p>
         <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="chooseFile()">
-          Choose PDF
+          Elegir PDF
         </button>
         <input
           #fileInput
@@ -88,7 +90,7 @@
       </div>
       @if (progress() !== null) {
         <div class="field">
-          <label for="carta-progress">Uploading…</label>
+          <label for="carta-progress">Subiendo…</label>
           <progress id="carta-progress" max="100" [value]="progress()">{{ progress() }}%</progress>
         </div>
       }

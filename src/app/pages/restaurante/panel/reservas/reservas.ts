@@ -1,8 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
-import { panelErrorMessage, parseLocalDate, toIsoDate } from '../panel-errors';
+import { formatearDia, panelErrorMessage, parseLocalDate, toIsoDate } from '../panel-errors';
 import { EstadoReserva, ReservaPanel } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 
@@ -15,13 +14,13 @@ interface GrupoPorDia {
 }
 
 export const ESTADO_LABEL: Record<EstadoReserva, string> = {
-  PENDIENTE: 'Pending',
-  ACEPTADA: 'Accepted',
-  CANCELADA: 'Cancelled',
+  PENDIENTE: 'Pendiente',
+  ACEPTADA: 'Aceptada',
+  CANCELADA: 'Cancelada',
 };
 
 @Component({
-  imports: [ConfirmDialog, DatePipe],
+  imports: [ConfirmDialog],
   selector: 'app-reservas',
   styleUrl: './reservas.css',
   templateUrl: './reservas.html',
@@ -32,6 +31,7 @@ export class Reservas implements OnInit {
   private readonly today = toIsoDate(new Date());
 
   protected readonly estadoLabel = ESTADO_LABEL;
+  protected readonly formatearDia = formatearDia;
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
@@ -39,7 +39,7 @@ export class Reservas implements OnInit {
   protected readonly reservas = signal<ReservaPanel[]>([]);
   protected readonly filtro = signal<Filtro>('PENDIENTE');
   protected readonly mostrarPasadas = signal(false);
-  /** Id of the reservation being updated, to disable only its buttons. */
+  /** Id de la reserva que se está actualizando, para deshabilitar solo sus botones. */
   protected readonly updatingId = signal<number | null>(null);
 
   private readonly visibles = computed(() =>
@@ -50,10 +50,10 @@ export class Reservas implements OnInit {
     const visibles = this.visibles();
     const count = (estado: EstadoReserva) => visibles.filter((r) => r.estado === estado).length;
     return [
-      { value: 'PENDIENTE' as Filtro, label: 'Pending', count: count('PENDIENTE') },
-      { value: 'ACEPTADA' as Filtro, label: 'Accepted', count: count('ACEPTADA') },
-      { value: 'CANCELADA' as Filtro, label: 'Cancelled', count: count('CANCELADA') },
-      { value: 'TODAS' as Filtro, label: 'All', count: visibles.length },
+      { value: 'PENDIENTE' as Filtro, label: 'Pendientes', count: count('PENDIENTE') },
+      { value: 'ACEPTADA' as Filtro, label: 'Aceptadas', count: count('ACEPTADA') },
+      { value: 'CANCELADA' as Filtro, label: 'Canceladas', count: count('CANCELADA') },
+      { value: 'TODAS' as Filtro, label: 'Todas', count: visibles.length },
     ];
   });
 
@@ -84,7 +84,7 @@ export class Reservas implements OnInit {
     try {
       this.reservas.set(await firstValueFrom(this.panel.getReservas()));
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'Could not load your reservations.'));
+      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tus reservas.'));
     } finally {
       this.loading.set(false);
     }
@@ -104,14 +104,14 @@ export class Reservas implements OnInit {
   ): Promise<void> {
     this.error.set(null);
     this.status.set(null);
-    const quien = `${reserva.nombreCliente}, ${reserva.cantidad} people at ${this.hora(reserva)}`;
+    const quien = `${reserva.nombreCliente}, ${reserva.cantidad} ${reserva.cantidad === 1 ? 'persona' : 'personas'} a las ${this.hora(reserva)}`;
     const confirmed = await this.confirm().open(
       estado === 'ACEPTADA'
-        ? { heading: 'Accept this reservation?', message: quien, confirmLabel: 'Accept' }
+        ? { heading: '¿Aceptar esta reserva?', message: quien, confirmLabel: 'Aceptar' }
         : {
-            heading: 'Cancel this reservation?',
-            message: `${quien}. The customer will lose this reservation.`,
-            confirmLabel: 'Cancel reservation',
+            heading: '¿Cancelar esta reserva?',
+            message: `${quien}. El cliente va a perder esta reserva.`,
+            confirmLabel: 'Cancelar reserva',
             tone: 'danger',
           },
     );
@@ -123,11 +123,11 @@ export class Reservas implements OnInit {
       const updated = await firstValueFrom(this.panel.cambiarEstado(reserva.id, estado));
       this.reservas.update((list) => list.map((r) => (r.id === updated.id ? updated : r)));
       this.status.set(
-        `Reservation for ${reserva.nombreCliente} ${estado === 'ACEPTADA' ? 'accepted' : 'cancelled'}.`,
+        `Reserva de ${reserva.nombreCliente} ${estado === 'ACEPTADA' ? 'aceptada' : 'cancelada'}.`,
       );
     } catch (error) {
       this.error.set(
-        panelErrorMessage(error, 'Could not update the reservation. Please try again.'),
+        panelErrorMessage(error, 'No pudimos actualizar la reserva. Intentá de nuevo.'),
       );
     } finally {
       this.updatingId.set(null);

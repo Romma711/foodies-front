@@ -46,8 +46,8 @@ describe('Reservas', () => {
     ]);
 
     expect(names()).toEqual(['Early', 'Late']);
-    expect(filter('Pending').getAttribute('aria-pressed')).toBe('true');
-    expect(filter('Pending').textContent).toContain('2');
+    expect(filter('Pendientes').getAttribute('aria-pressed')).toBe('true');
+    expect(filter('Pendientes').textContent).toContain('2');
     expect(element.querySelectorAll('section.day')).toHaveLength(1);
   });
 
@@ -58,11 +58,11 @@ describe('Reservas', () => {
       reserva({ id: 4, nombreCliente: 'Past', fecha: daysFromToday(-2) }),
     ]);
 
-    filter('Accepted').click();
+    filter('Aceptadas').click();
     await fixture.whenStable();
     expect(names()).toEqual(['Accepted']);
 
-    filter('All').click();
+    filter('Todas').click();
     const toggle = element.querySelector<HTMLInputElement>('.toggle input')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change'));
@@ -73,7 +73,7 @@ describe('Reservas', () => {
   it('shows the status as text, not only as a color', async () => {
     await render([reserva({ estado: 'PENDIENTE' })]);
 
-    expect(element.querySelector('.badge')?.textContent?.trim()).toBe('Pending');
+    expect(element.querySelector('.badge')?.textContent?.trim()).toBe('Pendiente');
   });
 
   it('accepts a reservation after confirmation and updates it in place', async () => {
@@ -81,7 +81,7 @@ describe('Reservas', () => {
     await render([reserva({ id: 9, nombreCliente: 'Ana Pérez' })]);
 
     element
-      .querySelector<HTMLButtonElement>('[aria-label^="Accept reservation of Ana Pérez"]')!
+      .querySelector<HTMLButtonElement>('[aria-label^="Aceptar la reserva de Ana Pérez"]')!
       .click();
     await settle(fixture);
     const req = http.expectOne({ method: 'PATCH', url: '/api/reservas/9/estado' });
@@ -89,25 +89,33 @@ describe('Reservas', () => {
     req.flush(reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ACEPTADA' }));
     await settle(fixture);
 
-    expect(element.querySelector('[role="status"]')?.textContent).toContain('accepted');
-    filter('Accepted').click();
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('aceptada');
+    filter('Aceptadas').click();
     await fixture.whenStable();
-    expect(element.querySelector('.badge')?.textContent?.trim()).toBe('Accepted');
+    expect(element.querySelector('.badge')?.textContent?.trim()).toBe('Aceptada');
   });
 
   it('does not cancel when the manager goes back', async () => {
     vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(false);
     await render([reserva({ id: 9 })]);
 
-    element.querySelector<HTMLButtonElement>('[aria-label^="Cancel reservation"]')!.click();
+    element.querySelector<HTMLButtonElement>('[aria-label^="Cancelar la reserva"]')!.click();
     await settle(fixture);
 
     http.expectNone({ method: 'PATCH' });
   });
 
+  it('muestra la fecha de cada día en español', async () => {
+    await render([reserva({ id: 1 })]);
+
+    expect(element.querySelector('section.day h2')?.textContent).toMatch(
+      /^\s*[A-ZÁÉ][a-záéíóú]+, \d{1,2} de [a-z]+ de \d{4}/,
+    );
+  });
+
   it('shows an empty state', async () => {
     await render([]);
 
-    expect(element.textContent).toContain('No reservations waiting for your answer.');
+    expect(element.textContent).toContain('No hay reservas esperando tu respuesta.');
   });
 });

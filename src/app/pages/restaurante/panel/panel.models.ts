@@ -9,7 +9,7 @@ export interface Carta {
   actualizadaEn: string | null;
 }
 
-/** `MiRestauranteDTO`: `carta` is null until a menu is uploaded. */
+/** `MiRestauranteDTO`: `carta` es null hasta que se sube una carta. */
 export interface MiRestaurante {
   id: number;
   nombre: string;
@@ -19,7 +19,7 @@ export interface MiRestaurante {
   carta: Carta | null;
 }
 
-/** `RestaurantPatchDTO`: only the fields sent are changed. */
+/** `RestaurantPatchDTO`: solo se modifican los campos enviados. */
 export type MiRestaurantePatch = Partial<
   Pick<MiRestaurante, 'nombre' | 'cupoMaximo' | 'ubicacion' | 'especialidad'>
 >;
@@ -28,7 +28,7 @@ export const ESTADOS_RESERVA = ['PENDIENTE', 'ACEPTADA', 'CANCELADA'] as const;
 
 export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];
 
-/** `ReservaPanelDTO`: `fecha` is `yyyy-MM-dd`, `horarioLlegada` is `HH:mm[:ss]`. */
+/** `ReservaPanelDTO`: `fecha` es `yyyy-MM-dd`, `horarioLlegada` es `HH:mm[:ss]`. */
 export interface ReservaPanel {
   id: number;
   cantidad: number;

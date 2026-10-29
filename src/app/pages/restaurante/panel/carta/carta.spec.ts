@@ -63,7 +63,7 @@ describe('CartaPanel', () => {
 
     await choose(new File(['hello'], 'menu.txt', { type: 'text/plain' }));
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Choose a PDF file.');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Elegí un archivo PDF.');
   });
 
   it('rejects files over 10 MB without calling the backend', async () => {
@@ -73,7 +73,7 @@ describe('CartaPanel', () => {
 
     await choose(big);
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('larger than 10 MB');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('pesa más de 10 MB');
   });
 
   it('uploads a first menu without asking for confirmation', async () => {
@@ -88,7 +88,7 @@ describe('CartaPanel', () => {
 
     expect(open).not.toHaveBeenCalled();
     expect(element.textContent).toContain('nueva.pdf');
-    expect(element.querySelector('[role="status"]')?.textContent).toContain('Menu uploaded');
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Carta subida');
   });
 
   it('asks before replacing the current menu and does nothing when declined', async () => {
@@ -106,14 +106,14 @@ describe('CartaPanel', () => {
     await render(carta);
 
     [...element.querySelectorAll('button')]
-      .find((b) => b.textContent?.trim() === 'Delete')!
+      .find((b) => b.textContent?.trim() === 'Eliminar')!
       .click();
     await settle(fixture);
     http.expectOne({ method: 'DELETE', url: '/api/restaurantes/me/carta' }).flush(null);
     await settle(fixture);
 
     expect(element.textContent).not.toContain('menu.pdf');
-    expect(element.textContent).toContain('Upload your menu');
+    expect(element.textContent).toContain('Subí tu carta');
   });
 
   it('shows a clear message when the backend rejects the file', async () => {
@@ -128,6 +128,6 @@ describe('CartaPanel', () => {
       );
     await settle(fixture);
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('valid PDF');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('PDF válido');
   });
 });

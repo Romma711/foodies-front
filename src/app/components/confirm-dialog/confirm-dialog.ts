@@ -55,7 +55,7 @@ export class ConfirmDialog {
     }
   }
 
-  /** Escape or any other native close counts as "no". */
+  /** Escape o cualquier otro cierre nativo cuenta como "no". */
   protected onClose(): void {
     this.settle(false);
   }

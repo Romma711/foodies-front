@@ -11,7 +11,7 @@ import {
   ReservaPanel,
 } from './panel.models';
 
-/** Restaurant manager API. Every call carries the RESTAURANTE session, never another role's token. */
+/** API del gestor del restaurante. Cada llamada usa la sesión RESTAURANTE, nunca el token de otro rol. */
 @Service()
 export class RestaurantePanelService {
   private readonly http = inject(HttpClient);
@@ -26,7 +26,7 @@ export class RestaurantePanelService {
     return this.http.patch<MiRestaurante>(this.meUrl, patch, { context: withRole('RESTAURANTE') });
   }
 
-  /** Emits upload progress events and finally the stored carta. */
+  /** Emite eventos de progreso de la subida y, al final, la carta guardada. */
   subirCarta(archivo: File): Observable<HttpEvent<Carta>> {
     const body = new FormData();
     body.append('archivo', archivo, archivo.name);

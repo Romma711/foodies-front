@@ -1,19 +1,19 @@
 <header class="page-header">
-  <h1>Reservations</h1>
-  <p class="subtitle">Accept or cancel the reservations of your restaurant.</p>
+  <h1>Reservas</h1>
+  <p class="subtitle">Aceptá o cancelá las reservas de tu restaurante.</p>
 </header>
 
 @if (loading()) {
-  <p role="status">Loading reservations…</p>
+  <p role="status">Cargando reservas…</p>
 } @else if (loadError(); as message) {
   <div class="stack">
     <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Try again</button></div>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
   </div>
 } @else {
   <div class="stack">
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Filter by status">
+      <div class="filters" role="group" aria-label="Filtrar por estado">
         @for (option of filtros(); track option.value) {
           <button
             type="button"
@@ -31,7 +31,7 @@
           [checked]="mostrarPasadas()"
           (change)="mostrarPasadas.set($any($event.target).checked)"
         />
-        Show past reservations
+        Mostrar reservas pasadas
       </label>
     </div>
 
@@ -43,9 +43,9 @@
     @for (grupo of grupos(); track grupo.fecha) {
       <section class="day" [attr.aria-labelledby]="'dia-' + grupo.fecha">
         <h2 [id]="'dia-' + grupo.fecha">
-          {{ grupo.dia | date: 'fullDate' }}
+          {{ formatearDia(grupo.dia) }}
           @if (isToday(grupo.fecha)) {
-            <span class="today">Today</span>
+            <span class="today">Hoy</span>
           }
         </h2>
         <ul class="list">
@@ -53,9 +53,9 @@
             <li class="card reserva">
               <div class="time">{{ hora(reserva) }}</div>
               <div class="who">
-                <p class="name">{{ reserva.nombreCliente || 'Customer' }}</p>
+                <p class="name">{{ reserva.nombreCliente || 'Cliente' }}</p>
                 <p class="muted">
-                  {{ reserva.cantidad }} {{ reserva.cantidad === 1 ? 'person' : 'people' }}
+                  {{ reserva.cantidad }} {{ reserva.cantidad === 1 ? 'persona' : 'personas' }}
                   @if (reserva.telefonoCliente) {
                     · <a [href]="'tel:' + reserva.telefonoCliente">{{ reserva.telefonoCliente }}</a>
                   }
@@ -76,11 +76,11 @@
                       class="btn btn-primary"
                       [disabled]="updatingId() === reserva.id"
                       [attr.aria-label]="
-                        'Accept reservation of ' + reserva.nombreCliente + ' at ' + hora(reserva)
+                        'Aceptar la reserva de ' + reserva.nombreCliente + ' a las ' + hora(reserva)
                       "
                       (click)="cambiarEstado(reserva, 'ACEPTADA')"
                     >
-                      Accept
+                      Aceptar
                     </button>
                   }
                   <button
@@ -88,11 +88,11 @@
                     class="btn btn-secondary"
                     [disabled]="updatingId() === reserva.id"
                     [attr.aria-label]="
-                      'Cancel reservation of ' + reserva.nombreCliente + ' at ' + hora(reserva)
+                      'Cancelar la reserva de ' + reserva.nombreCliente + ' a las ' + hora(reserva)
                     "
                     (click)="cambiarEstado(reserva, 'CANCELADA')"
                   >
-                    Cancel
+                    Cancelar
                   </button>
                 </div>
               }
@@ -103,9 +103,9 @@
     } @empty {
       <p class="card empty">
         @if (filtro() === 'PENDIENTE') {
-          No reservations waiting for your answer.
+          No hay reservas esperando tu respuesta.
         } @else {
-          No reservations to show.
+          No hay reservas para mostrar.
         }
       </p>
     }

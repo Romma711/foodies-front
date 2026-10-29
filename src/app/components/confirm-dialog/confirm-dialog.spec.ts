@@ -16,17 +16,17 @@ describe('ConfirmDialog', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     const result = fixture.componentInstance.open({
-      heading: 'Delete your menu?',
-      message: 'Customers will not see it.',
-      confirmLabel: 'Delete menu',
+      heading: '¿Eliminar tu carta?',
+      message: 'Tus clientes no la van a ver.',
+      confirmLabel: 'Eliminar carta',
       tone: 'danger',
     });
     await fixture.whenStable();
 
-    expect(element.querySelector('h2')?.textContent).toBe('Delete your menu?');
+    expect(element.querySelector('h2')?.textContent).toBe('¿Eliminar tu carta?');
     expect(element.querySelector('dialog')?.hasAttribute('open')).toBe(true);
-    expect(button(element, 'Delete menu').classList).toContain('btn-danger');
-    button(element, 'Delete menu').click();
+    expect(button(element, 'Eliminar carta').classList).toContain('btn-danger');
+    button(element, 'Eliminar carta').click();
     await expect(result).resolves.toBe(true);
     expect(element.querySelector('dialog')?.hasAttribute('open')).toBe(false);
   });
@@ -36,12 +36,12 @@ describe('ConfirmDialog', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     const result = fixture.componentInstance.open({
-      heading: 'Accept?',
+      heading: '¿Aceptar?',
       message: '',
-      confirmLabel: 'Accept',
+      confirmLabel: 'Aceptar',
     });
     await fixture.whenStable();
-    button(element, 'Go back').click();
+    button(element, 'Volver').click();
 
     await expect(result).resolves.toBe(false);
   });

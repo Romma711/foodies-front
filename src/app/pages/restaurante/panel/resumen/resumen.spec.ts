@@ -43,8 +43,8 @@ describe('Resumen', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toBe(
       'La Parrilla',
     );
-    expect(values).toEqual(['2', '2', 'Missing']);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('6 people');
+    expect(values).toEqual(['2', '2', 'Sin cargar']);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('6 personas');
   });
 
   it('offers a retry when loading fails', async () => {
@@ -56,7 +56,7 @@ describe('Resumen', () => {
     await settle(fixture);
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Could not load');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('No pudimos cargar');
     element.querySelector('button')!.click();
     await fixture.whenStable();
     http.expectOne('/api/restaurantes/me').flush(miRestaurante());

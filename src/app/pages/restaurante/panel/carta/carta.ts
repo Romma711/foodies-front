@@ -1,18 +1,17 @@
 import { HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
-import { panelErrorMessage } from '../panel-errors';
+import { formatearFechaHora, panelErrorMessage } from '../panel-errors';
 import { Carta as CartaModel, MAX_CARTA_BYTES } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 
-/** Menu URLs come from our backend: local storage (`/api/files/…`) or the R2 public domain. */
+/** Las URLs de la carta vienen del backend: almacenamiento local (`/api/files/…`) o el dominio público de R2. */
 const PREVIEWABLE_URL = /^(\/api\/files\/|https:\/\/)/;
 
 @Component({
-  imports: [ConfirmDialog, DatePipe],
+  imports: [ConfirmDialog],
   selector: 'app-carta',
   styleUrl: './carta.css',
   templateUrl: './carta.html',
@@ -24,10 +23,11 @@ export class CartaPanel implements OnInit {
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
   private readonly confirm = viewChild.required(ConfirmDialog);
 
+  protected readonly formatearFechaHora = formatearFechaHora;
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
   protected readonly carta = signal<CartaModel | null>(null);
-  /** Upload percentage while uploading, null otherwise. */
+  /** Porcentaje de subida mientras se sube el archivo; null en otro caso. */
   protected readonly progress = signal<number | null>(null);
   protected readonly busy = signal(false);
   protected readonly dragActive = signal(false);
@@ -52,7 +52,7 @@ export class CartaPanel implements OnInit {
       const resto = await firstValueFrom(this.panel.getMiRestaurante());
       this.carta.set(resto.carta);
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'Could not load your menu.'));
+      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tu carta.'));
     } finally {
       this.loading.set(false);
     }
@@ -96,9 +96,9 @@ export class CartaPanel implements OnInit {
     if (
       this.carta() &&
       !(await this.confirm().open({
-        heading: 'Replace your menu?',
-        message: `"${file.name}" will replace the current menu for your customers.`,
-        confirmLabel: 'Replace menu',
+        heading: '¿Reemplazar tu carta?',
+        message: `"${file.name}" va a reemplazar la carta que ven tus clientes.`,
+        confirmLabel: 'Reemplazar carta',
       }))
     ) {
       return;
@@ -112,12 +112,12 @@ export class CartaPanel implements OnInit {
           this.progress.set(Math.round((100 * event.loaded) / event.total));
         } else if (event.type === HttpEventType.Response && event.body) {
           this.carta.set(event.body);
-          this.status.set('Menu uploaded. Customers can see it now.');
+          this.status.set('Carta subida. Tus clientes ya la pueden ver.');
         }
       },
       error: (error: unknown) => {
         this.error.set(
-          panelErrorMessage(error, 'The file could not be uploaded. Make sure it is a valid PDF.'),
+          panelErrorMessage(error, 'No pudimos subir el archivo. Revisá que sea un PDF válido.'),
         );
         this.finishUpload();
       },
@@ -129,9 +129,9 @@ export class CartaPanel implements OnInit {
     this.error.set(null);
     this.status.set(null);
     const confirmed = await this.confirm().open({
-      heading: 'Delete your menu?',
-      message: 'Customers will not see a menu until you upload a new one.',
-      confirmLabel: 'Delete menu',
+      heading: '¿Eliminar tu carta?',
+      message: 'Tus clientes no van a ver ninguna carta hasta que subas una nueva.',
+      confirmLabel: 'Eliminar carta',
       tone: 'danger',
     });
     if (!confirmed) {
@@ -141,9 +141,9 @@ export class CartaPanel implements OnInit {
     try {
       await firstValueFrom(this.panel.eliminarCarta());
       this.carta.set(null);
-      this.status.set('Menu deleted.');
+      this.status.set('Carta eliminada.');
     } catch (error) {
-      this.error.set(panelErrorMessage(error, 'Could not delete the menu. Please try again.'));
+      this.error.set(panelErrorMessage(error, 'No pudimos eliminar la carta. Intentá de nuevo.'));
     } finally {
       this.busy.set(false);
     }
@@ -167,10 +167,10 @@ export class CartaPanel implements OnInit {
 function validate(file: File): string | null {
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
   if (!isPdf) {
-    return 'Choose a PDF file.';
+    return 'Elegí un archivo PDF.';
   }
   if (file.size > MAX_CARTA_BYTES) {
-    return 'The file is larger than 10 MB.';
+    return 'El archivo pesa más de 10 MB.';
   }
   return null;
 }
