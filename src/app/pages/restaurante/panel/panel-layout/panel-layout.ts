@@ -14,5 +14,6 @@ export class PanelLayout {
     { path: 'perfil', label: 'Perfil', exact: false },
     { path: 'carta', label: 'Carta', exact: false },
     { path: 'reservas', label: 'Reservas', exact: false },
+    { path: 'capacidad', label: 'Capacidad', exact: false },
   ];
 }

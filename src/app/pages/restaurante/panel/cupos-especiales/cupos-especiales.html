@@ -1,0 +1,117 @@
+<header class="page-header">
+  <h1>Capacidad especial</h1>
+  <p class="subtitle">
+    Reducí la capacidad de un día puntual, por ejemplo por un evento privado. Los clientes no ven
+    la capacidad: solo se enteran si hay lugar o no.
+  </p>
+</header>
+
+@if (loading()) {
+  <p role="status">Cargando la capacidad especial…</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+  </div>
+} @else {
+  <div class="stack">
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    <p class="visually-hidden" role="status">{{ status() }}</p>
+    @if (status(); as message) {
+      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+    }
+
+    <form class="card stack" novalidate (submit)="onSubmit($event)">
+      <p class="muted">Tu capacidad normal es de {{ cupoMaximo() }} personas por día.</p>
+
+      <div class="fields">
+        <div class="field">
+          <label for="cupo-fecha">Día</label>
+          <input
+            id="cupo-fecha"
+            type="date"
+            [formField]="cupoForm.fecha"
+            [attr.aria-invalid]="cupoForm.fecha().touched() && cupoForm.fecha().invalid()"
+            aria-describedby="cupo-fecha-error"
+          />
+          @if (cupoForm.fecha().touched() && cupoForm.fecha().errors()[0]; as error) {
+            <p id="cupo-fecha-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="cupo-cantidad">Personas ese día</label>
+          <input
+            id="cupo-cantidad"
+            type="number"
+            inputmode="numeric"
+            [formField]="cupoForm.cupo"
+            [attr.aria-invalid]="cupoForm.cupo().touched() && cupoForm.cupo().invalid()"
+            aria-describedby="cupo-cantidad-hint cupo-cantidad-error"
+          />
+          <p id="cupo-cantidad-hint" class="muted">0 si ese día no tomás reservas.</p>
+          @if (cupoForm.cupo().touched() && cupoForm.cupo().errors()[0]; as error) {
+            <p id="cupo-cantidad-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="cupo-motivo">Motivo <span class="muted">(opcional, solo lo ves vos)</span></label>
+        <input
+          id="cupo-motivo"
+          type="text"
+          [formField]="cupoForm.motivo"
+          [attr.aria-invalid]="cupoForm.motivo().touched() && cupoForm.motivo().invalid()"
+          aria-describedby="cupo-motivo-error"
+        />
+        @if (cupoForm.motivo().touched() && cupoForm.motivo().errors()[0]; as error) {
+          <p id="cupo-motivo-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="cupoForm().submitting()">
+          {{ cupoForm().submitting() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+
+    <section class="stack" aria-labelledby="cupos-proximos">
+      <h2 id="cupos-proximos">Próximos días</h2>
+      @if (cupos().length) {
+        <ul class="list">
+          @for (cupo of cupos(); track cupo.fecha) {
+            <li class="card cupo">
+              <div>
+                <p class="dia">{{ formatearFecha(cupo.fecha) }}</p>
+                <p class="muted">
+                  {{ cupo.cupo }} {{ cupo.cupo === 1 ? 'persona' : 'personas' }} ·
+                  {{ cupo.reservadas }} ya reservadas
+                </p>
+                @if (cupo.motivo) {
+                  <p class="muted">{{ cupo.motivo }}</p>
+                }
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                [disabled]="quitando() === cupo.fecha"
+                [attr.aria-label]="'Quitar la capacidad especial del ' + formatearFecha(cupo.fecha)"
+                (click)="quitar(cupo)"
+              >
+                Quitar
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="card empty">No cargaste días con capacidad especial.</p>
+      }
+    </section>
+  </div>
+}
+
+<app-confirm-dialog />

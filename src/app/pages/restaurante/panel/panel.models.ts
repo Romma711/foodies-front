@@ -44,4 +44,21 @@ export interface ReservaPanel {
   telefonoCliente: string | null;
 }
 
+/** `CupoEspecialDTO`: capacidad reducida de un día. `fecha` es `yyyy-MM-dd`. */
+export interface CupoEspecial {
+  fecha: string;
+  cupo: number;
+  motivo: string | null;
+  /** Personas con reservas no canceladas ese día. */
+  reservadas: number;
+}
+
+/** `CupoEspecialRequestDTO` */
+export interface CupoEspecialRequest {
+  cupo: number;
+  motivo: string | null;
+}
+
+export const MAX_MOTIVO_CUPO = 120;
+
 export const MAX_CARTA_BYTES = 10 * 1024 * 1024;

@@ -5,6 +5,8 @@ import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
 import {
   Carta,
+  CupoEspecial,
+  CupoEspecialRequest,
   EstadoReserva,
   MiRestaurante,
   MiRestaurantePatch,
@@ -43,6 +45,25 @@ export class RestaurantePanelService {
 
   getReservas(): Observable<ReservaPanel[]> {
     return this.http.get<ReservaPanel[]>(`${this.meUrl}/reservas`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  getCuposEspeciales(): Observable<CupoEspecial[]> {
+    return this.http.get<CupoEspecial[]>(`${this.meUrl}/cupos-especiales`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** Crea o modifica el cupo especial de `fecha` (`yyyy-MM-dd`). */
+  guardarCupoEspecial(fecha: string, request: CupoEspecialRequest): Observable<CupoEspecial> {
+    return this.http.put<CupoEspecial>(`${this.meUrl}/cupos-especiales/${fecha}`, request, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  eliminarCupoEspecial(fecha: string): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/cupos-especiales/${fecha}`, {
       context: withRole('RESTAURANTE'),
     });
   }
