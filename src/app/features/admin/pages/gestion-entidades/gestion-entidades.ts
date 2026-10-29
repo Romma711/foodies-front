@@ -240,7 +240,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         [attr.aria-label]="
           (pestana() === 'clientes' ? 'Cuenta activa de ' : 'Restaurante activo: ') + nombre
         "
-        [disabled]="procesando() === clave"
+        [disabled]="procesando().has(clave)"
         (click)="cambiar()"
       >
         <span aria-hidden="true">{{ activo ? 'Activo' : 'De baja' }}</span>
@@ -273,8 +273,8 @@ export class GestionEntidades {
   protected readonly error = this.servicio.error;
 
   protected readonly pestana = signal<Pestana>('clientes');
-  /** Key of the switch whose request is in flight ("c4", "r2"), to disable it meanwhile. */
-  protected readonly procesando = signal<string | null>(null);
+  /** Keys of the switches whose request is in flight ("c4", "r2"), each disabled until its own ends. */
+  protected readonly procesando = signal<ReadonlySet<string>>(new Set());
   protected readonly estados = ESTADOS;
   protected readonly pestanas = [
     { id: 'clientes' as const, texto: 'Clientes', cantidad: () => this.clientes().length },
@@ -343,14 +343,23 @@ export class GestionEntidades {
     activo: boolean,
     peticion: Observable<unknown>,
   ): void {
-    this.procesando.set(clave);
+    if (this.procesando().has(clave)) {
+      return;
+    }
+    this.procesando.update((claves) => new Set(claves).add(clave));
+    const liberar = () =>
+      this.procesando.update((claves) => {
+        const restantes = new Set(claves);
+        restantes.delete(clave);
+        return restantes;
+      });
     peticion.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.procesando.set(null);
+        liberar();
         this.toasts.exito(activo ? `${nombre} fue reactivado.` : `${nombre} fue dado de baja.`);
       },
       error: (error: Error) => {
-        this.procesando.set(null);
+        liberar();
         this.toasts.error(error.message);
       },
     });

@@ -1,6 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { EntidadCliente, EntidadRestaurante } from '../../models/entidades-admin';
 import { AdminEntidadesService } from '../../services/admin-entidades.service';
 import { GestionEntidades } from './gestion-entidades';
@@ -139,6 +139,38 @@ describe('GestionEntidades', () => {
 
     expect(host.textContent).toContain('No se puede dar de baja a un administrador');
     expect(host.querySelector('tbody [role="switch"]')?.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('cada interruptor queda deshabilitado hasta que termina su propio pedido', () => {
+    const LUIS: EntidadCliente = {
+      ...ANA,
+      id: 5,
+      nombre: 'Luis',
+      apellido: 'Paz',
+      email: 'luis@mail.com',
+    };
+    clientes.set([ANA, LUIS]);
+    const pedidos = new Map<number, Subject<unknown>>();
+    servicio.cambiarActivoCliente.mockImplementation((id: number) => {
+      const pedido = new Subject<unknown>();
+      pedidos.set(id, pedido);
+      return pedido;
+    });
+    const { fixture, host } = crear();
+    const interruptores = () => host.querySelectorAll<HTMLButtonElement>('tbody [role="switch"]');
+
+    interruptores()[0].click();
+    interruptores()[1].click();
+    fixture.detectChanges();
+    expect([...interruptores()].map((boton) => boton.disabled)).toEqual([true, true]);
+
+    pedidos.get(4)!.next({});
+    pedidos.get(4)!.complete();
+    fixture.detectChanges();
+
+    expect([...interruptores()].map((boton) => boton.disabled)).toEqual([false, true]);
+    interruptores()[1].click();
+    expect(servicio.cambiarActivoCliente).toHaveBeenCalledTimes(2);
   });
 
   it('las pestañas se recorren con las flechas del teclado', () => {
