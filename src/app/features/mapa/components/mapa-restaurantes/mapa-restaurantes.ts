@@ -131,16 +131,24 @@ export class MapaRestaurantes {
       keyboard: true,
     }).bindPopup(popup.elemento, { className: 'popup-restaurante', minWidth: 224, maxWidth: 224 });
 
-    let cargada = false;
+    // Loaded once; after a failure the next opening retries.
+    let estado: 'pendiente' | 'cargando' | 'cargada' = 'pendiente';
     pin.on('popupopen', () => {
-      if (cargada) {
+      if (estado !== 'pendiente') {
         return;
       }
-      cargada = true;
+      estado = 'cargando';
+      popup.mostrarCargando();
       this.suscripciones.add(
         this.calificaciones.promedio(restaurante.id).subscribe({
-          next: (calificacion) => popup.mostrarCalificacion(calificacion),
-          error: () => popup.mostrarCalificacion({ promedio: 0, total: 0 }),
+          next: (calificacion) => {
+            estado = 'cargada';
+            popup.mostrarCalificacion(calificacion);
+          },
+          error: () => {
+            estado = 'pendiente';
+            popup.mostrarError();
+          },
         }),
       );
     });

@@ -6,6 +6,10 @@ import { elementoIconoEspecialidad } from './marcador-especialidad';
 export interface PopupRestaurante {
   elemento: HTMLElement;
   mostrarCalificacion(calificacion: Calificacion): void;
+  /** Shown while the rating is requested again after a failure. */
+  mostrarCargando(): void;
+  /** The rating could not be loaded; the popup retries the next time it opens. */
+  mostrarError(): void;
 }
 
 /**
@@ -59,16 +63,23 @@ export function crearPopupRestaurante(
   cuerpo.append(especialidad, titulo, direccion, calificacion, enlace);
   elemento.append(portada, cuerpo);
 
+  const mostrarTexto = (texto: string) => {
+    calificacion.replaceChildren();
+    calificacion.removeAttribute('aria-label');
+    calificacion.removeAttribute('role');
+    calificacion.textContent = texto;
+  };
+
   return {
     elemento,
+    mostrarCargando: () => mostrarTexto('Cargando calificación…'),
+    mostrarError: () => mostrarTexto('No pudimos cargar la calificación.'),
     mostrarCalificacion({ promedio, total }) {
-      calificacion.replaceChildren();
       if (total === 0) {
-        calificacion.removeAttribute('aria-label');
-        calificacion.removeAttribute('role');
-        calificacion.textContent = 'Sin reseñas todavía';
+        mostrarTexto('Sin reseñas todavía');
         return;
       }
+      calificacion.replaceChildren();
       const valor = Number.isInteger(promedio) ? String(promedio) : promedio.toFixed(1);
       calificacion.setAttribute('role', 'img');
       calificacion.setAttribute(

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { RestauranteListDTO } from '../../../../pages/restaurante/models/restaurante.models';
 import { Calificacion, CalificacionService } from '../../services/calificacion.service';
 import { CENTRO_MAR_DEL_PLATA, MapaRestaurantes } from './mapa-restaurantes';
@@ -140,6 +140,24 @@ describe('MapaRestaurantes', () => {
     expect(popup.querySelector('[data-testid="calificacion"]')?.getAttribute('aria-label')).toBe(
       'Calificación: 3 de 5 (1 reseña)',
     );
+  });
+
+  it('si falla la calificación muestra el error y reintenta al volver a abrir el popup', () => {
+    calificaciones[1] = throwError(() => new Error('sin conexión'));
+    const { host } = crear([PARRILLA]);
+
+    const popup = abrirPopup(host, 'La Parrilla de Tito');
+    expect(popup.querySelector('[data-testid="calificacion"]')?.textContent?.trim()).toBe(
+      'No pudimos cargar la calificación.',
+    );
+
+    calificaciones[1] = of({ promedio: 4, total: 3 });
+    host.querySelector<HTMLElement>('.leaflet-popup-close-button')!.click();
+    const reabierto = abrirPopup(host, 'La Parrilla de Tito');
+
+    expect(
+      reabierto.querySelector('[data-testid="calificacion"]')?.getAttribute('aria-label'),
+    ).toBe('Calificación: 4 de 5 (3 reseñas)');
   });
 
   it('el enlace del popup navega con el router sin recargar la página', () => {
