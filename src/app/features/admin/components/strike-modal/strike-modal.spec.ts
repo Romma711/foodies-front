@@ -104,6 +104,28 @@ describe('StrikeModal', () => {
     expect(boton(host, 'Cancelar').disabled).toBe(true);
   });
 
+  it('Escape no cierra el diálogo mientras se envía el strike', () => {
+    const { fixture, host, cancelaciones } = crear();
+    fixture.componentRef.setInput('enviando', true);
+    fixture.detectChanges();
+
+    const escape = new Event('cancel', { cancelable: true });
+    host.querySelector('dialog')!.dispatchEvent(escape);
+
+    expect(escape.defaultPrevented).toBe(true);
+    expect(host.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+    expect(cancelaciones()).toBe(0);
+  });
+
+  it('Escape sí cierra el diálogo cuando no se está enviando', () => {
+    const { host } = crear();
+
+    const escape = new Event('cancel', { cancelable: true });
+    host.querySelector('dialog')!.dispatchEvent(escape);
+
+    expect(escape.defaultPrevented).toBe(false);
+  });
+
   it('muestra el error que le pasa el padre', () => {
     const { fixture, host } = crear();
 

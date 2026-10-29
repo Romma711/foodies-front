@@ -9,7 +9,8 @@ let siguienteId = 0;
 
 /**
  * Native `<dialog>` to apply a strike with its reason. Presentational: it emits the reason and the
- * parent calls the API, then closes it or passes back `error`. Escape and "Cancelar" close it.
+ * parent calls the API, then closes it or passes back `error`. Escape and "Cancelar" close it,
+ * except while `enviando`.
  */
 @Component({
   selector: 'app-strike-modal',
@@ -19,6 +20,7 @@ let siguienteId = 0;
       class="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-ink-900 shadow-soft backdrop:bg-ink-900/40"
       [attr.aria-labelledby]="ids.titulo"
       [attr.aria-describedby]="ids.descripcion"
+      (cancel)="alPedirCancelar($event)"
       (close)="alCerrar()"
     >
       <form class="p-6" novalidate (submit)="confirmar($event)">
@@ -162,6 +164,13 @@ export class StrikeModal {
       return;
     }
     this.enviar.emit(motivo);
+  }
+
+  /** Escape fires `cancel`; while the strike is being sent it is ignored so the error stays visible. */
+  protected alPedirCancelar(evento: Event): void {
+    if (this.enviando()) {
+      evento.preventDefault();
+    }
   }
 
   /** Escape, "Cancelar" or `cerrar()`: only a user-initiated close counts as cancel. */
