@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservaService } from '../../../features/reservas/services/reserva.service';
-import { RestauranteDetailDTO } from '../models/restaurante.models';
+import { CartaPublicaDTO, RestauranteDetailDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
 import { RestauranteDetail } from './restaurante-detail';
 
@@ -31,6 +31,8 @@ describe('RestauranteDetail', () => {
   let cliente: WritableSignal<boolean>;
   let usuarioId: WritableSignal<number | null>;
   let obtener: ReturnType<typeof vi.fn>;
+  let obtenerCarta: ReturnType<typeof vi.fn>;
+  let carta: CartaPublicaDTO | null;
   let limpiar: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -44,6 +46,14 @@ describe('RestauranteDetail', () => {
       return of(detalle);
     });
     limpiar = vi.fn();
+    carta = {
+      id: 3,
+      nombreArchivo: 'carta.pdf',
+      url: '/api/files/cartas/5/a.pdf',
+      tamanioBytes: 2048,
+      actualizadaEn: '2026-10-20T12:00:00Z',
+    };
+    obtenerCarta = vi.fn(() => of(carta));
 
     TestBed.overrideComponent(RestauranteDetail, {
       remove: { imports: [RestauranteResenas] },
@@ -61,6 +71,7 @@ describe('RestauranteDetail', () => {
             loading: cargando.asReadonly(),
             error: error.asReadonly(),
             obtener,
+            obtenerCarta,
             limpiar,
           },
         },
@@ -108,10 +119,30 @@ describe('RestauranteDetail', () => {
     expect(texto).not.toContain('15');
   });
 
+  it('debería mostrar un botón para ver la carta en una pestaña nueva', () => {
+    const fixture = crearComponente();
+    const enlace = Array.from(
+      fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>,
+    ).find((item) => item.textContent?.includes('Ver carta'));
+
+    expect(obtenerCarta).toHaveBeenCalledWith(5);
+    expect(enlace?.getAttribute('href')).toBe('/api/files/cartas/5/a.pdf');
+    expect(enlace?.getAttribute('target')).toBe('_blank');
+    expect(enlace?.getAttribute('rel')).toBe('noopener');
+  });
+
+  it('no debería mostrar el botón de la carta si el restaurante no subió una', () => {
+    carta = null;
+    const fixture = crearComponente();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Ver carta');
+  });
+
   it('no debería pedir datos si el id no es válido', () => {
     const fixture = crearComponente('no-es-un-id');
 
     expect(obtener).not.toHaveBeenCalled();
+    expect(obtenerCarta).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('El restaurante solicitado no es válido');
   });
 

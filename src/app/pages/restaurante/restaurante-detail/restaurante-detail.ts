@@ -11,6 +11,7 @@ import {
   formatearFechaReserva,
   formatearHora,
 } from '../../../features/reservas/utils/reserva-formato';
+import { CartaPublicaDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
 
 @Component({
@@ -36,6 +37,7 @@ export class RestauranteDetail {
   protected readonly usuarioId = computed(() => this.auth.userId('CLIENTE'));
   protected readonly mostrarFormulario = signal(false);
   protected readonly reservaCreada = signal<ReservaDetailDTO | null>(null);
+  protected readonly carta = signal<CartaPublicaDTO | null>(null);
 
   protected readonly formatearFecha = formatearFechaReserva;
   protected readonly formatearHora = formatearHora;
@@ -85,5 +87,11 @@ export class RestauranteDetail {
       .obtener(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+
+    this.carta.set(null);
+    this.restauranteService
+      .obtenerCarta(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((carta) => this.carta.set(carta));
   }
 }

@@ -127,6 +127,17 @@
               Ver reseñas
             </button>
 
+            @if (carta(); as cartaActual) {
+              <a
+                class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                [href]="cartaActual.url"
+                target="_blank"
+                rel="noopener"
+              >
+                Ver carta<span class="sr-only"> (se abre en una pestaña nueva)</span>
+              </a>
+            }
+
             @if (esCliente()) {
               @if (usuarioId() !== null) {
                 @if (!mostrarFormulario() && !reservaCreada()) {
