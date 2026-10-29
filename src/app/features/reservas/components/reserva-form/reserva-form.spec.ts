@@ -43,7 +43,6 @@ describe('ReservaForm', () => {
   function crearComponente() {
     const fixture = TestBed.createComponent(ReservaForm);
     fixture.componentRef.setInput('restauranteId', 5);
-    fixture.componentRef.setInput('cupoMaximo', 15);
     fixture.componentRef.setInput('usuarioId', 29);
     fixture.detectChanges();
     return fixture;
@@ -77,19 +76,18 @@ describe('ReservaForm', () => {
     expect(emitida).toHaveBeenCalledWith(detalle);
   });
 
-  it('no debería enviar una cantidad mayor al cupo máximo', async () => {
+  it('no debería mostrar la capacidad y deja que el backend decida si hay lugar', async () => {
     const fixture = crearComponente();
     const input = fixture.nativeElement.querySelector('#reserva-cantidad') as HTMLInputElement;
+
+    expect(fixture.nativeElement.textContent).not.toMatch(/capacidad|cupo/i);
 
     input.value = '20';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-
     await enviar(fixture);
-    fixture.detectChanges();
 
-    expect(crear).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('El cupo máximo es de 15 personas.');
+    expect(crear).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 20 }));
   });
 
   it('debería mostrar el error de escritura del servicio', () => {

@@ -20,7 +20,6 @@ describe('RestauranteDetail', () => {
   const detalle: RestauranteDetailDTO = {
     id: 5,
     nombre: 'Ochiwan',
-    cupoMaximo: 15,
     ubicacion: 'San juan 229',
     especialidad: 'ASIATICA',
   };
@@ -116,7 +115,6 @@ describe('RestauranteDetail', () => {
     const texto = fixture.nativeElement.textContent as string;
 
     expect(texto).not.toContain('Capacidad');
-    expect(texto).not.toContain('15');
   });
 
   it('debería mostrar un botón para ver la carta en una pestaña nueva', () => {
