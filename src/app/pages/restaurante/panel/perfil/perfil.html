@@ -85,6 +85,49 @@
       }
     </div>
 
+    <fieldset class="field">
+      <legend>Aceptación automática</legend>
+      <label class="checkbox" for="perfil-auto">
+        <input
+          id="perfil-auto"
+          type="checkbox"
+          [formField]="perfilForm.autoAceptar"
+          aria-describedby="perfil-auto-hint"
+        />
+        Aceptar reservas automáticamente
+      </label>
+      <p id="perfil-auto-hint" class="muted">
+        Las reservas se aceptan solas hasta el porcentaje de la capacidad que elijas. Las que superen
+        ese límite quedan pendientes para que las revises.
+      </p>
+
+      @if (!perfilForm.porcentajeAutoAceptacion().hidden()) {
+        <label for="perfil-porcentaje">Porcentaje de la capacidad (%)</label>
+        <input
+          id="perfil-porcentaje"
+          type="number"
+          inputmode="numeric"
+          [formField]="perfilForm.porcentajeAutoAceptacion"
+          [attr.aria-invalid]="
+            perfilForm.porcentajeAutoAceptacion().touched() &&
+            perfilForm.porcentajeAutoAceptacion().invalid()
+          "
+          aria-describedby="perfil-porcentaje-hint perfil-porcentaje-error"
+        />
+        <p id="perfil-porcentaje-hint" class="muted">
+          Con tu capacidad actual se aceptan solas hasta {{ personasAutoAceptadas() }} personas por
+          día.
+        </p>
+        @if (
+          perfilForm.porcentajeAutoAceptacion().touched() &&
+            perfilForm.porcentajeAutoAceptacion().errors()[0];
+          as error
+        ) {
+          <p id="perfil-porcentaje-error" class="field-error">{{ error.message }}</p>
+        }
+      }
+    </fieldset>
+
     <div class="actions">
       <button type="submit" class="btn btn-primary" [disabled]="perfilForm().submitting()">
         {{ perfilForm().submitting() ? 'Guardando…' : 'Guardar cambios' }}

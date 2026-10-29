@@ -14,6 +14,8 @@ export interface MiRestaurante {
   id: number;
   nombre: string;
   cupoMaximo: number;
+  /** Porcentaje del cupo diario que se acepta solo (0 = apagado). */
+  porcentajeAutoAceptacion: number;
   ubicacion: string;
   especialidad: EspecialidadDeComida;
   carta: Carta | null;
@@ -21,7 +23,10 @@ export interface MiRestaurante {
 
 /** `RestaurantPatchDTO`: solo se modifican los campos enviados. */
 export type MiRestaurantePatch = Partial<
-  Pick<MiRestaurante, 'nombre' | 'cupoMaximo' | 'ubicacion' | 'especialidad'>
+  Pick<
+    MiRestaurante,
+    'nombre' | 'cupoMaximo' | 'porcentajeAutoAceptacion' | 'ubicacion' | 'especialidad'
+  >
 >;
 
 export const ESTADOS_RESERVA = ['PENDIENTE', 'ACEPTADA', 'CANCELADA'] as const;
