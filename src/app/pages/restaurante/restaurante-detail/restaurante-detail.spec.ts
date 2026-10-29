@@ -97,8 +97,15 @@ describe('RestauranteDetail', () => {
     expect(obtener).toHaveBeenCalledWith(5);
     expect(texto).toContain('Ochiwan');
     expect(texto).toContain('San juan 229');
-    expect(texto).toContain('15');
     expect(texto).toContain('Asiática');
+  });
+
+  it('no debería mostrar la capacidad del restaurante', () => {
+    const fixture = crearComponente();
+    const texto = fixture.nativeElement.textContent as string;
+
+    expect(texto).not.toContain('Capacidad');
+    expect(texto).not.toContain('15');
   });
 
   it('no debería pedir datos si el id no es válido', () => {
