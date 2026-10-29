@@ -1,7 +1,7 @@
 import { especialidadLabel } from '../../../core/catalog/especialidades';
 import { RestauranteListDTO } from '../../../pages/restaurante/models/restaurante.models';
 import { Calificacion } from '../services/calificacion.service';
-import { GLIFO_ESPECIALIDAD } from './marcador-especialidad';
+import { elementoIconoEspecialidad } from './marcador-especialidad';
 
 export interface PopupRestaurante {
   elemento: HTMLElement;
@@ -25,10 +25,10 @@ export function crearPopupRestaurante(
 
   const portada = crear(
     'div',
-    'grid h-20 place-items-center bg-gradient-to-br from-brand-100 via-cream-100 to-cream-50 text-3xl',
+    'grid h-20 place-items-center bg-gradient-to-br from-brand-100 via-cream-100 to-cream-50 text-brand-700',
   );
   portada.setAttribute('aria-hidden', 'true');
-  portada.textContent = GLIFO_ESPECIALIDAD[restaurante.especialidad];
+  portada.append(elementoIconoEspecialidad(restaurante.especialidad, 32));
 
   const cuerpo = crear('div', 'p-4');
   const especialidad = crear('p', 'text-xs font-semibold tracking-wide text-brand-700 uppercase');

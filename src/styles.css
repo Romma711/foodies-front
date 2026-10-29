@@ -210,8 +210,8 @@ app-panel-layout {
 }
 
 .marcador .marcador-glifo {
-  font-size: 1.15rem;
-  line-height: 1;
+  display: grid;
+  color: var(--marcador-color, var(--color-brand-600));
   transform: rotate(45deg);
 }
 
