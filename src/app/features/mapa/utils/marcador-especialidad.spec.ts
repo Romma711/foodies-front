@@ -21,6 +21,12 @@ describe('iconoEspecialidad', () => {
     expect(html).toContain('aria-hidden="true"');
     expect(html).not.toMatch(EMOJI);
   });
+
+  it('dibuja la gota en un elemento interno, porque Leaflet pisa el transform del contenedor', () => {
+    const html = String(iconoEspecialidad('CAFE').options.html);
+
+    expect(html).toMatch(/^<span class="marcador-pin"><span class="marcador-glifo"><svg/);
+  });
 });
 
 describe('portada del popup', () => {

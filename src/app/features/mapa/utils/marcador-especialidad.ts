@@ -95,7 +95,7 @@ export function elementoIconoEspecialidad(
 export function iconoEspecialidad(especialidad: EspecialidadDeComida): DivIcon {
   return divIcon({
     className: `marcador marcador-${especialidad.toLowerCase()}`,
-    html: `<span class="marcador-glifo">${svgEspecialidad(especialidad, 18)}</span>`,
+    html: `<span class="marcador-pin"><span class="marcador-glifo">${svgEspecialidad(especialidad, 18)}</span></span>`,
     iconSize: [40, 40],
     iconAnchor: [20, 40],
     popupAnchor: [0, -36],
