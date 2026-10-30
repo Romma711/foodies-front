@@ -1,6 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { NEVER, of, throwError } from 'rxjs';
+import { NEVER, of, Subject, throwError } from 'rxjs';
 import { SolicitudRestaurante } from '../../models/entidades-admin';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 import { SolicitudesRestaurantes } from './solicitudes-restaurantes';
@@ -156,5 +156,53 @@ describe('SolicitudesRestaurantes', () => {
     boton(host, 'Reintentar').click();
     fixture.detectChanges();
     expect(servicio.cargar).toHaveBeenCalledTimes(2);
+  });
+
+  it('cada solicitud queda bloqueada hasta que termina su propio pedido', () => {
+    const SUSHI: SolicitudRestaurante = { ...PASTA, restaurantId: 8, nombre: 'Sushi del Puerto' };
+    solicitudes.set([PASTA, SUSHI]);
+    const pedidos = new Map<number, Subject<unknown>>();
+    servicio.aprobar.mockImplementation((id: number) => {
+      const pedido = new Subject<unknown>();
+      pedidos.set(id, pedido);
+      return pedido;
+    });
+    const { fixture, host } = crear();
+    const aprobar = (nombre: string) =>
+      host.querySelector<HTMLButtonElement>(`button[aria-label="Aprobar ${nombre}"]`)!;
+
+    aprobar('Pasta Nostra').click();
+    aprobar('Sushi del Puerto').click();
+    fixture.detectChanges();
+    expect(aprobar('Pasta Nostra').disabled).toBe(true);
+    expect(aprobar('Sushi del Puerto').disabled).toBe(true);
+
+    pedidos.get(7)!.next({});
+    pedidos.get(7)!.complete();
+    fixture.detectChanges();
+
+    expect(aprobar('Sushi del Puerto').disabled).toBe(true);
+    expect(aprobar('Sushi del Puerto').textContent?.trim()).toBe('Aprobando…');
+    aprobar('Sushi del Puerto').click();
+    expect(servicio.aprobar).toHaveBeenCalledTimes(2);
+  });
+
+  it('terminar una solicitud no cierra la confirmación de rechazo de otra', () => {
+    const SUSHI: SolicitudRestaurante = { ...PASTA, restaurantId: 8, nombre: 'Sushi del Puerto' };
+    solicitudes.set([PASTA, SUSHI]);
+    const pedido = new Subject<unknown>();
+    servicio.aprobar.mockReturnValue(pedido);
+    const { fixture, host } = crear();
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="Aprobar Pasta Nostra"]')!.click();
+    host
+      .querySelector<HTMLButtonElement>('button[aria-label="Rechazar Sushi del Puerto"]')!
+      .click();
+    fixture.detectChanges();
+    pedido.next({});
+    pedido.complete();
+    fixture.detectChanges();
+
+    expect(boton(host, 'Confirmar rechazo')).toBeDefined();
   });
 });
