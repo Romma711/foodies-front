@@ -1,9 +1,14 @@
-import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength, required, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
-import { formatearDia, panelErrorMessage, parseLocalDate, toIsoDate } from '../panel-errors';
+import {
+  formatearDia,
+  mensajeDeNegocio,
+  panelErrorMessage,
+  parseLocalDate,
+  toIsoDate,
+} from '../panel-errors';
 import { CupoEspecial, MAX_MOTIVO_CUPO } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 
@@ -130,13 +135,4 @@ export class CuposEspeciales implements OnInit {
       this.quitando.set(null);
     }
   }
-}
-
-/** Los 400 de esta sección traen un mensaje pensado para el encargado (por ejemplo, cuántas personas ya reservaron). */
-function mensajeDeNegocio(error: unknown): string | null {
-  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
-    const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
-    return typeof mensaje === 'string' && mensaje.trim() ? mensaje : null;
-  }
-  return null;
 }

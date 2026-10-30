@@ -1,0 +1,107 @@
+<header class="page-header">
+  <h1>Fotos</h1>
+  <p class="subtitle">
+    La portada es la foto que ven los clientes en la lista de restaurantes y arriba de la página de
+    tu restaurante. Tenés que tener entre {{ minFotos }} y {{ maxFotos }} fotos.
+  </p>
+</header>
+
+@if (loading()) {
+  <p role="status">Cargando tus fotos…</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+  </div>
+} @else {
+  <div class="stack">
+    @if (!completas()) {
+      <p class="alert alert-warning faltan">Te faltan fotos: subí al menos {{ minFotos }}.</p>
+    }
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    <p class="visually-hidden" role="status">{{ status() }}</p>
+    @if (status(); as message) {
+      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+    }
+
+    @if (fotos().length) {
+      <ul class="grid">
+        @for (foto of fotos(); track foto.id; let i = $index) {
+          <li class="card foto">
+            <div class="marco">
+              <img class="imagen" [src]="foto.url" [alt]="'Foto ' + (i + 1)" />
+              @if (foto.portada) {
+                <span class="badge-portada">Portada</span>
+              }
+            </div>
+            <div class="actions">
+              @if (!foto.portada) {
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [disabled]="busy()"
+                  [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"
+                  (click)="usarComoPortada(foto)"
+                >
+                  Usar como portada
+                </button>
+              }
+              <button
+                type="button"
+                class="btn btn-secondary"
+                [disabled]="busy()"
+                [attr.aria-label]="'Reemplazar la foto ' + (i + 1)"
+                (click)="reemplazar(foto)"
+              >
+                Reemplazar
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                [disabled]="busy() || foto.portada || !puedeBorrar()"
+                [attr.aria-label]="'Eliminar la foto ' + (i + 1)"
+                (click)="eliminar(foto)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+      <p class="muted">La portada no se puede borrar: elegí otra antes.</p>
+      @if (!puedeBorrar()) {
+        <p class="muted">Necesitás al menos {{ minFotos }} fotos: subí otra antes de borrar.</p>
+      }
+    } @else {
+      <p class="card empty">Todavía no subiste fotos.</p>
+    }
+
+    <div class="actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="busy() || !puedeAgregar()"
+        (click)="subir()"
+      >
+        Agregar foto
+      </button>
+    </div>
+    @if (!puedeAgregar()) {
+      <p class="muted">Llegaste al máximo de {{ maxFotos }} fotos.</p>
+    }
+
+    <input
+      #fileInput
+      class="visually-hidden"
+      type="file"
+      [accept]="accept"
+      tabindex="-1"
+      aria-hidden="true"
+      (change)="onFileChosen($event)"
+    />
+  </div>
+}
+
+<app-confirm-dialog />

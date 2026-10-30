@@ -3,6 +3,7 @@ import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
+import { Foto } from '../../../core/catalog/fotos';
 import {
   Carta,
   CupoEspecial,
@@ -64,6 +65,37 @@ export class RestaurantePanelService {
 
   eliminarCupoEspecial(fecha: string): Observable<void> {
     return this.http.delete<void>(`${this.meUrl}/cupos-especiales/${fecha}`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  getFotos(): Observable<Foto[]> {
+    return this.http.get<Foto[]>(`${this.meUrl}/fotos`, { context: withRole('RESTAURANTE') });
+  }
+
+  subirFoto(archivo: File): Observable<Foto> {
+    const body = new FormData();
+    body.append('archivo', archivo, archivo.name);
+    return this.http.post<Foto>(`${this.meUrl}/fotos`, body, { context: withRole('RESTAURANTE') });
+  }
+
+  reemplazarFoto(fotoId: number, archivo: File): Observable<Foto> {
+    const body = new FormData();
+    body.append('archivo', archivo, archivo.name);
+    return this.http.put<Foto>(`${this.meUrl}/fotos/${fotoId}`, body, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** Devuelve todas las fotos, con la nueva portada primero. */
+  elegirPortada(fotoId: number): Observable<Foto[]> {
+    return this.http.put<Foto[]>(`${this.meUrl}/fotos/${fotoId}/portada`, null, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  eliminarFoto(fotoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/fotos/${fotoId}`, {
       context: withRole('RESTAURANTE'),
     });
   }
