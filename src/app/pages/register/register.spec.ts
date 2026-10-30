@@ -26,6 +26,35 @@ describe('Register', () => {
     }
   };
 
+  const imagen = (nombre: string) => new File(['img'], nombre, { type: 'image/jpeg' });
+
+  const choose = (fixture: ComponentFixture<Register>, selector: string, files: File[]) => {
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(selector)!;
+    Object.defineProperty(input, 'files', { value: files, configurable: true });
+    input.dispatchEvent(new Event('change'));
+  };
+
+  const portada = (fixture: ComponentFixture<Register>, n: number) =>
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      `input[aria-label="Usar la foto ${n} como portada"]`,
+    )!;
+
+  const quitar = (fixture: ComponentFixture<Register>, nombre: string) =>
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      `button[aria-label="Quitar ${nombre}"]`,
+    )!;
+
+  const fillRestaurante = (fixture: ComponentFixture<Register>) =>
+    fill(fixture, {
+      '#register-restaurant-name': 'La Parrilla',
+      '#register-email': 'luis@foodies.com',
+      '#register-password': 'secret123',
+      '#register-phone': '2235551111',
+      '#register-address': 'Calle 1',
+      '#register-specialty': 'PARRILLA',
+      '#register-capacity': '40',
+    });
+
   const submitForm = async (fixture: ComponentFixture<Register>) => {
     (fixture.nativeElement as HTMLElement)
       .querySelector('form')!
@@ -77,22 +106,19 @@ describe('Register', () => {
     req.flush({});
   });
 
-  it('sends RegistroRestauranteRequestDTO and shows the pending approval notice', async () => {
+  it('sends RegistroRestauranteRequestDTO with the photos and shows the pending approval notice', async () => {
     const fixture = await render('RESTAURANTE');
-    fill(fixture, {
-      '#register-restaurant-name': 'La Parrilla',
-      '#register-email': 'luis@foodies.com',
-      '#register-password': 'secret123',
-      '#register-phone': '2235551111',
-      '#register-address': 'Calle 1',
-      '#register-specialty': 'PARRILLA',
-      '#register-capacity': '40',
-    });
+    fillRestaurante(fixture);
+    choose(fixture, '#register-photos', ['1', '2', '3'].map((n) => imagen(`foto-${n}.jpg`)));
+    await fixture.whenStable();
+    portada(fixture, 2).click();
+    await fixture.whenStable();
 
     await submitForm(fixture);
 
     const req = http.expectOne('/api/auth/register/restaurante');
-    expect(req.request.body).toEqual({
+    const body = req.request.body as FormData;
+    expect(JSON.parse(await (body.get('datos') as Blob).text())).toEqual({
       email: 'luis@foodies.com',
       password: 'secret123',
       telefono: '2235551111',
@@ -101,6 +127,12 @@ describe('Register', () => {
       especialidadDeComida: 'PARRILLA',
       cupoMaximo: 40,
     });
+    expect((body.getAll('fotos') as File[]).map((f) => f.name)).toEqual([
+      'foto-1.jpg',
+      'foto-2.jpg',
+      'foto-3.jpg',
+    ]);
+    expect(body.get('portada')).toBe('1');
     req.flush({});
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
@@ -108,6 +140,79 @@ describe('Register', () => {
     expect(
       (fixture.nativeElement as HTMLElement).querySelector('[role="status"]')?.textContent,
     ).toContain('Un administrador debe aprobar tu restaurante');
+  });
+
+  it('does not register a restaurant without the required photos', async () => {
+    const fixture = await render('RESTAURANTE');
+    fillRestaurante(fixture);
+    choose(fixture, '#register-photos', [imagen('foto-1.jpg'), imagen('foto-2.jpg')]);
+    await fixture.whenStable();
+
+    await submitForm(fixture);
+
+    http.expectNone('/api/auth/register/restaurante');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Subí al menos 3 fotos del restaurante.',
+    );
+  });
+
+  it('rejects photos that are not images or are larger than 5 MB', async () => {
+    const fixture = await render('RESTAURANTE');
+    fillRestaurante(fixture);
+    const grande = imagen('grande.jpg');
+    Object.defineProperty(grande, 'size', { value: 5 * 1024 * 1024 + 1 });
+    choose(fixture, '#register-photos', [
+      new File(['x'], 'menu.pdf', { type: 'application/pdf' }),
+      imagen('foto-1.jpg'),
+      grande,
+    ]);
+    await fixture.whenStable();
+
+    await submitForm(fixture);
+    http.expectNone('/api/auth/register/restaurante');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      '"menu.pdf" no es una imagen JPG, PNG o WebP.',
+    );
+
+    quitar(fixture, 'menu.pdf').click();
+    choose(fixture, '#register-photos', [imagen('foto-2.jpg')]);
+    await fixture.whenStable();
+    await submitForm(fixture);
+    http.expectNone('/api/auth/register/restaurante');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      '"grande.jpg" pesa más de 5 MB.',
+    );
+  });
+
+  it('keeps at most 5 photos and uses the first one as cover until another is chosen', async () => {
+    const fixture = await render('RESTAURANTE');
+    choose(
+      fixture,
+      '#register-photos',
+      ['1', '2', '3', '4', '5', '6'].map((n) => imagen(`foto-${n}.jpg`)),
+    );
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('.foto-registro')).toHaveLength(5);
+    expect(element.querySelector<HTMLInputElement>('#register-photos')!.disabled).toBe(true);
+    expect(portada(fixture, 1).checked).toBe(true);
+
+    // Si se quita la portada, la primera que queda pasa a ser la portada.
+    portada(fixture, 3).click();
+    await fixture.whenStable();
+    quitar(fixture, 'foto-3.jpg').click();
+    await fixture.whenStable();
+    expect(element.querySelectorAll('.foto-registro')).toHaveLength(4);
+    expect(portada(fixture, 1).checked).toBe(true);
+
+    // Si se quita una anterior a la portada, la portada sigue siendo la misma foto.
+    portada(fixture, 3).click();
+    await fixture.whenStable();
+    quitar(fixture, 'foto-1.jpg').click();
+    await fixture.whenStable();
+    expect(portada(fixture, 2).checked).toBe(true);
+    expect(element.querySelectorAll('.foto-registro')[1].textContent).toContain('foto-4.jpg');
   });
 
   describe('when the backend rejects the registration', () => {

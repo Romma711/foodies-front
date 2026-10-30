@@ -16,11 +16,13 @@ import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../cor
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
 import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
+import { errorDeFotosRegistro } from '../../core/catalog/fotos';
 import {
   backendMessage,
   CONNECTION_ERROR_MESSAGE,
   isConnectionError,
 } from '../../core/http/api-error';
+import { RegistroFotos } from './registro-fotos/registro-fotos';
 
 interface RegisterFormModel {
   nombre: string;
@@ -35,7 +37,7 @@ interface RegisterFormModel {
 }
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, RegistroFotos, RouterLink],
   selector: 'app-register',
   templateUrl: './register.html',
 })
@@ -53,6 +55,10 @@ export class Register {
   protected readonly errorMessage = signal<string | null>(null);
   /** Restaurant requests need admin approval, so they stay here with a confirmation. */
   protected readonly pendingApproval = signal(false);
+  protected readonly fotos = signal<File[]>([]);
+  protected readonly portada = signal(0);
+  /** Los errores de las fotos aparecen después del primer intento de enviar. */
+  protected readonly intentoEnviar = signal(false);
 
   private readonly model = signal<RegisterFormModel>({
     nombre: '',
@@ -95,6 +101,10 @@ export class Register {
   protected async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
     this.errorMessage.set(null);
+    this.intentoEnviar.set(true);
+    if (this.isRestaurante() && errorDeFotosRegistro(this.fotos())) {
+      return;
+    }
     await submit(this.registerForm, async () => {
       try {
         await firstValueFrom(this.register());
@@ -113,7 +123,8 @@ export class Register {
   private register(): Observable<unknown> {
     const value = this.model();
     if (this.isRestaurante() && value.especialidadDeComida !== '') {
-      return this.auth.registerRestaurante({
+      return this.auth.registerRestaurante(
+        {
         email: value.email,
         password: value.password,
         telefono: value.telefono,
@@ -121,7 +132,9 @@ export class Register {
         direccion: value.direccion,
         especialidadDeComida: value.especialidadDeComida,
         cupoMaximo: value.cupoMaximo,
-      });
+        },
+        { fotos: this.fotos(), portada: this.portada() },
+      );
     }
     return this.auth.registerCliente({
       nombre: value.nombre,

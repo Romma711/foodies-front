@@ -52,8 +52,18 @@ export class AuthService {
   }
 
   /** Creates a `ROLE_PENDIENTE` account; it can sign in only after an admin approves it. */
-  registerRestaurante(request: RegisterRestauranteRequest): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/auth/register/restaurante`, request);
+  /** Multipart: `datos` en JSON, las `fotos` y en `portada` el índice de la que se muestra en el catálogo. */
+  registerRestaurante(
+    request: RegisterRestauranteRequest,
+    { fotos, portada }: { fotos: readonly File[]; portada: number },
+  ): Observable<unknown> {
+    const body = new FormData();
+    body.append('datos', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    for (const foto of fotos) {
+      body.append('fotos', foto, foto.name);
+    }
+    body.append('portada', String(portada));
+    return this.http.post(`${this.apiUrl}/auth/register/restaurante`, body);
   }
 
   logout(role: Role): void {

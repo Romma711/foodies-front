@@ -122,7 +122,7 @@ describe('AuthService', () => {
     expect(localStorage.getItem('foodies.token.CLIENTE')).toBeNull();
   });
 
-  it('registers clients and restaurants with the backend DTOs', () => {
+  it('registers clients and restaurants with the backend DTOs', async () => {
     const cliente = {
       nombre: 'Ana',
       apellido: 'Pérez',
@@ -139,13 +139,28 @@ describe('AuthService', () => {
       especialidadDeComida: 'PARRILLA' as const,
       cupoMaximo: 40,
     };
+    const fotos = [
+      new File(['img'], 'foto-1.jpg', { type: 'image/jpeg' }),
+      new File(['img'], 'foto-2.png', { type: 'image/png' }),
+      new File(['img'], 'foto-3.png', { type: 'image/png' }),
+    ];
     auth.registerCliente(cliente).subscribe();
-    auth.registerRestaurante(restaurante).subscribe();
+    auth.registerRestaurante(restaurante, { fotos, portada: 1 }).subscribe();
 
     const clienteReq = http.expectOne(`${API}/auth/register/cliente`);
     const restauranteReq = http.expectOne(`${API}/auth/register/restaurante`);
     expect(clienteReq.request.body).toEqual(cliente);
-    expect(restauranteReq.request.body).toEqual(restaurante);
+    // El registro del restaurante es multipart: los datos van en JSON y las fotos como archivos.
+    const body = restauranteReq.request.body as FormData;
+    const datos = body.get('datos') as Blob;
+    expect(datos.type).toBe('application/json');
+    expect(JSON.parse(await datos.text())).toEqual(restaurante);
+    expect((body.getAll('fotos') as File[]).map((f) => f.name)).toEqual([
+      'foto-1.jpg',
+      'foto-2.png',
+      'foto-3.png',
+    ]);
+    expect(body.get('portada')).toBe('1');
     clienteReq.flush({});
     restauranteReq.flush({});
   });
