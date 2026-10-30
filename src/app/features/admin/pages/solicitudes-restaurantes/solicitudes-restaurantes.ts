@@ -108,7 +108,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
                     type="button"
                     class="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
                     [id]="'cancelar-' + solicitud.restaurantId"
-                    [disabled]="procesandoId() === solicitud.restaurantId"
+                    [disabled]="procesando().has(solicitud.restaurantId)"
                     (click)="cancelar(solicitud.restaurantId)"
                   >
                     Cancelar
@@ -116,13 +116,11 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
                   <button
                     type="button"
                     class="rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-60"
-                    [disabled]="procesandoId() === solicitud.restaurantId"
+                    [disabled]="procesando().has(solicitud.restaurantId)"
                     (click)="rechazar(solicitud)"
                   >
                     {{
-                      procesandoId() === solicitud.restaurantId
-                        ? 'Rechazando…'
-                        : 'Confirmar rechazo'
+                      procesando().has(solicitud.restaurantId) ? 'Rechazando…' : 'Confirmar rechazo'
                     }}
                   </button>
                 } @else {
@@ -131,7 +129,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
                     class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100 disabled:opacity-60"
                     [id]="'rechazar-' + solicitud.restaurantId"
                     [attr.aria-label]="'Rechazar ' + solicitud.nombre"
-                    [disabled]="procesandoId() === solicitud.restaurantId"
+                    [disabled]="procesando().has(solicitud.restaurantId)"
                     (click)="pedirConfirmacion(solicitud.restaurantId)"
                   >
                     Rechazar
@@ -140,10 +138,10 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
                     type="button"
                     class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 disabled:cursor-progress disabled:opacity-60"
                     [attr.aria-label]="'Aprobar ' + solicitud.nombre"
-                    [disabled]="procesandoId() === solicitud.restaurantId"
+                    [disabled]="procesando().has(solicitud.restaurantId)"
                     (click)="aprobar(solicitud)"
                   >
-                    {{ procesandoId() === solicitud.restaurantId ? 'Aprobando…' : 'Aprobar' }}
+                    {{ procesando().has(solicitud.restaurantId) ? 'Aprobando…' : 'Aprobar' }}
                   </button>
                 }
               </div>
@@ -194,7 +192,8 @@ export class SolicitudesRestaurantes {
   protected readonly error = this.servicio.error;
 
   protected readonly confirmandoId = signal<number | null>(null);
-  protected readonly procesandoId = signal<number | null>(null);
+  /** Requests whose approve/reject call is in flight; each card stays disabled until its own ends. */
+  protected readonly procesando = signal<ReadonlySet<number>>(new Set());
   protected readonly skeletons = [1, 2];
 
   constructor() {
@@ -223,35 +222,62 @@ export class SolicitudesRestaurantes {
   }
 
   protected aprobar(solicitud: SolicitudRestaurante): void {
-    this.procesandoId.set(solicitud.restaurantId);
+    if (!this.empezar(solicitud.restaurantId)) {
+      return;
+    }
     this.servicio
       .aprobar(solicitud.restaurantId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.terminar(`${solicitud.nombre} fue aprobado y ya aparece en el catálogo.`),
-        error: (error: Error) => this.fallar(error),
+        next: () =>
+          this.terminar(
+            solicitud.restaurantId,
+            `${solicitud.nombre} fue aprobado y ya aparece en el catálogo.`,
+          ),
+        error: (error: Error) => this.fallar(solicitud.restaurantId, error),
       });
   }
 
   protected rechazar(solicitud: SolicitudRestaurante): void {
-    this.procesandoId.set(solicitud.restaurantId);
+    if (!this.empezar(solicitud.restaurantId)) {
+      return;
+    }
     this.servicio
       .rechazar(solicitud.restaurantId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.terminar(`Se rechazó la solicitud de ${solicitud.nombre}.`),
-        error: (error: Error) => this.fallar(error),
+        next: () =>
+          this.terminar(solicitud.restaurantId, `Se rechazó la solicitud de ${solicitud.nombre}.`),
+        error: (error: Error) => this.fallar(solicitud.restaurantId, error),
       });
   }
 
-  private terminar(mensaje: string): void {
-    this.procesandoId.set(null);
-    this.confirmandoId.set(null);
+  /** Marks the request as in flight; false when it already was, so no duplicate call goes out. */
+  private empezar(id: number): boolean {
+    if (this.procesando().has(id)) {
+      return false;
+    }
+    this.procesando.update((ids) => new Set(ids).add(id));
+    return true;
+  }
+
+  private liberar(id: number): void {
+    this.procesando.update((ids) => {
+      const restantes = new Set(ids);
+      restantes.delete(id);
+      return restantes;
+    });
+  }
+
+  private terminar(id: number, mensaje: string): void {
+    this.liberar(id);
+    // Only this request's confirmation closes; another card may be asking its own.
+    this.confirmandoId.update((actual) => (actual === id ? null : actual));
     this.toasts.exito(mensaje);
   }
 
-  private fallar(error: Error): void {
-    this.procesandoId.set(null);
+  private fallar(id: number, error: Error): void {
+    this.liberar(id);
     this.toasts.error(error.message);
   }
 
