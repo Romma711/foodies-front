@@ -2,6 +2,7 @@ import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { CalificacionService } from '../../../features/mapa/services/calificacion.service';
 import { RestauranteListDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
 import { RestauranteList } from './restaurante-list';
@@ -27,6 +28,10 @@ describe('RestauranteList', () => {
       imports: [RestauranteList],
       providers: [
         provideRouter([]),
+        {
+          provide: CalificacionService,
+          useValue: { promedio: vi.fn(() => of({ promedio: 0, total: 0 })) },
+        },
         {
           provide: RestauranteService,
           useValue: {
@@ -83,5 +88,35 @@ describe('RestauranteList', () => {
     fixture.detectChanges();
 
     expect(listar).toHaveBeenCalledTimes(2);
+  });
+  it('arranca en la vista de lista con el selector marcando "Lista"', () => {
+    const fixture = crearComponente();
+    const host = fixture.nativeElement as HTMLElement;
+
+    const lista = host.querySelector<HTMLButtonElement>('[data-testid="vista-lista"]');
+    const mapa = host.querySelector<HTMLButtonElement>('[data-testid="vista-mapa"]');
+    expect(lista?.getAttribute('aria-pressed')).toBe('true');
+    expect(mapa?.getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('app-mapa-restaurantes')).toBeNull();
+  });
+
+  it('muestra el mapa al elegir la vista "Mapa" y vuelve a la lista', () => {
+    const fixture = crearComponente();
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-testid="vista-mapa"]')!.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('app-mapa-restaurantes')).not.toBeNull();
+    expect(host.querySelectorAll('ul > li').length).toBe(0);
+    expect(host.querySelector('[data-testid="vista-mapa"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+
+    host.querySelector<HTMLButtonElement>('[data-testid="vista-lista"]')!.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('app-mapa-restaurantes')).toBeNull();
+    expect(host.querySelectorAll('ul > li').length).toBe(2);
   });
 });

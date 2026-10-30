@@ -6,6 +6,9 @@ export interface RestauranteListDTO {
   nombre: string;
   ubicacion: string;
   especialidad: EspecialidadDeComida;
+  /** Map coordinates; null (or missing on older backends) until an admin sets the location. */
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 /** `RestaurantDetailDTO` */
