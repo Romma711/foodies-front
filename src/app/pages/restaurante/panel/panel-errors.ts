@@ -19,6 +19,18 @@ export function panelErrorMessage(error: unknown, fallback: string): string {
   }
 }
 
+/**
+ * Mensaje de un 400 de reglas de negocio, pensado para el encargado (por ejemplo, cuántas personas ya reservaron
+ * o cuántas fotos faltan). Null si el error es de otro tipo.
+ */
+export function mensajeDeNegocio(error: unknown): string | null {
+  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
+    const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
+    return typeof mensaje === 'string' && mensaje.trim() ? mensaje : null;
+  }
+  return null;
+}
+
 /** Las fechas de reserva llegan como `yyyy-MM-dd`; se leen como fecha local, no como medianoche UTC. */
 export function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split('-').map(Number);

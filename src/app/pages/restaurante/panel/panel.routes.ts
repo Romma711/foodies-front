@@ -29,6 +29,11 @@ export const panelRoutes: Routes = [
           import('./cupos-especiales/cupos-especiales').then((m) => m.CuposEspeciales),
       },
       {
+        path: 'fotos',
+        title: 'Fotos · Foodies',
+        loadComponent: () => import('./fotos/fotos').then((m) => m.FotosPanel),
+      },
+      {
         path: 'reservas',
         title: 'Reservas · Foodies',
         loadComponent: () => import('./reservas/reservas').then((m) => m.Reservas),

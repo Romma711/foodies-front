@@ -1,5 +1,7 @@
 .confirm {
   width: min(28rem, calc(100vw - 2rem));
+  /* El reset de Tailwind pone `margin: 0` en todo; sin esto el modal queda arriba a la izquierda. */
+  margin: auto;
   padding: var(--space-6);
   color: var(--color-fg);
   background: var(--color-surface);

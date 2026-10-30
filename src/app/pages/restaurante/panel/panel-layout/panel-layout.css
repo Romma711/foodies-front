@@ -1,5 +1,7 @@
 .panel {
   display: grid;
+  /* Sin `minmax(0, …)` la columna crece con el menú y el `overflow-x` de la lista nunca actúa. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   max-width: 72rem;
   margin: 0 auto;

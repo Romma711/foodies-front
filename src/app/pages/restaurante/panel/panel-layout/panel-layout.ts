@@ -13,6 +13,7 @@ export class PanelLayout {
     { path: '.', label: 'Resumen', exact: true },
     { path: 'perfil', label: 'Perfil', exact: false },
     { path: 'carta', label: 'Carta', exact: false },
+    { path: 'fotos', label: 'Fotos', exact: false },
     { path: 'reservas', label: 'Reservas', exact: false },
     { path: 'capacidad', label: 'Capacidad', exact: false },
   ];
