@@ -9,22 +9,22 @@ export const panelRoutes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'Overview · Foodies',
+        title: 'Resumen · Foodies',
         loadComponent: () => import('./resumen/resumen').then((m) => m.Resumen),
       },
       {
         path: 'perfil',
-        title: 'Profile · Foodies',
+        title: 'Perfil · Foodies',
         loadComponent: () => import('./perfil/perfil').then((m) => m.Perfil),
       },
       {
         path: 'carta',
-        title: 'Menu · Foodies',
+        title: 'Carta · Foodies',
         loadComponent: () => import('./carta/carta').then((m) => m.CartaPanel),
       },
       {
         path: 'reservas',
-        title: 'Reservations · Foodies',
+        title: 'Reservas · Foodies',
         loadComponent: () => import('./reservas/reservas').then((m) => m.Reservas),
       },
     ],

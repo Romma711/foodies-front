@@ -1,8 +1,12 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Service, inject, signal } from '@angular/core';
-import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { RestauranteDetailDTO, RestauranteListDTO } from '../models/restaurante.models';
+import {
+  CartaPublicaDTO,
+  RestauranteDetailDTO,
+  RestauranteListDTO,
+} from '../models/restaurante.models';
 
 @Service()
 export class RestauranteService {
@@ -39,6 +43,13 @@ export class RestauranteService {
         .get<RestauranteDetailDTO>(`${this.apiUrl}/${id}`)
         .pipe(tap((restaurante) => this._restaurante.set(restaurante))),
     );
+  }
+
+  /** La carta es opcional: si el restaurante no subió una (404) o falla el pedido, devuelve null. */
+  obtenerCarta(id: number): Observable<CartaPublicaDTO | null> {
+    return this.http
+      .get<CartaPublicaDTO>(`${this.apiUrl}/${id}/carta`)
+      .pipe(catchError(() => of(null)));
   }
 
   private ejecutarLectura<T>(request: Observable<T>): Observable<T> {

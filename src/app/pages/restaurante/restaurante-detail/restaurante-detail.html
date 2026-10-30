@@ -109,14 +109,7 @@
             {{ resto.ubicacion }}
           </p>
 
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
-              <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Capacidad</p>
-              <p class="mt-1 text-2xl font-extrabold tracking-tight text-ink-900">
-                {{ resto.cupoMaximo }}
-                <span class="text-sm font-semibold text-ink-500">personas</span>
-              </p>
-            </div>
+          <div class="mt-6 grid gap-4">
             <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
               <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Especialidad</p>
               <p class="mt-1 text-lg font-extrabold tracking-tight text-ink-900">
@@ -133,6 +126,17 @@
             >
               Ver reseñas
             </button>
+
+            @if (carta(); as cartaActual) {
+              <a
+                class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                [href]="cartaActual.url"
+                target="_blank"
+                rel="noopener"
+              >
+                Ver carta<span class="sr-only"> (se abre en una pestaña nueva)</span>
+              </a>
+            }
 
             @if (esCliente()) {
               @if (usuarioId() !== null) {

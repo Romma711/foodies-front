@@ -10,7 +10,7 @@ import { MiRestaurante, ReservaPanel } from './panel.models';
 
 export const RESTAURANTE_TOKEN = fakeJwt({ roles: ['ROLE_ENCARGADO'], exp: futureExp() });
 
-/** Signs in a restaurant manager and wires HTTP through the real auth interceptor. */
+/** Inicia sesión como gestor de restaurante y pasa el HTTP por el interceptor de auth real. */
 export function providePanelTesting(): (Provider | EnvironmentProviders)[] {
   localStorage.clear();
   localStorage.setItem('foodies.token.RESTAURANTE', RESTAURANTE_TOKEN);

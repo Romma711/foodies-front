@@ -44,10 +44,10 @@ describe('restaurant panel routes', () => {
 
     expect(TestBed.inject(Router).url).toBe('/restaurante/carta');
     expect(
-      harness.routeNativeElement?.querySelector('nav[aria-label="Restaurant panel"]'),
+      harness.routeNativeElement?.querySelector('nav[aria-label="Panel del restaurante"]'),
     ).not.toBeNull();
     expect(
       harness.routeNativeElement?.querySelector('a[aria-current="page"]')?.textContent?.trim(),
-    ).toBe('Menu');
+    ).toBe('Carta');
   });
 });

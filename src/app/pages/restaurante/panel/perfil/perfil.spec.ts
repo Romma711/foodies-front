@@ -57,7 +57,7 @@ describe('Perfil', () => {
     req.flush(miRestaurante({ nombre: 'Nueva Parrilla', cupoMaximo: 55 }));
     await settle(fixture);
 
-    expect(element.querySelector('[role="status"]')?.textContent).toContain('Changes saved.');
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Cambios guardados.');
   });
 
   it('does not save an invalid capacity', async () => {
@@ -66,6 +66,6 @@ describe('Perfil', () => {
     await submitForm();
 
     http.expectNone({ method: 'PATCH' });
-    expect(element.textContent).toContain('Capacity must be at least 1.');
+    expect(element.textContent).toContain('La capacidad debe ser al menos 1.');
   });
 });
