@@ -226,7 +226,6 @@
           } @else if (mostrarFormulario() && usuarioId(); as userId) {
             <app-reserva-form
               [restauranteId]="id()"
-              [cupoMaximo]="resto.cupoMaximo"
               [usuarioId]="userId"
               (creada)="alCrear($event)"
               (cancelada)="cerrarFormulario()"

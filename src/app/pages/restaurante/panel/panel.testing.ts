@@ -32,6 +32,7 @@ export function miRestaurante(overrides: Partial<MiRestaurante> = {}): MiRestaur
     id: 7,
     nombre: 'La Parrilla',
     cupoMaximo: 40,
+    porcentajeAutoAceptacion: 0,
     ubicacion: 'Calle 1',
     especialidad: 'PARRILLA',
     carta: null,

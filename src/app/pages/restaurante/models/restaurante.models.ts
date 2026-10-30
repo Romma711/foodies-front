@@ -21,7 +21,6 @@ export interface CartaPublicaDTO {
 export interface RestauranteDetailDTO {
   id: number;
   nombre: string;
-  cupoMaximo: number;
   ubicacion: string;
   especialidad: EspecialidadDeComida;
 }
