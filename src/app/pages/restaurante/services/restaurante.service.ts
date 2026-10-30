@@ -4,6 +4,7 @@ import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs
 import { environment } from '../../../../environments/environment';
 import {
   CartaPublicaDTO,
+  FotoPublicaDTO,
   RestauranteDetailDTO,
   RestauranteListDTO,
 } from '../models/restaurante.models';
@@ -50,6 +51,16 @@ export class RestauranteService {
     return this.http
       .get<CartaPublicaDTO>(`${this.apiUrl}/${id}/carta`)
       .pipe(catchError(() => of(null)));
+  }
+
+  /** Las fotos son opcionales en el detalle: si falla el pedido, se muestra sin galería. */
+  obtenerFotos(id: number): Observable<FotoPublicaDTO[]> {
+    return this.http
+      .get<FotoPublicaDTO[] | null>(`${this.apiUrl}/${id}/fotos`)
+      .pipe(
+        map((fotos) => fotos ?? []),
+        catchError(() => of([])),
+      );
   }
 
   private ejecutarLectura<T>(request: Observable<T>): Observable<T> {

@@ -8,8 +8,20 @@ import { RestauranteList } from './restaurante-list';
 
 describe('RestauranteList', () => {
   const restaurantesMock: RestauranteListDTO[] = [
-    { id: 5, nombre: 'Ochiwan', ubicacion: 'San juan 229', especialidad: 'ASIATICA' },
-    { id: 6, nombre: 'La Trattoria', ubicacion: 'Av. Siempre Viva 742', especialidad: 'PASTAS' },
+    {
+      id: 5,
+      nombre: 'Ochiwan',
+      ubicacion: 'San juan 229',
+      especialidad: 'ASIATICA',
+      fotoPortada: '/api/files/fotos/5/portada.jpg',
+    },
+    {
+      id: 6,
+      nombre: 'La Trattoria',
+      ubicacion: 'Av. Siempre Viva 742',
+      especialidad: 'PASTAS',
+      fotoPortada: null,
+    },
   ];
 
   let restaurantes: WritableSignal<RestauranteListDTO[]>;
@@ -55,6 +67,17 @@ describe('RestauranteList', () => {
     expect(texto).toContain('Ochiwan');
     expect(texto).toContain('San juan 229');
     expect(texto).toContain('Asiática');
+  });
+
+  it('debería usar la portada como miniatura, y la portada genérica si no hay foto', () => {
+    const fixture = crearComponente();
+    const tarjetas = fixture.nativeElement.querySelectorAll('li') as NodeListOf<HTMLElement>;
+
+    expect(tarjetas[0].querySelector('img.portada')?.getAttribute('src')).toBe(
+      '/api/files/fotos/5/portada.jpg',
+    );
+    expect(tarjetas[1].querySelector('img.portada')).toBeNull();
+    expect(tarjetas[1].textContent).toContain('L');
   });
 
   it('debería mostrar el estado de carga', () => {

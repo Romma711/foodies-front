@@ -6,6 +6,15 @@ export interface RestauranteListDTO {
   nombre: string;
   ubicacion: string;
   especialidad: EspecialidadDeComida;
+  /** Portada elegida por el restaurante; null si todavía no cargó fotos. */
+  fotoPortada: string | null;
+}
+
+/** `FotoDTO` público. La portada viene primero. */
+export interface FotoPublicaDTO {
+  id: number;
+  url: string;
+  portada: boolean;
 }
 
 /** `RestaurantDetailDTO` */

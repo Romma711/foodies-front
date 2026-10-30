@@ -11,7 +11,7 @@ import {
   formatearFechaReserva,
   formatearHora,
 } from '../../../features/reservas/utils/reserva-formato';
-import { CartaPublicaDTO } from '../models/restaurante.models';
+import { CartaPublicaDTO, FotoPublicaDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
 
 @Component({
@@ -38,6 +38,9 @@ export class RestauranteDetail {
   protected readonly mostrarFormulario = signal(false);
   protected readonly reservaCreada = signal<ReservaDetailDTO | null>(null);
   protected readonly carta = signal<CartaPublicaDTO | null>(null);
+  protected readonly fotos = signal<FotoPublicaDTO[]>([]);
+  protected readonly portada = computed(() => this.fotos().find((f) => f.portada) ?? null);
+  protected readonly galeria = computed(() => this.fotos().filter((f) => !f.portada));
 
   protected readonly formatearFecha = formatearFechaReserva;
   protected readonly formatearHora = formatearHora;
@@ -93,5 +96,11 @@ export class RestauranteDetail {
       .obtenerCarta(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((carta) => this.carta.set(carta));
+
+    this.fotos.set([]);
+    this.restauranteService
+      .obtenerFotos(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((fotos) => this.fotos.set(fotos));
   }
 }
