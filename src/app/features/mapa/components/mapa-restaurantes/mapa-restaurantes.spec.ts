@@ -12,6 +12,7 @@ const PARRILLA: RestauranteListDTO = {
   especialidad: 'PARRILLA',
   latitud: -38.0,
   longitud: -57.55,
+  fotoPortada: null,
 };
 const CAFE: RestauranteListDTO = {
   id: 2,
@@ -20,6 +21,7 @@ const CAFE: RestauranteListDTO = {
   especialidad: 'CAFE',
   latitud: -38.01,
   longitud: -57.54,
+  fotoPortada: null,
 };
 const SIN_UBICACION: RestauranteListDTO = {
   id: 3,
@@ -28,6 +30,7 @@ const SIN_UBICACION: RestauranteListDTO = {
   especialidad: 'PASTAS',
   latitud: null,
   longitud: null,
+  fotoPortada: null,
 };
 
 describe('MapaRestaurantes', () => {

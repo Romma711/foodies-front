@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin } from 'rxjs';
+import { ESPECIALIDAD_LABELS } from '../../../../core/catalog/especialidades';
 import { panelErrorMessage, toIsoDate } from '../panel-errors';
 import { MiRestaurante, ReservaPanel } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
@@ -14,6 +15,7 @@ import { RestaurantePanelService } from '../restaurante-panel.service';
 export class Resumen implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
 
+  protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly restaurante = signal<MiRestaurante | null>(null);
@@ -47,7 +49,7 @@ export class Resumen implements OnInit {
       this.restaurante.set(restaurante);
       this.reservas.set(reservas);
     } catch (error) {
-      this.error.set(panelErrorMessage(error, 'Could not load your restaurant.'));
+      this.error.set(panelErrorMessage(error, 'No pudimos cargar tu restaurante.'));
     } finally {
       this.loading.set(false);
     }

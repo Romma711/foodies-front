@@ -80,8 +80,20 @@
     } @else if (restaurante(); as resto) {
       <div class="mt-6 grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:items-start">
         <section
-          class="rounded-3xl border border-line/70 bg-white/90 p-6 shadow-soft backdrop-blur sm:p-8"
+          class="overflow-hidden rounded-3xl border border-line/70 bg-white/90 shadow-soft backdrop-blur"
         >
+          <div
+            class="relative h-56 bg-gradient-to-br from-brand-100 via-cream-100 to-cream-50 sm:h-72"
+          >
+            @if (portada(); as foto) {
+              <img
+                [src]="foto.url"
+                [alt]="'Portada de ' + resto.nombre"
+                class="portada absolute inset-0 size-full object-cover"
+              />
+            }
+          </div>
+          <div class="p-6 sm:p-8">
           <span
             class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold tracking-wide text-brand-700 uppercase ring-1 ring-brand-100"
           >
@@ -109,14 +121,7 @@
             {{ resto.ubicacion }}
           </p>
 
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
-              <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Capacidad</p>
-              <p class="mt-1 text-2xl font-extrabold tracking-tight text-ink-900">
-                {{ resto.cupoMaximo }}
-                <span class="text-sm font-semibold text-ink-500">personas</span>
-              </p>
-            </div>
+          <div class="mt-6 grid gap-4">
             <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
               <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Especialidad</p>
               <p class="mt-1 text-lg font-extrabold tracking-tight text-ink-900">
@@ -133,6 +138,17 @@
             >
               Ver reseñas
             </button>
+
+            @if (carta(); as cartaActual) {
+              <a
+                class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                [href]="cartaActual.url"
+                target="_blank"
+                rel="noopener"
+              >
+                Ver carta<span class="sr-only"> (se abre en una pestaña nueva)</span>
+              </a>
+            }
 
             @if (esCliente()) {
               @if (usuarioId() !== null) {
@@ -164,8 +180,36 @@
           </div>
 
           <p class="mt-6 text-sm leading-6 text-ink-500">
-            Las reservas quedan pendientes de confirmación por parte del restaurante.
+            Según el restaurante, tu reserva puede confirmarse al instante o quedar pendiente hasta
+            que la revisen.
           </p>
+
+          @if (galeria().length) {
+            <div class="mt-8">
+              <h2 class="text-sm font-bold tracking-wide text-ink-500 uppercase">Fotos</h2>
+              <ul class="galeria mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                @for (foto of galeria(); track foto.id; let i = $index) {
+                  <li>
+                    <a
+                      [href]="foto.url"
+                      target="_blank"
+                      rel="noopener"
+                      class="block overflow-hidden rounded-2xl ring-1 ring-line/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                    >
+                      <img
+                        [src]="foto.url"
+                        [alt]="resto.nombre + ', foto ' + (i + 1)"
+                        loading="lazy"
+                        class="aspect-[4/3] w-full object-cover transition hover:scale-105"
+                      />
+                      <span class="sr-only"> (se abre en una pestaña nueva)</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+          </div>
         </section>
 
         <div class="space-y-4">
@@ -222,7 +266,6 @@
           } @else if (mostrarFormulario() && usuarioId(); as userId) {
             <app-reserva-form
               [restauranteId]="id()"
-              [cupoMaximo]="resto.cupoMaximo"
               [usuarioId]="userId"
               (creada)="alCrear($event)"
               (cancelada)="cerrarFormulario()"

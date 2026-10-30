@@ -31,6 +31,7 @@ describe('Accesibilidad del mapa de restaurantes', () => {
         especialidad: 'PARRILLA',
         latitud: -38.0,
         longitud: -57.55,
+        fotoPortada: null,
       },
       { id: 2, nombre: 'Pasta Nostra', ubicacion: 'Alem 3000', especialidad: 'PASTAS' },
     ]);

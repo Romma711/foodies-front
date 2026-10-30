@@ -35,7 +35,6 @@ export class ReservaForm {
   private readonly reservaService = inject(ReservaService);
 
   readonly restauranteId = input.required<number>();
-  readonly cupoMaximo = input.required<number>();
   readonly usuarioId = input.required<number>();
 
   readonly creada = output<ReservaDetailDTO>();
@@ -86,12 +85,6 @@ export class ReservaForm {
       }
       if (cantidad < 1) {
         return { kind: 'min', message: 'Reservá al menos para 1 persona.' };
-      }
-      if (cantidad > this.cupoMaximo()) {
-        return {
-          kind: 'max',
-          message: `El cupo máximo es de ${this.cupoMaximo()} personas.`,
-        };
       }
       return null;
     });

@@ -37,8 +37,8 @@ describe('portada del popup', () => {
         nombre: 'El Muelle',
         ubicacion: 'Costa 1',
         especialidad: 'PESCADOS',
-        cupoMaximo: 10,
-      } as Parameters<typeof crearPopupRestaurante>[0],
+        fotoPortada: null,
+      },
       () => undefined,
     );
 

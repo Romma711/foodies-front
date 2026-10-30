@@ -6,7 +6,11 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservaService } from '../../../features/reservas/services/reserva.service';
-import { RestauranteDetailDTO } from '../models/restaurante.models';
+import {
+  CartaPublicaDTO,
+  FotoPublicaDTO,
+  RestauranteDetailDTO,
+} from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
 import { RestauranteDetail } from './restaurante-detail';
 
@@ -20,7 +24,6 @@ describe('RestauranteDetail', () => {
   const detalle: RestauranteDetailDTO = {
     id: 5,
     nombre: 'Ochiwan',
-    cupoMaximo: 15,
     ubicacion: 'San juan 229',
     especialidad: 'ASIATICA',
   };
@@ -31,6 +34,10 @@ describe('RestauranteDetail', () => {
   let cliente: WritableSignal<boolean>;
   let usuarioId: WritableSignal<number | null>;
   let obtener: ReturnType<typeof vi.fn>;
+  let obtenerCarta: ReturnType<typeof vi.fn>;
+  let obtenerFotos: ReturnType<typeof vi.fn>;
+  let fotos: FotoPublicaDTO[];
+  let carta: CartaPublicaDTO | null;
   let limpiar: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -44,6 +51,20 @@ describe('RestauranteDetail', () => {
       return of(detalle);
     });
     limpiar = vi.fn();
+    carta = {
+      id: 3,
+      nombreArchivo: 'carta.pdf',
+      url: '/api/files/cartas/5/a.pdf',
+      tamanioBytes: 2048,
+      actualizadaEn: '2026-10-20T12:00:00Z',
+    };
+    obtenerCarta = vi.fn(() => of(carta));
+    fotos = [
+      { id: 1, url: '/api/files/fotos/5/portada.jpg', portada: true },
+      { id: 2, url: '/api/files/fotos/5/foto-1.jpg', portada: false },
+      { id: 3, url: '/api/files/fotos/5/foto-2.jpg', portada: false },
+    ];
+    obtenerFotos = vi.fn(() => of(fotos));
 
     TestBed.overrideComponent(RestauranteDetail, {
       remove: { imports: [RestauranteResenas] },
@@ -61,6 +82,8 @@ describe('RestauranteDetail', () => {
             loading: cargando.asReadonly(),
             error: error.asReadonly(),
             obtener,
+            obtenerCarta,
+            obtenerFotos,
             limpiar,
           },
         },
@@ -97,14 +120,63 @@ describe('RestauranteDetail', () => {
     expect(obtener).toHaveBeenCalledWith(5);
     expect(texto).toContain('Ochiwan');
     expect(texto).toContain('San juan 229');
-    expect(texto).toContain('15');
     expect(texto).toContain('Asiática');
+  });
+
+  it('no debería mostrar la capacidad del restaurante', () => {
+    const fixture = crearComponente();
+    const texto = fixture.nativeElement.textContent as string;
+
+    expect(texto).not.toContain('Capacidad');
+  });
+
+  it('debería mostrar un botón para ver la carta en una pestaña nueva', () => {
+    const fixture = crearComponente();
+    const enlace = Array.from(
+      fixture.nativeElement.querySelectorAll('a') as NodeListOf<HTMLAnchorElement>,
+    ).find((item) => item.textContent?.includes('Ver carta'));
+
+    expect(obtenerCarta).toHaveBeenCalledWith(5);
+    expect(enlace?.getAttribute('href')).toBe('/api/files/cartas/5/a.pdf');
+    expect(enlace?.getAttribute('target')).toBe('_blank');
+    expect(enlace?.getAttribute('rel')).toBe('noopener');
+  });
+
+  it('no debería mostrar el botón de la carta si el restaurante no subió una', () => {
+    carta = null;
+    const fixture = crearComponente();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Ver carta');
+  });
+
+  it('debería mostrar la portada elegida arriba y las demás fotos en una galería', () => {
+    const fixture = crearComponente();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(obtenerFotos).toHaveBeenCalledWith(5);
+    expect(element.querySelector('img.portada')?.getAttribute('src')).toBe(
+      '/api/files/fotos/5/portada.jpg',
+    );
+    expect(element.querySelector('img.portada')?.getAttribute('alt')).toBe('Portada de Ochiwan');
+    const galeria = [...element.querySelectorAll('.galeria a')].map((a) => a.getAttribute('href'));
+    expect(galeria).toEqual(['/api/files/fotos/5/foto-1.jpg', '/api/files/fotos/5/foto-2.jpg']);
+  });
+
+  it('debería mostrar la portada genérica y sin galería si el restaurante no tiene fotos', () => {
+    fotos = [];
+    const fixture = crearComponente();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('img.portada')).toBeNull();
+    expect(element.querySelector('.galeria')).toBeNull();
+    expect(element.textContent).toContain('Ochiwan');
   });
 
   it('no debería pedir datos si el id no es válido', () => {
     const fixture = crearComponente('no-es-un-id');
 
     expect(obtener).not.toHaveBeenCalled();
+    expect(obtenerCarta).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('El restaurante solicitado no es válido');
   });
 

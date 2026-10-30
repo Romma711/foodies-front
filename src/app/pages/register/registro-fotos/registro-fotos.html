@@ -1,0 +1,59 @@
+<fieldset class="space-y-4" aria-describedby="register-photos-hint">
+  <legend class="text-sm font-bold text-ink-900">Fotos del restaurante</legend>
+  <p id="register-photos-hint" class="text-xs text-ink-500">
+    Entre {{ minFotos }} y {{ maxFotos }} fotos. Elegí cuál es la portada: es la que ven los
+    clientes en la lista de restaurantes. JPG, PNG o WebP de hasta 5 MB.
+  </p>
+
+  <div>
+    <label for="register-photos" class="text-sm font-semibold text-ink-900">
+      Fotos ({{ fotos().length }} de {{ maxFotos }})
+    </label>
+    <input
+      id="register-photos"
+      type="file"
+      multiple
+      [accept]="accept"
+      [disabled]="completas()"
+      (change)="agregar($event)"
+      class="mt-2 block w-full text-sm text-ink-700 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:font-semibold file:text-brand-700 disabled:opacity-60"
+    />
+    @if (fotos().length) {
+      <ul class="mt-2 grid gap-2">
+        @for (archivo of fotos(); track $index; let i = $index) {
+          <li class="foto-registro flex items-center gap-3">
+            @if (preview(archivo); as url) {
+              <img [src]="url" alt="" class="size-12 rounded-lg object-cover" />
+            }
+            <span class="text-xs text-ink-700">{{ archivo.name }}</span>
+            <label class="ml-auto flex items-center gap-1.5 text-xs font-semibold text-ink-700">
+              <input
+                type="radio"
+                name="register-portada"
+                class="accent-brand-700"
+                [checked]="portada() === i"
+                [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"
+                (change)="portada.set(i)"
+              />
+              Portada
+            </label>
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-brand-700"
+              [attr.aria-label]="'Quitar ' + archivo.name"
+              (click)="quitar(i)"
+            >
+              Quitar
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (mostrarErrores() && error(); as mensaje) {
+    <p id="register-photos-error" class="text-xs font-medium text-red-700" role="alert">
+      {{ mensaje }}
+    </p>
+  }
+</fieldset>

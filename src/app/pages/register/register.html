@@ -241,6 +241,12 @@
                 </p>
               }
             </div>
+
+            <app-registro-fotos
+              [(fotos)]="fotos"
+              [(portada)]="portada"
+              [mostrarErrores]="intentoEnviar()"
+            />
           } @else {
             <div>
               <label for="register-first-name" class="text-sm font-bold text-ink-900">

@@ -3,15 +3,18 @@ import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
+import { Foto } from '../../../core/catalog/fotos';
 import {
   Carta,
+  CupoEspecial,
+  CupoEspecialRequest,
   EstadoReserva,
   MiRestaurante,
   MiRestaurantePatch,
   ReservaPanel,
 } from './panel.models';
 
-/** Restaurant manager API. Every call carries the RESTAURANTE session, never another role's token. */
+/** API del gestor del restaurante. Cada llamada usa la sesión RESTAURANTE, nunca el token de otro rol. */
 @Service()
 export class RestaurantePanelService {
   private readonly http = inject(HttpClient);
@@ -26,7 +29,7 @@ export class RestaurantePanelService {
     return this.http.patch<MiRestaurante>(this.meUrl, patch, { context: withRole('RESTAURANTE') });
   }
 
-  /** Emits upload progress events and finally the stored carta. */
+  /** Emite eventos de progreso de la subida y, al final, la carta guardada. */
   subirCarta(archivo: File): Observable<HttpEvent<Carta>> {
     const body = new FormData();
     body.append('archivo', archivo, archivo.name);
@@ -43,6 +46,56 @@ export class RestaurantePanelService {
 
   getReservas(): Observable<ReservaPanel[]> {
     return this.http.get<ReservaPanel[]>(`${this.meUrl}/reservas`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  getCuposEspeciales(): Observable<CupoEspecial[]> {
+    return this.http.get<CupoEspecial[]>(`${this.meUrl}/cupos-especiales`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** Crea o modifica el cupo especial de `fecha` (`yyyy-MM-dd`). */
+  guardarCupoEspecial(fecha: string, request: CupoEspecialRequest): Observable<CupoEspecial> {
+    return this.http.put<CupoEspecial>(`${this.meUrl}/cupos-especiales/${fecha}`, request, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  eliminarCupoEspecial(fecha: string): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/cupos-especiales/${fecha}`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  getFotos(): Observable<Foto[]> {
+    return this.http.get<Foto[]>(`${this.meUrl}/fotos`, { context: withRole('RESTAURANTE') });
+  }
+
+  subirFoto(archivo: File): Observable<Foto> {
+    const body = new FormData();
+    body.append('archivo', archivo, archivo.name);
+    return this.http.post<Foto>(`${this.meUrl}/fotos`, body, { context: withRole('RESTAURANTE') });
+  }
+
+  reemplazarFoto(fotoId: number, archivo: File): Observable<Foto> {
+    const body = new FormData();
+    body.append('archivo', archivo, archivo.name);
+    return this.http.put<Foto>(`${this.meUrl}/fotos/${fotoId}`, body, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** Devuelve todas las fotos, con la nueva portada primero. */
+  elegirPortada(fotoId: number): Observable<Foto[]> {
+    return this.http.put<Foto[]>(`${this.meUrl}/fotos/${fotoId}/portada`, null, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  eliminarFoto(fotoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/fotos/${fotoId}`, {
       context: withRole('RESTAURANTE'),
     });
   }
