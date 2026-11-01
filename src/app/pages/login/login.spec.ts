@@ -49,7 +49,8 @@ describe('Login', () => {
     http.expectNone(() => true);
   });
 
-  it('shows an error when the account belongs to another portal', async () => {
+  it('sends a client account to the client portal instead of failing', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     type('#login-email', 'ana@foodies.com');
     type('#login-password', 'secret123');
     await submitForm();
@@ -58,6 +59,23 @@ describe('Login', () => {
       .expectOne(() => true)
       .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_CLIENTE'], exp: futureExp() })}` });
     // Let the rejected login settle inside the async submit action before rendering.
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(String(navigate.mock.calls[0][0])).toBe('/login?email=ana@foodies.com');
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(localStorage.getItem('foodies.token.CLIENTE')).toBeNull();
+  });
+
+  it('shows an error when the account has no portal role', async () => {
+    type('#login-email', 'nuevo@foodies.com');
+    type('#login-password', 'secret123');
+    await submitForm();
+
+    http
+      .expectOne(() => true)
+      .flush({ Token: `Bearer ${fakeJwt({ roles: ['ROLE_PENDIENTE'], exp: futureExp() })}` });
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
 

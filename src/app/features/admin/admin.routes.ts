@@ -17,6 +17,20 @@ export const ADMIN_ROUTES: Routes = [
           import('./pages/dashboard-admin/dashboard-admin').then((m) => m.DashboardAdmin),
       },
       {
+        path: 'aceptar',
+        title: 'Aceptar restaurantes | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/solicitudes-restaurantes/solicitudes-restaurantes').then(
+            (m) => m.SolicitudesRestaurantes,
+          ),
+      },
+      {
+        path: 'aceptar/:usuarioId',
+        title: 'Solicitud de restaurante | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/detalle-solicitud/detalle-solicitud').then((m) => m.DetalleSolicitud),
+      },
+      {
         path: 'moderacion',
         title: 'Moderación | Admin Foodies',
         loadComponent: () =>

@@ -88,6 +88,12 @@ export class AuthService {
     return this.token(role) !== null;
   }
 
+  /** The token's subject (the account email), shown in the dashboards' sidebar. */
+  subject(role: Role): string | null {
+    const token = this.token(role);
+    return token ? (decodeJwt(token)?.sub ?? null) : null;
+  }
+
   /** Backend user id from the role's token, used when creating reservations. */
   userId(role: Role): number | null {
     const token = this.token(role);

@@ -99,6 +99,22 @@ describe('AuthService', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
+  it('exposes the subject of a live token only', () => {
+    localStorage.setItem(
+      'foodies.token.ADMIN',
+      fakeJwt({ sub: 'admin@foodies.com', roles: ['ROLE_ADMIN'], exp: futureExp() }),
+    );
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    auth = TestBed.inject(AuthService);
+    http = TestBed.inject(HttpTestingController);
+
+    expect(auth.subject('ADMIN')).toBe('admin@foodies.com');
+    expect(auth.subject('CLIENTE')).toBeNull();
+  });
+
   it('logout only clears the given role', () => {
     localStorage.setItem(
       'foodies.token.CLIENTE',

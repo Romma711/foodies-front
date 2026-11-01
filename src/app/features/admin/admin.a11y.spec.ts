@@ -12,6 +12,9 @@ import { MetricasAdmin } from './models/metricas-admin';
 import { ResenaModeracion } from './models/resena-moderacion';
 import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
 import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
+import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
+import { AdminSolicitudesService } from './services/admin-solicitudes.service';
+import { solicitud } from './services/admin-solicitudes.service.spec';
 import { AdminMetricasService } from './services/admin-metricas.service';
 import { AdminModeracionService } from './services/admin-moderacion.service';
 
@@ -44,12 +47,14 @@ describe('Accesibilidad del panel de administración', () => {
   let cargandoMetricas: WritableSignal<boolean>;
   let errorMetricas: WritableSignal<string | null>;
   let lista: WritableSignal<ResenaModeracion[]>;
+  let pendientes: WritableSignal<ReturnType<typeof solicitud>[]>;
 
   beforeEach(async () => {
     datos = signal<MetricasAdmin | null>(metricas);
     cargandoMetricas = signal(false);
     errorMetricas = signal<string | null>(null);
     lista = signal(resenas);
+    pendientes = signal([solicitud(), solicitud({ id: 13, nombre: 'Ochiwan', fotos: [] })]);
 
     await TestBed.configureTestingModule({
       providers: [
@@ -68,7 +73,7 @@ describe('Accesibilidad del panel de administración', () => {
           provide: PIE_CHART_FACTORY,
           useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
         },
-        { provide: AuthService, useValue: { logout: vi.fn() } },
+        { provide: AuthService, useValue: { logout: vi.fn(), subject: () => 'admin@foodies.com' } },
         {
           provide: AdminMetricasService,
           useValue: {
@@ -76,6 +81,15 @@ describe('Accesibilidad del panel de administración', () => {
             cargando: cargandoMetricas.asReadonly(),
             error: errorMetricas.asReadonly(),
             cargar: vi.fn(() => of(metricas)),
+          },
+        },
+        {
+          provide: AdminSolicitudesService,
+          useValue: {
+            solicitudes: pendientes.asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of(pendientes())),
           },
         },
         {
@@ -135,5 +149,13 @@ describe('Accesibilidad del panel de administración', () => {
   it('ModeracionResenas vacía', async () => {
     lista.set([]);
     await sinViolaciones(TestBed.createComponent(ModeracionResenas));
+  });
+
+  it('SolicitudesRestaurantes con pendientes y vacía', async () => {
+    const fixture = TestBed.createComponent(SolicitudesRestaurantes);
+    await sinViolaciones(fixture);
+
+    pendientes.set([]);
+    await sinViolaciones(fixture);
   });
 });

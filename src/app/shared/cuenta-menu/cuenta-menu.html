@@ -1,0 +1,23 @@
+<!-- Siempre en el DOM: `aria-controls` tiene que apuntar a un id que exista. -->
+<div id="cuenta-menu" class="cuenta-menu" [hidden]="!abierta()">
+  <button #salirBoton type="button" class="cuenta-salir" (click)="cerrarSesion.emit()">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />
+    </svg>
+    Cerrar sesión
+  </button>
+</div>
+<button
+  #cuentaBoton
+  type="button"
+  class="cuenta-btn"
+  aria-controls="cuenta-menu"
+  [attr.aria-expanded]="abierta()"
+  (click)="alternar()"
+>
+  <span class="cuenta-inicial" aria-hidden="true">{{ inicial() }}</span>
+  <span class="cuenta-nombre">{{ nombre() }}</span>
+  <svg class="cuenta-chevron" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m7 15 5-5 5 5" />
+  </svg>
+</button>

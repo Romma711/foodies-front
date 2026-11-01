@@ -1,7 +1,11 @@
 <div class="flex min-h-dvh flex-col">
-  <app-header />
+  @if (!portal.esDashboard()) {
+    <app-header />
+  }
   <div class="flex-1">
     <router-outlet />
   </div>
-  <app-footer />
+  @if (!portal.esDashboard()) {
+    <app-footer />
+  }
 </div>

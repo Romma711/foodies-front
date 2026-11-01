@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { HOSTNAME } from './core/config/host.config';
 import { App } from './app';
 
 describe('App', () => {
@@ -25,5 +26,25 @@ describe('App', () => {
     expect(element.querySelector('app-header header')).not.toBeNull();
     expect(element.querySelector('router-outlet')).not.toBeNull();
     expect(element.querySelector('app-footer footer')).not.toBeNull();
+  });
+
+  it('hides the public header and footer on the dashboard host', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        { provide: HOSTNAME, useValue: 'dashboard.localhost' },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('app-header')).toBeNull();
+    expect(element.querySelector('router-outlet')).not.toBeNull();
+    expect(element.querySelector('app-footer')).toBeNull();
   });
 });

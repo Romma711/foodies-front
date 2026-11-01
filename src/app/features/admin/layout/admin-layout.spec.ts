@@ -21,12 +21,13 @@ describe('AdminLayout', () => {
             component: AdminLayout,
             children: [
               { path: '', component: PaginaFalsa },
+              { path: 'aceptar', component: PaginaFalsa },
               { path: 'moderacion', component: PaginaFalsa },
             ],
           },
           { path: 'admin/login', component: PaginaFalsa },
         ]),
-        { provide: AuthService, useValue: { logout } },
+        { provide: AuthService, useValue: { logout, subject: () => 'admin@foodies.com' } },
       ],
     });
   });
@@ -47,10 +48,12 @@ describe('AdminLayout', () => {
 
     expect(enlaces(elemento).map((enlace) => enlace.textContent?.trim())).toEqual([
       'Dashboard',
+      'Aceptar',
       'Moderación',
     ]);
     expect(enlaces(elemento).map((enlace) => enlace.getAttribute('href'))).toEqual([
       '/admin',
+      '/admin/aceptar',
       '/admin/moderacion',
     ]);
     expect(elemento.querySelector('[data-testid="contenido"]')).not.toBeNull();
@@ -58,7 +61,7 @@ describe('AdminLayout', () => {
 
   it('debería marcar como actual solo la sección activa', async () => {
     const { elemento } = await abrir('/admin/moderacion');
-    const [dashboard, moderacion] = enlaces(elemento);
+    const [dashboard, , moderacion] = enlaces(elemento);
 
     expect(dashboard.getAttribute('aria-current')).toBeNull();
     expect(moderacion.getAttribute('aria-current')).toBe('page');
@@ -76,12 +79,21 @@ describe('AdminLayout', () => {
     expect(boton.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('debería cerrar la sesión de admin y volver al login', async () => {
+  it('debería mostrar el email del admin al pie de la barra', async () => {
+    const { elemento } = await abrir();
+
+    expect(elemento.querySelector('aside [aria-controls="cuenta-menu"]')?.textContent).toContain(
+      'admin@foodies.com',
+    );
+  });
+
+  it('debería cerrar la sesión de admin desde el popup y volver al login', async () => {
     const { harness, elemento } = await abrir();
 
-    const salir = Array.from(elemento.querySelectorAll('button')).find(
-      (boton) => boton.textContent?.trim() === 'Cerrar sesión',
-    ) as HTMLButtonElement;
+    (elemento.querySelector('[aria-controls="cuenta-menu"]') as HTMLButtonElement).click();
+    await harness.fixture.whenStable();
+    const salir = elemento.querySelector('#cuenta-menu button') as HTMLButtonElement;
+    expect(salir.textContent?.trim()).toBe('Cerrar sesión');
     salir.click();
     await harness.fixture.whenStable();
 
