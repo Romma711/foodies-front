@@ -1,21 +1,93 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { WritableSignal, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { RestauranteListDTO } from '../restaurante/models/restaurante.models';
+import { RestauranteService } from '../restaurante/services/restaurante.service';
 import { Home } from './home';
 
 describe('Home', () => {
-  let component: Home;
-  let fixture: ComponentFixture<Home>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Home],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Home);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+  const restaurante = (id: number): RestauranteListDTO => ({
+    id,
+    nombre: `Restaurante ${id}`,
+    ubicacion: `Calle ${id}`,
+    especialidad: 'PASTAS',
+    fotoPortada: null,
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  let restaurantes: WritableSignal<RestauranteListDTO[]>;
+  let cargando: WritableSignal<boolean>;
+  let esCliente: boolean;
+  let listar: ReturnType<typeof vi.fn<() => ReturnType<RestauranteService['listar']>>>;
+
+  beforeEach(async () => {
+    restaurantes = signal([]);
+    cargando = signal(false);
+    esCliente = false;
+    listar = vi.fn<() => ReturnType<RestauranteService['listar']>>(() => of(restaurantes()));
+
+    await TestBed.configureTestingModule({
+      imports: [Home],
+      providers: [
+        provideRouter([]),
+        {
+          provide: RestauranteService,
+          useValue: {
+            restaurantes: restaurantes.asReadonly(),
+            loading: cargando.asReadonly(),
+            listar: () => listar(),
+          },
+        },
+        { provide: AuthService, useValue: { isAuthenticated: () => esCliente } },
+      ],
+    }).compileComponents();
+  });
+
+  function render(): HTMLElement {
+    const fixture = TestBed.createComponent(Home);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  function links(element: HTMLElement): string[] {
+    return Array.from(element.querySelectorAll('a')).map((a) => a.getAttribute('href') ?? '');
+  }
+
+  it('muestra el hero con el acceso al catálogo y al registro', () => {
+    const element = render();
+
+    expect(element.querySelector('h1')?.textContent).toContain('Tu próxima mesa');
+    expect(links(element)).toContain('/restaurantes');
+    expect(links(element)).toContain('/register');
+    expect(links(element)).toContain('/restaurante/register');
+    expect(listar).toHaveBeenCalledTimes(1);
+  });
+
+  it('le ofrece sus reservas al cliente logueado en vez del registro', () => {
+    esCliente = true;
+    const element = render();
+
+    expect(links(element)).toContain('/mis-reservas');
+    expect(links(element)).not.toContain('/register');
+  });
+
+  it('destaca hasta tres restaurantes', () => {
+    restaurantes.set([1, 2, 3, 4].map(restaurante));
+    const element = render();
+
+    expect(links(element).filter((href) => /^\/restaurantes\/\d+$/.test(href))).toEqual([
+      '/restaurantes/1',
+      '/restaurantes/2',
+      '/restaurantes/3',
+    ]);
+  });
+
+  it('oculta los destacados si no hay restaurantes o falla la carga', () => {
+    listar.mockReturnValue(throwError(() => new Error('sin conexión')));
+    const element = render();
+
+    expect(element.querySelector('#home-destacados')).toBeNull();
+    expect(element.querySelector('h1')).not.toBeNull();
   });
 });

@@ -1,17 +1,13 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { especialidadLabel } from '../../../../core/catalog/especialidades';
-import { ToastService } from '../../../../shared/toast/toast.service';
-import { ToastOutlet } from '../../../../shared/toast/toast-outlet';
-import { SolicitudRestaurante } from '../../models/entidades-admin';
+import { RouterLink } from '@angular/router';
+import { Foto } from '../../../../core/catalog/fotos';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 
-/** Pending restaurant sign-ups: approve publishes them, reject asks for confirmation first. */
+/** Restaurantes pendientes de aprobación. Se aceptan o rechazan desde su detalle, después de revisarlos. */
 @Component({
   selector: 'app-solicitudes-restaurantes',
-  imports: [ToastOutlet],
-  providers: [ToastService],
+  imports: [RouterLink],
   template: `
     <section aria-labelledby="titulo-solicitudes">
       <div class="flex flex-wrap items-end justify-between gap-4">
@@ -21,11 +17,11 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
             id="titulo-solicitudes"
             class="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl"
           >
-            Solicitudes
+            Aceptar restaurantes
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-6 text-ink-500">
-            Restaurantes que pidieron sumarse a Foodies. Al aprobarlos aparecen en el catálogo y su
-            encargado puede entrar al panel.
+            Estos restaurantes se registraron y esperan tu aprobación. Entrá al detalle de cada uno
+            para revisarlo y aceptarlo o rechazarlo.
           </p>
         </div>
         @if (solicitudes().length > 0) {
@@ -43,6 +39,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
       @if (error(); as mensaje) {
         <div
           class="mt-6 flex flex-col gap-3 rounded-2xl border border-red-100 bg-red-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+          role="alert"
         >
           <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
           <button
@@ -56,235 +53,84 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
       }
 
       @if (solicitudes().length > 0) {
-        <ul class="mt-8 grid gap-4 lg:grid-cols-2">
+        <ul
+          class="mt-8 divide-y divide-line/60 rounded-2xl border border-line/60 bg-white shadow-sm"
+        >
           @for (solicitud of solicitudes(); track solicitud.restaurantId) {
-            <li
-              class="flex flex-col rounded-2xl border border-line/60 bg-white p-5 shadow-sm sm:p-6"
-              data-testid="solicitud"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-brand-700">
-                    {{ especialidad(solicitud) }}
-                  </p>
-                  <h2 class="mt-1 truncate text-lg font-extrabold tracking-tight text-ink-900">
-                    {{ solicitud.nombre }}
-                  </h2>
-                </div>
+            <li class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex min-w-0 items-center gap-4">
                 <span
-                  class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200"
+                  class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-50 text-lg font-extrabold text-brand-700"
+                  aria-hidden="true"
                 >
-                  Pendiente
+                  @if (portada(solicitud.fotos); as url) {
+                    <img [src]="url" alt="" class="size-full object-cover" />
+                  } @else {
+                    {{ solicitud.nombre.charAt(0).toUpperCase() }}
+                  }
                 </span>
-              </div>
-
-              <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-                <div>
-                  <dt class="text-xs text-ink-500">Dirección</dt>
-                  <dd class="font-medium text-ink-700">{{ solicitud.ubicacion }}</dd>
-                </div>
-                <div>
-                  <dt class="text-xs text-ink-500">Capacidad</dt>
-                  <dd class="font-medium text-ink-700">{{ solicitud.cupoMaximo }} personas</dd>
-                </div>
                 <div class="min-w-0">
-                  <dt class="text-xs text-ink-500">Email</dt>
-                  <dd class="truncate font-medium text-ink-700">{{ solicitud.email }}</dd>
+                  <h2 class="truncate text-base font-bold text-ink-900">{{ solicitud.nombre }}</h2>
+                  <p class="truncate text-sm text-ink-500">{{ solicitud.email }}</p>
                 </div>
-                <div>
-                  <dt class="text-xs text-ink-500">Teléfono</dt>
-                  <dd class="font-medium text-ink-700">{{ solicitud.telefono }}</dd>
-                </div>
-              </dl>
-
-              <div
-                class="mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-line/60 pt-4"
-              >
-                @if (confirmandoId() === solicitud.restaurantId) {
-                  <span class="mr-auto text-sm font-semibold text-ink-900">
-                    ¿Rechazar la solicitud?
-                  </span>
-                  <button
-                    type="button"
-                    class="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
-                    [id]="'cancelar-' + solicitud.restaurantId"
-                    [disabled]="procesando().has(solicitud.restaurantId)"
-                    (click)="cancelar(solicitud.restaurantId)"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-60"
-                    [disabled]="procesando().has(solicitud.restaurantId)"
-                    (click)="rechazar(solicitud)"
-                  >
-                    {{
-                      procesando().has(solicitud.restaurantId) ? 'Rechazando…' : 'Confirmar rechazo'
-                    }}
-                  </button>
-                } @else {
-                  <button
-                    type="button"
-                    class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100 disabled:opacity-60"
-                    [id]="'rechazar-' + solicitud.restaurantId"
-                    [attr.aria-label]="'Rechazar ' + solicitud.nombre"
-                    [disabled]="procesando().has(solicitud.restaurantId)"
-                    (click)="pedirConfirmacion(solicitud.restaurantId)"
-                  >
-                    Rechazar
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 disabled:cursor-progress disabled:opacity-60"
-                    [attr.aria-label]="'Aprobar ' + solicitud.nombre"
-                    [disabled]="procesando().has(solicitud.restaurantId)"
-                    (click)="aprobar(solicitud)"
-                  >
-                    {{ procesando().has(solicitud.restaurantId) ? 'Aprobando…' : 'Aprobar' }}
-                  </button>
-                }
               </div>
+              <a
+                class="inline-flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 ring-1 ring-line transition hover:bg-cream-100"
+                [routerLink]="['/admin/aceptar', solicitud.restaurantId]"
+                [attr.aria-label]="'Ver detalles de ' + solicitud.nombre"
+              >
+                Ver detalles
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14m0 0-6-6m6 6-6 6" />
+                </svg>
+              </a>
             </li>
           }
         </ul>
       } @else if (cargando()) {
-        <div class="mt-8" role="status">
-          <span class="sr-only">Cargando solicitudes…</span>
-          <div class="grid gap-4 lg:grid-cols-2" aria-hidden="true">
-            @for (item of skeletons; track item) {
-              <div class="space-y-3 rounded-2xl border border-line/60 bg-white p-6 shadow-sm">
-                <span
-                  class="block h-4 w-1/3 rounded-full bg-cream-100 motion-safe:animate-pulse"
-                ></span>
-                <span class="block h-3 rounded-full bg-cream-100 motion-safe:animate-pulse"></span>
-                <span
-                  class="block h-3 w-2/3 rounded-full bg-cream-100 motion-safe:animate-pulse"
-                ></span>
-              </div>
-            }
-          </div>
-        </div>
+        <p class="mt-8 text-sm font-medium text-ink-500" role="status">Cargando solicitudes…</p>
       } @else if (!error()) {
         <div
           class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white px-6 py-16 text-center shadow-sm"
         >
-          <h2 class="text-lg font-bold text-ink-900">No hay solicitudes pendientes</h2>
+          <h2 class="text-lg font-bold text-ink-900">No hay restaurantes por aceptar</h2>
           <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-            Cuando un restaurante se registre, su solicitud va a aparecer acá.
+            Cuando un restaurante se registre, va a aparecer acá para que lo revises.
           </p>
         </div>
       }
     </section>
-
-    <app-toast-outlet />
   `,
 })
 export class SolicitudesRestaurantes {
-  private readonly servicio = inject(AdminSolicitudesService);
-  private readonly toasts = inject(ToastService);
+  private readonly solicitudesService = inject(AdminSolicitudesService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly injector = inject(Injector);
-  private readonly document = inject(DOCUMENT);
 
-  protected readonly solicitudes = this.servicio.solicitudes;
-  protected readonly cargando = this.servicio.cargando;
-  protected readonly error = this.servicio.error;
-
-  protected readonly confirmandoId = signal<number | null>(null);
-  /** Requests whose approve/reject call is in flight; each card stays disabled until its own ends. */
-  protected readonly procesando = signal<ReadonlySet<number>>(new Set());
-  protected readonly skeletons = [1, 2];
+  protected readonly solicitudes = this.solicitudesService.solicitudes;
+  protected readonly cargando = this.solicitudesService.cargando;
+  protected readonly error = this.solicitudesService.error;
 
   constructor() {
     this.recargar();
   }
 
-  protected especialidad(solicitud: SolicitudRestaurante): string {
-    return especialidadLabel(solicitud.especialidad);
+  protected portada(fotos: Foto[]): string | null {
+    return (fotos.find((foto) => foto.portada) ?? fotos[0])?.url ?? null;
   }
 
   protected recargar(): void {
-    this.servicio
+    this.solicitudesService
       .cargar()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
-  }
-
-  protected pedirConfirmacion(id: number): void {
-    this.confirmandoId.set(id);
-    this.enfocar(`cancelar-${id}`);
-  }
-
-  protected cancelar(id: number): void {
-    this.confirmandoId.set(null);
-    this.enfocar(`rechazar-${id}`);
-  }
-
-  protected aprobar(solicitud: SolicitudRestaurante): void {
-    if (!this.empezar(solicitud.restaurantId)) {
-      return;
-    }
-    this.servicio
-      .aprobar(solicitud.restaurantId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () =>
-          this.terminar(
-            solicitud.restaurantId,
-            `${solicitud.nombre} fue aprobado y ya aparece en el catálogo.`,
-          ),
-        error: (error: Error) => this.fallar(solicitud.restaurantId, error),
-      });
-  }
-
-  protected rechazar(solicitud: SolicitudRestaurante): void {
-    if (!this.empezar(solicitud.restaurantId)) {
-      return;
-    }
-    this.servicio
-      .rechazar(solicitud.restaurantId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () =>
-          this.terminar(solicitud.restaurantId, `Se rechazó la solicitud de ${solicitud.nombre}.`),
-        error: (error: Error) => this.fallar(solicitud.restaurantId, error),
-      });
-  }
-
-  /** Marks the request as in flight; false when it already was, so no duplicate call goes out. */
-  private empezar(id: number): boolean {
-    if (this.procesando().has(id)) {
-      return false;
-    }
-    this.procesando.update((ids) => new Set(ids).add(id));
-    return true;
-  }
-
-  private liberar(id: number): void {
-    this.procesando.update((ids) => {
-      const restantes = new Set(ids);
-      restantes.delete(id);
-      return restantes;
-    });
-  }
-
-  private terminar(id: number, mensaje: string): void {
-    this.liberar(id);
-    // Only this request's confirmation closes; another card may be asking its own.
-    this.confirmandoId.update((actual) => (actual === id ? null : actual));
-    this.toasts.exito(mensaje);
-  }
-
-  private fallar(id: number, error: Error): void {
-    this.liberar(id);
-    this.toasts.error(error.message);
-  }
-
-  /** Keeps keyboard users in place when the card swaps its buttons. */
-  private enfocar(id: string): void {
-    afterNextRender(() => this.document.getElementById(id)?.focus(), {
-      injector: this.injector,
-    });
   }
 }

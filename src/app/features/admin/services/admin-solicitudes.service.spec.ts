@@ -3,23 +3,28 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { SolicitudRestaurante } from '../models/entidades-admin';
+import { SolicitudRestaurante } from '../models/solicitud-restaurante';
 import { AdminSolicitudesService } from './admin-solicitudes.service';
 
 const API = environment.apiUrl;
 
-function solicitud(restaurantId: number, nombre: string): SolicitudRestaurante {
+export function solicitud(overrides: Partial<SolicitudRestaurante> = {}): SolicitudRestaurante {
   return {
-    restaurantId,
-    nombre,
+    restaurantId: 12,
+    nombre: 'La Parrilla',
     ubicacion: 'Av. Colón 1200',
-    especialidad: 'PASTAS',
+    especialidad: 'PARRILLA',
     cupoMaximo: 40,
     estado: 'PENDIENTE',
-    usuarioId: restaurantId + 100,
-    email: `${restaurantId}@mail.com`,
-    telefono: '2234000000',
+    usuarioId: 112,
+    email: 'encargado@laparrilla.com',
+    telefono: '2235550000',
     fechaRegistro: '2026-10-28T10:15:00',
+    fotos: [
+      { id: 1, url: '/api/files/fotos/3/a.jpg', portada: false },
+      { id: 2, url: '/api/files/fotos/3/b.jpg', portada: true },
+    ],
+    ...overrides,
   };
 }
 
@@ -47,7 +52,9 @@ describe('AdminSolicitudesService', () => {
     const carga = firstValueFrom(service.cargar());
     expect(service.cargando()).toBe(true);
 
-    http.expectOne(`${API}/admin/restaurantes/pendientes`).flush([solicitud(1, 'Pasta Nostra')]);
+    http
+      .expectOne(`${API}/admin/restaurantes/pendientes`)
+      .flush([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
     await carga;
 
     expect(service.cargando()).toBe(false);
@@ -55,7 +62,10 @@ describe('AdminSolicitudesService', () => {
   });
 
   it('aprueba con PUT y saca la solicitud de la lista', async () => {
-    await cargarCon([solicitud(1, 'Pasta Nostra'), solicitud(2, 'El Muelle')]);
+    await cargarCon([
+      solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' }),
+      solicitud({ restaurantId: 2, nombre: 'El Muelle' }),
+    ]);
 
     const aprobar = firstValueFrom(service.aprobar(1));
     const req = http.expectOne(`${API}/admin/restaurantes/1/aprobar`);
@@ -67,7 +77,7 @@ describe('AdminSolicitudesService', () => {
   });
 
   it('rechaza con PUT y saca la solicitud de la lista', async () => {
-    await cargarCon([solicitud(1, 'Pasta Nostra')]);
+    await cargarCon([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
 
     const rechazar = firstValueFrom(service.rechazar(1));
     const req = http.expectOne(`${API}/admin/restaurantes/1/rechazar`);
@@ -79,7 +89,7 @@ describe('AdminSolicitudesService', () => {
   });
 
   it('si falla una acción deja la solicitud y devuelve un mensaje para mostrar', async () => {
-    await cargarCon([solicitud(1, 'Pasta Nostra')]);
+    await cargarCon([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
 
     const rechazar = firstValueFrom(service.rechazar(1));
     http.expectOne(`${API}/admin/restaurantes/1/rechazar`).flush(

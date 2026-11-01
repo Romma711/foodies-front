@@ -1,7 +1,7 @@
 import { HttpEventType } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { providePanelTesting, RESTAURANTE_TOKEN } from './panel.testing';
+import { miRestaurante, providePanelTesting, RESTAURANTE_TOKEN } from './panel.testing';
 import { RestaurantePanelService } from './restaurante-panel.service';
 
 describe('RestaurantePanelService', () => {
@@ -33,10 +33,24 @@ describe('RestaurantePanelService', () => {
     ];
     for (const req of requests) {
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${RESTAURANTE_TOKEN}`);
-      req.flush(null);
+      req.flush(req.request.url === '/api/restaurantes/me' ? miRestaurante() : null);
     }
     expect(requests[2].request.body).toEqual({ nombre: 'Nuevo' });
     expect(requests[4].request.body).toEqual({ estado: 'ACEPTADA' });
+  });
+
+  it('keeps the latest restaurant name from reads and profile edits', () => {
+    expect(service.nombre()).toBeNull();
+
+    service.getMiRestaurante().subscribe();
+    http.expectOne({ method: 'GET', url: '/api/restaurantes/me' }).flush(miRestaurante());
+    expect(service.nombre()).toBe('La Parrilla');
+
+    service.actualizar({ nombre: 'La Parrilla de Juan' }).subscribe();
+    http
+      .expectOne({ method: 'PATCH', url: '/api/restaurantes/me' })
+      .flush(miRestaurante({ nombre: 'La Parrilla de Juan' }));
+    expect(service.nombre()).toBe('La Parrilla de Juan');
   });
 
   it('uploads the menu as multipart with progress events', () => {

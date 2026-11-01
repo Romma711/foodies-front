@@ -17,19 +17,26 @@ export const ADMIN_ROUTES: Routes = [
           import('./pages/dashboard-admin/dashboard-admin').then((m) => m.DashboardAdmin),
       },
       {
-        path: 'moderacion',
-        title: 'Moderación | Admin Foodies',
-        loadComponent: () =>
-          import('./pages/moderacion-resenas/moderacion-resenas').then((m) => m.ModeracionResenas),
-      },
-      {
-        path: 'solicitudes',
-        title: 'Solicitudes | Admin Foodies',
+        path: 'aceptar',
+        title: 'Aceptar restaurantes | Admin Foodies',
         loadComponent: () =>
           import('./pages/solicitudes-restaurantes/solicitudes-restaurantes').then(
             (m) => m.SolicitudesRestaurantes,
           ),
       },
+      {
+        path: 'aceptar/:restaurantId',
+        title: 'Solicitud de restaurante | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/detalle-solicitud/detalle-solicitud').then((m) => m.DetalleSolicitud),
+      },
+      {
+        path: 'moderacion',
+        title: 'Moderación | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/moderacion-resenas/moderacion-resenas').then((m) => m.ModeracionResenas),
+      },
+      { path: 'solicitudes', redirectTo: 'aceptar', pathMatch: 'full' },
       {
         path: 'entidades',
         title: 'Entidades | Admin Foodies',

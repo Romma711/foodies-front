@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
-import { inject, Service } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Service, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
 import { Foto } from '../../../core/catalog/fotos';
@@ -21,12 +21,20 @@ export class RestaurantePanelService {
   private readonly apiUrl = inject(API_URL);
   private readonly meUrl = `${this.apiUrl}/restaurantes/me`;
 
+  private readonly _nombre = signal<string | null>(null);
+  /** Último nombre conocido del restaurante; se refresca con cada lectura o edición del perfil. */
+  readonly nombre = this._nombre.asReadonly();
+
   getMiRestaurante(): Observable<MiRestaurante> {
-    return this.http.get<MiRestaurante>(this.meUrl, { context: withRole('RESTAURANTE') });
+    return this.http
+      .get<MiRestaurante>(this.meUrl, { context: withRole('RESTAURANTE') })
+      .pipe(tap(({ nombre }) => this._nombre.set(nombre)));
   }
 
   actualizar(patch: MiRestaurantePatch): Observable<MiRestaurante> {
-    return this.http.patch<MiRestaurante>(this.meUrl, patch, { context: withRole('RESTAURANTE') });
+    return this.http
+      .patch<MiRestaurante>(this.meUrl, patch, { context: withRole('RESTAURANTE') })
+      .pipe(tap(({ nombre }) => this._nombre.set(nombre)));
   }
 
   /** Emite eventos de progreso de la subida y, al final, la carta guardada. */

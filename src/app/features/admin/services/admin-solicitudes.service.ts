@@ -3,7 +3,8 @@ import { Service, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { environment } from '../../../../environments/environment';
-import { EstadoRestaurante, SolicitudRestaurante } from '../models/entidades-admin';
+import { EstadoRestaurante } from '../models/entidades-admin';
+import { SolicitudRestaurante } from '../models/solicitud-restaurante';
 import { mensajeErrorAdmin } from './mensaje-error-admin';
 
 interface EstadoSolicitud {

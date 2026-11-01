@@ -2,21 +2,6 @@ import { EspecialidadDeComida } from '../../../core/auth/auth.models';
 
 export type EstadoRestaurante = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
 
-/** `SolicitudRestauranteDTO`: a restaurant sign-up waiting for review. */
-export interface SolicitudRestaurante {
-  restaurantId: number;
-  nombre: string;
-  ubicacion: string;
-  especialidad: EspecialidadDeComida;
-  cupoMaximo: number;
-  estado: EstadoRestaurante;
-  usuarioId: number;
-  email: string;
-  telefono: string;
-  /** ISO date-time; null for accounts created before the column existed. */
-  fechaRegistro: string | null;
-}
-
 /** `EntidadClienteDTO` */
 export interface EntidadCliente {
   id: number;

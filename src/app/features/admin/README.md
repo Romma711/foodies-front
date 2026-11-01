@@ -112,8 +112,9 @@ Piezas compartidas con reseñas, movidas a `shared/`: `charts/bar-chart-factory.
 
 ## Fase 3 · Sprint 19: Solicitudes y Gestión de Entidades
 
-- **Solicitudes** (`/admin/solicitudes`): restaurantes en estado `PENDIENTE` con los datos de contacto
-  del encargado. _Aprobar_ lo publica y le da `ROLE_ENCARGADO`; _Rechazar_ pide confirmación.
+- **Aceptar** (`/admin/aceptar`): restaurantes en estado `PENDIENTE` con foto y email. Cada uno abre su
+  detalle (`/admin/aceptar/:restaurantId`) con los datos y las fotos, para aceptarlo o rechazarlo con
+  confirmación. `/admin/solicitudes` redirige acá.
   Servicio: `AdminSolicitudesService` (`GET /api/admin/restaurantes/pendientes`,
   `PUT .../{id}/aprobar|rechazar`).
 - **Entidades** (`/admin/entidades`): pestañas Clientes / Restaurantes (patrón WAI-ARIA tabs, se

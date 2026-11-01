@@ -12,12 +12,13 @@ import { MetricasAdmin } from './models/metricas-admin';
 import { ResenaModeracion } from './models/resena-moderacion';
 import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
 import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
+import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
+import { AdminSolicitudesService } from './services/admin-solicitudes.service';
+import { solicitud } from './services/admin-solicitudes.service.spec';
 import { AdminMetricasService } from './services/admin-metricas.service';
 import { AdminModeracionService } from './services/admin-moderacion.service';
 import { AdminEntidadesService } from './services/admin-entidades.service';
-import { AdminSolicitudesService } from './services/admin-solicitudes.service';
 import { GestionEntidades } from './pages/gestion-entidades/gestion-entidades';
-import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
 
 @Component({ template: '<h1>Contenido</h1>' })
 class PaginaFalsa {}
@@ -48,12 +49,17 @@ describe('Accesibilidad del panel de administración', () => {
   let cargandoMetricas: WritableSignal<boolean>;
   let errorMetricas: WritableSignal<string | null>;
   let lista: WritableSignal<ResenaModeracion[]>;
+  let pendientes: WritableSignal<ReturnType<typeof solicitud>[]>;
 
   beforeEach(async () => {
     datos = signal<MetricasAdmin | null>(metricas);
     cargandoMetricas = signal(false);
     errorMetricas = signal<string | null>(null);
     lista = signal(resenas);
+    pendientes = signal([
+      solicitud(),
+      solicitud({ restaurantId: 13, nombre: 'Ochiwan', fotos: [] }),
+    ]);
 
     await TestBed.configureTestingModule({
       providers: [
@@ -72,7 +78,7 @@ describe('Accesibilidad del panel de administración', () => {
           provide: PIE_CHART_FACTORY,
           useValue: () => ({ data: { datasets: [] }, update: vi.fn(), destroy: vi.fn() }),
         },
-        { provide: AuthService, useValue: { logout: vi.fn() } },
+        { provide: AuthService, useValue: { logout: vi.fn(), subject: () => 'admin@foodies.com' } },
         {
           provide: AdminMetricasService,
           useValue: {
@@ -83,6 +89,15 @@ describe('Accesibilidad del panel de administración', () => {
           },
         },
         {
+          provide: AdminSolicitudesService,
+          useValue: {
+            solicitudes: pendientes.asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of(pendientes())),
+          },
+        },
+        {
           provide: AdminModeracionService,
           useValue: {
             resenas: lista.asReadonly(),
@@ -90,30 +105,6 @@ describe('Accesibilidad del panel de administración', () => {
             error: signal<string | null>(null).asReadonly(),
             cargar: vi.fn(() => of(resenas)),
             eliminar: vi.fn(() => of(undefined)),
-          },
-        },
-        {
-          provide: AdminSolicitudesService,
-          useValue: {
-            solicitudes: signal([
-              {
-                restaurantId: 7,
-                nombre: 'Pasta Nostra',
-                ubicacion: 'Av. Colón 1200',
-                especialidad: 'PASTAS',
-                cupoMaximo: 40,
-                estado: 'PENDIENTE',
-                usuarioId: 12,
-                email: 'pasta@mail.com',
-                telefono: '2234000000',
-                fechaRegistro: null,
-              },
-            ]).asReadonly(),
-            cargando: signal(false).asReadonly(),
-            error: signal<string | null>(null).asReadonly(),
-            cargar: vi.fn(() => of([])),
-            aprobar: vi.fn(() => of(undefined)),
-            rechazar: vi.fn(() => of(undefined)),
           },
         },
         {
@@ -200,14 +191,6 @@ describe('Accesibilidad del panel de administración', () => {
     lista.set([]);
     await sinViolaciones(TestBed.createComponent(ModeracionResenas));
   });
-  it('SolicitudesRestaurantes con una solicitud y con el rechazo por confirmar', async () => {
-    const fixture = TestBed.createComponent(SolicitudesRestaurantes);
-    await sinViolaciones(fixture);
-
-    (fixture.nativeElement.querySelector('button[id="rechazar-7"]') as HTMLButtonElement).click();
-    await sinViolaciones(fixture);
-  });
-
   it('GestionEntidades en la pestaña de clientes y en la de restaurantes', async () => {
     const fixture = TestBed.createComponent(GestionEntidades);
     await sinViolaciones(fixture);
@@ -228,6 +211,14 @@ describe('Accesibilidad del panel de administración', () => {
     (
       fixture.nativeElement.querySelector('dialog button[type="submit"]') as HTMLButtonElement
     ).click();
+    await sinViolaciones(fixture);
+  });
+
+  it('SolicitudesRestaurantes con pendientes y vacía', async () => {
+    const fixture = TestBed.createComponent(SolicitudesRestaurantes);
+    await sinViolaciones(fixture);
+
+    pendientes.set([]);
     await sinViolaciones(fixture);
   });
 });
