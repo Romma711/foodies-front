@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { routes } from '../../../app.routes';
+import { DASHBOARD_ROUTES } from '../../../app.routes';
 import { RESTAURANTE_TOKEN } from './panel.testing';
 
 describe('restaurant panel routes', () => {
@@ -11,7 +11,8 @@ describe('restaurant panel routes', () => {
     localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes, withComponentInputBinding()),
+        // The panel is served on the dashboard host.
+        provideRouter(DASHBOARD_ROUTES, withComponentInputBinding()),
         provideHttpClient(),
         provideHttpClientTesting(),
       ],

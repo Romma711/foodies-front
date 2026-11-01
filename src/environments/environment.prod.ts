@@ -6,4 +6,7 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
+  // Cambiar cuando el dominio real esté dado de alta: el mismo build sirve en ambos hosts.
+  appUrl: 'https://app.com',
+  dashboardUrl: 'https://dashboard.app.com',
 } as const;

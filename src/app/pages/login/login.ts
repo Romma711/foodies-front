@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
-import { Component, computed, inject, input, signal } from '@angular/core';
-import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { email as emailValidator, form, FormField, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -11,6 +11,7 @@ import {
 } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { PortalNavigation } from '../../core/auth/portal-navigation';
 import { safeReturnUrl } from '../../core/auth/return-url';
 import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../core/http/api-error';
 
@@ -22,11 +23,14 @@ import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../core/http/api
 export class Login {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly portals = inject(PortalNavigation);
 
   /** Bound from the route `data.role`. */
   readonly role = input.required<Role>();
   /** Bound from the `?returnUrl=` query param a guard adds when it sends the user here. */
   readonly returnUrl = input<string>();
+  /** Bound from `?email=`, set when another portal of the ecosystem redirects the user here. */
+  readonly email = input<string>();
 
   protected readonly portal = computed(() => PORTALS[this.role()]);
   private readonly destination = computed(
@@ -37,9 +41,18 @@ export class Login {
   private readonly model = signal<LoginRequest>({ email: '', password: '' });
   protected readonly loginForm = form(this.model, (path) => {
     required(path.email, { message: 'El email es obligatorio.' });
-    email(path.email, { message: 'Ingresá un email válido.' });
+    emailValidator(path.email, { message: 'Ingresá un email válido.' });
     required(path.password, { message: 'La contraseña es obligatoria.' });
   });
+
+  constructor() {
+    effect(() => {
+      const email = this.email();
+      if (email) {
+        this.model.update((modelo) => ({ ...modelo, email }));
+      }
+    });
+  }
 
   protected async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
@@ -48,6 +61,14 @@ export class Login {
       try {
         await firstValueFrom(this.auth.login(this.model(), this.role()));
       } catch (error) {
+        if (error instanceof RoleMismatchError && error.actual !== null) {
+          // Credenciales válidas de otro portal: se manda al usuario al host que lo sirve,
+          // con el email listo para que solo falte la contraseña.
+          await this.portals.irA(error.actual, PORTALS[error.actual].loginPath, {
+            email: this.model().email,
+          });
+          return undefined;
+        }
         this.errorMessage.set(toMessage(error));
         return undefined;
       }

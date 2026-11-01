@@ -1,1 +1,188 @@
-<p>home works!</p>
+<main class="relative isolate overflow-hidden">
+  <div
+    class="pointer-events-none absolute inset-x-0 -top-48 -z-10 flex justify-center"
+    aria-hidden="true"
+  >
+    <div class="h-96 w-[48rem] max-w-full rounded-full bg-brand-100/80 blur-3xl"></div>
+  </div>
+
+  <section
+    class="mx-auto w-full max-w-6xl px-4 pt-12 pb-10 sm:px-6 sm:pt-16 lg:px-8 lg:pt-24"
+    aria-labelledby="home-titulo"
+  >
+    <div class="max-w-3xl">
+      <span
+        class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line"
+      >
+        <span class="size-1.5 rounded-full bg-brand-500" aria-hidden="true"></span>
+        Reservas sin llamadas ni esperas
+      </span>
+
+      <h1
+        id="home-titulo"
+        class="mt-5 text-4xl leading-tight font-extrabold tracking-tight text-ink-900 sm:text-6xl"
+      >
+        Tu próxima mesa está a
+        <span class="text-brand-600">un clic</span>
+      </h1>
+
+      <p class="mt-5 max-w-xl text-base leading-7 text-ink-500 sm:text-lg">
+        Descubrí restaurantes cerca tuyo, reservá en segundos y compartí tu experiencia con la
+        comunidad Foodies.
+      </p>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a
+          routerLink="/restaurantes"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+        >
+          Explorar restaurantes
+          <svg
+            class="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14m0 0-6-6m6 6-6 6" />
+          </svg>
+        </a>
+        @if (esCliente()) {
+          <a
+            routerLink="/mis-reservas"
+            class="inline-flex items-center justify-center rounded-full bg-white/80 px-6 py-3 text-sm font-semibold text-ink-900 ring-1 ring-line transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
+          >
+            Ver mis reservas
+          </a>
+        } @else {
+          <a
+            routerLink="/register"
+            class="inline-flex items-center justify-center rounded-full bg-white/80 px-6 py-3 text-sm font-semibold text-ink-900 ring-1 ring-line transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
+          >
+            Crear mi cuenta
+          </a>
+        }
+      </div>
+    </div>
+
+    <ul class="mt-12 flex flex-wrap gap-2" aria-label="Especialidades disponibles">
+      @for (especialidad of especialidades; track especialidad) {
+        <li
+          class="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line"
+        >
+          {{ especialidad }}
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8" aria-labelledby="home-pasos">
+    <h2 id="home-pasos" class="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
+      Cómo funciona
+    </h2>
+    <ol class="mt-6 grid gap-5 sm:grid-cols-3">
+      @for (paso of pasos; track paso.titulo; let i = $index) {
+        <li class="rounded-2xl border border-line/70 bg-white/85 p-6 shadow-card">
+          <span
+            class="grid size-10 place-items-center rounded-xl bg-brand-50 text-base font-extrabold text-brand-700"
+            aria-hidden="true"
+          >
+            {{ i + 1 }}
+          </span>
+          <h3 class="mt-4 text-lg font-bold text-ink-900">{{ paso.titulo }}</h3>
+          <p class="mt-2 text-sm leading-6 text-ink-500">{{ paso.texto }}</p>
+        </li>
+      }
+    </ol>
+  </section>
+
+  @if (cargando() || destacados().length > 0) {
+    <section
+      class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8"
+      aria-labelledby="home-destacados"
+      [attr.aria-busy]="cargando()"
+    >
+      <div class="flex items-end justify-between gap-4">
+        <h2
+          id="home-destacados"
+          class="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl"
+        >
+          Para ir conociendo
+        </h2>
+        <a
+          routerLink="/restaurantes"
+          class="shrink-0 rounded-full text-sm font-semibold text-brand-700 hover:underline"
+        >
+          Ver todos
+        </a>
+      </div>
+
+      @if (cargando()) {
+        <p class="mt-6 text-sm font-medium text-ink-500" role="status">Cargando restaurantes…</p>
+      } @else {
+        <ul class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          @for (restaurante of destacados(); track restaurante.id) {
+            <li class="h-full">
+              <a
+                [routerLink]="['/restaurantes', restaurante.id]"
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-line/70 bg-white/90 shadow-card transition hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+              >
+                <div
+                  class="relative h-36 bg-gradient-to-br from-brand-100 via-cream-100 to-cream-50"
+                  aria-hidden="true"
+                >
+                  @if (restaurante.fotoPortada; as portada) {
+                    <img
+                      [src]="portada"
+                      alt=""
+                      loading="lazy"
+                      class="absolute inset-0 size-full object-cover"
+                    />
+                  }
+                  <span
+                    class="absolute top-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-100"
+                  >
+                    {{ especialidadLabels[restaurante.especialidad] }}
+                  </span>
+                  <span
+                    class="absolute bottom-4 left-4 grid size-12 place-items-center rounded-2xl bg-white/95 text-lg font-extrabold text-brand-700 shadow-card"
+                  >
+                    {{ inicial(restaurante.nombre) }}
+                  </span>
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <h3 class="text-lg font-extrabold tracking-tight text-ink-900">
+                    {{ restaurante.nombre }}
+                  </h3>
+                  <p class="mt-1.5 truncate text-sm text-ink-500">{{ restaurante.ubicacion }}</p>
+                </div>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  <section class="mx-auto w-full max-w-6xl px-4 pt-10 pb-16 sm:px-6 lg:px-8 lg:pb-24">
+    <div
+      class="flex flex-col gap-5 rounded-3xl bg-ink-900 p-8 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10"
+    >
+      <div>
+        <h2 class="text-2xl font-extrabold tracking-tight">¿Tenés un restaurante?</h2>
+        <p class="mt-2 max-w-lg text-sm leading-6 text-cream-200">
+          Sumalo a Foodies, gestioná tus mesas y empezá a recibir reservas desde tu panel.
+        </p>
+      </div>
+      <a
+        routerLink="/restaurante/register"
+        class="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-900 transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        Quiero sumarme
+      </a>
+    </div>
+  </section>
+</main>
