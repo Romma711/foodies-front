@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SolicitudRestaurante } from '../../models/solicitud-restaurante';
-import { solicitud } from '../../services/admin-solicitudes.service.spec';
+import { solicitud } from '../../testing/solicitud';
 import { SolicitudesRestaurantes } from './solicitudes-restaurantes';
 
 describe('SolicitudesRestaurantes', () => {

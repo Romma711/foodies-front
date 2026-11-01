@@ -14,7 +14,7 @@ import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
 import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
 import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
 import { AdminSolicitudesService } from './services/admin-solicitudes.service';
-import { solicitud } from './services/admin-solicitudes.service.spec';
+import { solicitud } from './testing/solicitud';
 import { AdminMetricasService } from './services/admin-metricas.service';
 import { AdminModeracionService } from './services/admin-moderacion.service';
 import { AdminEntidadesService } from './services/admin-entidades.service';

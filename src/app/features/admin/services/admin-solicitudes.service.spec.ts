@@ -4,29 +4,10 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SolicitudRestaurante } from '../models/solicitud-restaurante';
+import { solicitud } from '../testing/solicitud';
 import { AdminSolicitudesService } from './admin-solicitudes.service';
 
 const API = environment.apiUrl;
-
-export function solicitud(overrides: Partial<SolicitudRestaurante> = {}): SolicitudRestaurante {
-  return {
-    restaurantId: 12,
-    nombre: 'La Parrilla',
-    ubicacion: 'Av. Colón 1200',
-    especialidad: 'PARRILLA',
-    cupoMaximo: 40,
-    estado: 'PENDIENTE',
-    usuarioId: 112,
-    email: 'encargado@laparrilla.com',
-    telefono: '2235550000',
-    fechaRegistro: '2026-10-28T10:15:00',
-    fotos: [
-      { id: 1, url: '/api/files/fotos/3/a.jpg', portada: false },
-      { id: 2, url: '/api/files/fotos/3/b.jpg', portada: true },
-    ],
-    ...overrides,
-  };
-}
 
 describe('AdminSolicitudesService', () => {
   let service: AdminSolicitudesService;

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { violacionesAxe } from '../../../../shared/testing/axe';
-import { solicitud } from '../../services/admin-solicitudes.service.spec';
+import { solicitud } from '../../testing/solicitud';
 import { DetalleSolicitud } from './detalle-solicitud';
 
 describe('DetalleSolicitud', () => {
