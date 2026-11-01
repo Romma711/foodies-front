@@ -2,68 +2,145 @@
   display: grid;
   /* Sin `minmax(0, …)` la columna crece con el menú y el `overflow-x` de la lista nunca actúa. */
   grid-template-columns: minmax(0, 1fr);
+  /* Sin esto, en mobile el alto sobrante de `min-height` se reparte entre las filas. */
+  align-content: start;
+  min-height: 100dvh;
+}
+
+svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.panel-marca {
+  margin: 0;
+  color: var(--color-fg);
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.panel-marca-punto {
+  color: var(--color-primary);
+}
+
+/* Mobile: barra superior con el botón que despliega la navegación. */
+.panel-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  color: var(--color-fg);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.panel-icon-btn:hover {
+  background: var(--color-bg);
+}
+
+.panel-sidebar {
+  display: none;
+  flex-direction: column;
   gap: var(--space-4);
-  max-width: 72rem;
-  margin: 0 auto;
   padding: var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-sidebar.abierta {
+  display: flex;
+}
+
+.panel-marca-desktop {
+  display: none;
 }
 
 .panel-nav ul {
   display: flex;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
-  overflow-x: auto;
   list-style: none;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .panel-nav a {
   display: flex;
   align-items: center;
+  gap: var(--space-3);
   min-height: var(--touch-target);
   padding: 0 var(--space-3);
   color: var(--color-muted-fg);
   font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
+  border-radius: var(--radius);
+  transition: background-color var(--duration-fast) ease-out;
 }
 
 .panel-nav a:hover {
   color: var(--color-fg);
+  background: var(--color-bg);
 }
 
 .panel-nav a.active {
   color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  background: var(--color-bg);
 }
 
 .panel-content {
   min-width: 0;
+  padding: var(--space-4);
 }
 
-/* Desktop: side navigation */
+/* Desktop: barra lateral fija a la izquierda, del alto de la pantalla. */
 @media (min-width: 48rem) {
   .panel {
-    grid-template-columns: 13rem 1fr;
-    gap: var(--space-8);
-    padding: var(--space-8) var(--space-4);
+    grid-template-columns: 15rem minmax(0, 1fr);
   }
 
-  .panel-nav ul {
-    flex-direction: column;
+  .panel-topbar {
+    display: none;
+  }
+
+  .panel-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100dvh;
+    padding: var(--space-6) var(--space-4);
+    border-right: 1px solid var(--color-border);
     border-bottom: none;
   }
 
-  .panel-nav a {
-    border-bottom: none;
-    border-left: 3px solid transparent;
-    border-radius: 0 var(--radius) var(--radius) 0;
+  .panel-marca-desktop {
+    display: block;
+    padding: 0 var(--space-3) var(--space-2);
   }
 
-  .panel-nav a.active {
-    background: var(--color-surface);
-    border-left-color: var(--color-primary);
+  .panel-content {
+    width: 100%;
+    max-width: 68rem;
+    padding: var(--space-8);
   }
 }

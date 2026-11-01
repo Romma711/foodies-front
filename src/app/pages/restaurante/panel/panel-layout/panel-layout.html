@@ -1,19 +1,48 @@
 <div class="panel">
-  <nav class="panel-nav" aria-label="Panel del restaurante">
-    <ul>
-      @for (section of sections; track section.path) {
-        <li>
-          <a
-            [routerLink]="section.path"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: section.exact }"
-            ariaCurrentWhenActive="page"
-            >{{ section.label }}</a
-          >
-        </li>
-      }
-    </ul>
-  </nav>
+  <div class="panel-topbar">
+    <span class="panel-marca">Foodies<span class="panel-marca-punto">.</span></span>
+    <button
+      type="button"
+      class="panel-icon-btn"
+      aria-controls="panel-sidebar"
+      [attr.aria-expanded]="menuAbierto()"
+      [attr.aria-label]="menuAbierto() ? 'Cerrar menú del panel' : 'Abrir menú del panel'"
+      (click)="alternarMenu()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        @if (menuAbierto()) {
+          <path d="M6 6l12 12M18 6 6 18" />
+        } @else {
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        }
+      </svg>
+    </button>
+  </div>
+
+  <aside id="panel-sidebar" class="panel-sidebar" [class.abierta]="menuAbierto()">
+    <p class="panel-marca panel-marca-desktop">Foodies<span class="panel-marca-punto">.</span></p>
+
+    <nav class="panel-nav" aria-label="Panel del restaurante">
+      <ul>
+        @for (section of sections; track section.path) {
+          <li>
+            <a
+              [routerLink]="section.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: section.exact }"
+              ariaCurrentWhenActive="page"
+              (click)="cerrarMenu()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="section.icono" /></svg>
+              {{ section.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <app-cuenta-menu [nombre]="nombre()" (cerrarSesion)="cerrarSesion()" />
+  </aside>
 
   <main class="panel-content">
     <router-outlet />

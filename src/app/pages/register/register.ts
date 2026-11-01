@@ -15,6 +15,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { VolverAlInicio } from '../../shared/volver-al-inicio/volver-al-inicio';
 import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
 import { errorDeFotosRegistro } from '../../core/catalog/fotos';
 import {
@@ -37,7 +38,7 @@ interface RegisterFormModel {
 }
 
 @Component({
-  imports: [FormField, RegistroFotos, RouterLink],
+  imports: [FormField, RegistroFotos, RouterLink, VolverAlInicio],
   selector: 'app-register',
   templateUrl: './register.html',
 })
