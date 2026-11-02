@@ -46,6 +46,22 @@ export const APP_ROUTES: Routes = [
     canMatch: [roleGuard('CLIENTE')],
   },
   {
+    path: 'perfil',
+    title: 'Mi perfil | Foodies',
+    loadComponent: () =>
+      import('./features/perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
+    canMatch: [roleGuard('CLIENTE')],
+  },
+  {
+    path: 'mis-resenas',
+    title: 'Mis reseñas | Foodies',
+    loadComponent: () =>
+      import('./features/resenas/pages/mis-resenas/mis-resenas').then(
+        (module) => module.MisResenas,
+      ),
+    canMatch: [roleGuard('CLIENTE')],
+  },
+  {
     // Reviews live inside the restaurant page now; keep old links working.
     path: 'resenas/:restauranteId',
     redirectTo: 'restaurantes/:restauranteId',
