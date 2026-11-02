@@ -3,25 +3,33 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Role, ROLES } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { ClientePerfilService } from '../../features/perfil/services/cliente-perfil.service';
+import { ClienteMenu } from './cliente-menu/cliente-menu';
 
 @Component({
-  imports: [RouterLink, RouterLinkActive],
+  imports: [ClienteMenu, RouterLink, RouterLinkActive],
   selector: 'app-header',
   templateUrl: './header.html',
 })
 export class Header {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  protected readonly perfil = inject(ClientePerfilService);
 
   protected readonly portals = PORTALS;
   protected readonly menuAbierto = signal(false);
+
+  /** Accesos de la cuenta del cliente en el menú móvil (en desktop están en su popup). */
+  protected readonly opcionesCliente = [
+    { path: '/perfil', label: 'Mi perfil' },
+    { path: '/mis-resenas', label: 'Mis reseñas' },
+    { path: '/mis-reservas', label: 'Mis reservas' },
+  ];
 
   /** Each role keeps its own session, so several can be active at once. */
   protected readonly activeRoles = computed(() =>
     ROLES.filter((role) => this.auth.isAuthenticated(role)),
   );
-
-  protected readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
 
   protected toggleMenu(): void {
     this.menuAbierto.update((abierto) => !abierto);
@@ -34,6 +42,9 @@ export class Header {
   protected async logout(role: Role): Promise<void> {
     this.cerrarMenu();
     this.auth.logout(role);
+    if (role === 'CLIENTE') {
+      this.perfil.limpiar();
+    }
     await this.router.navigateByUrl(PORTALS[role].loginPath);
   }
 }

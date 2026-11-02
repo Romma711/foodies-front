@@ -10,6 +10,7 @@ import {
   ResenaListDTO,
   ResenaPatchDTO,
   ResenaRequestDTO,
+  ResenaUsuarioDTO,
 } from '../models';
 
 interface ApiError {
@@ -24,6 +25,7 @@ export class ResenaService {
   private readonly apiUrl = `${environment.apiUrl}/resenas`;
 
   private readonly _resenas = signal<ResenaListDTO[]>([]);
+  private readonly _misResenas = signal<ResenaUsuarioDTO[]>([]);
   private readonly _resena = signal<ResenaDetailDTO | null>(null);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
@@ -32,6 +34,8 @@ export class ResenaService {
   private readonly _misResenaIds = signal<ReadonlySet<number>>(new Set());
 
   readonly resenas = this._resenas.asReadonly();
+  /** Reviews written by the signed-in client, each with the restaurant it is about. */
+  readonly misResenas = this._misResenas.asReadonly();
   readonly resena = this._resena.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly saving = this._saving.asReadonly();
@@ -73,22 +77,22 @@ export class ResenaService {
     );
   }
 
-  listarPorUsuario(usuarioId: number): Observable<ResenaListDTO[]> {
+  listarPorUsuario(usuarioId: number): Observable<ResenaUsuarioDTO[]> {
     return this.ejecutarLectura(
       this.http
-        .get<ResenaListDTO[] | null>(`${this.apiUrl}/usuario/${usuarioId}`, {
+        .get<ResenaUsuarioDTO[] | null>(`${this.apiUrl}/usuario/${usuarioId}`, {
           context: withRole('CLIENTE'),
         })
         .pipe(
           map((resenas) => resenas ?? []),
-          tap((resenas) => this._resenas.set(resenas)),
+          tap((resenas) => this._misResenas.set(resenas)),
         ),
     );
   }
 
   cargarMisResenas(usuarioId: number): Observable<ReadonlySet<number>> {
     return this.http
-      .get<ResenaListDTO[] | null>(`${this.apiUrl}/usuario/${usuarioId}`, {
+      .get<ResenaUsuarioDTO[] | null>(`${this.apiUrl}/usuario/${usuarioId}`, {
         context: withRole('CLIENTE'),
       })
       .pipe(

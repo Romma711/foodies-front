@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AUTH_ROLE } from '../../../core/auth/auth-context';
-import { ResenaDetailDTO, ResenaListDTO, ResenaRequestDTO } from '../models';
+import { ResenaDetailDTO, ResenaListDTO, ResenaRequestDTO, ResenaUsuarioDTO } from '../models';
 import { ResenaService } from './resena.service';
 
 describe('ResenaService', () => {
@@ -78,7 +78,7 @@ describe('ResenaService', () => {
   });
 
   it('debería devolver una lista vacía cuando el backend responde 204', () => {
-    let resultado: ResenaListDTO[] | undefined;
+    let resultado: ResenaUsuarioDTO[] | undefined;
 
     service.listarPorUsuario(3).subscribe((resenas) => (resultado = resenas));
 
@@ -88,7 +88,7 @@ describe('ResenaService', () => {
     req.flush(null, { status: 204, statusText: 'No Content' });
 
     expect(resultado).toEqual([]);
-    expect(service.resenas()).toEqual([]);
+    expect(service.misResenas()).toEqual([]);
     expect(service.loading()).toBe(false);
   });
 
