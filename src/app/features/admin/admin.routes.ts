@@ -25,7 +25,7 @@ export const ADMIN_ROUTES: Routes = [
           ),
       },
       {
-        path: 'aceptar/:usuarioId',
+        path: 'aceptar/:restaurantId',
         title: 'Solicitud de restaurante | Admin Foodies',
         loadComponent: () =>
           import('./pages/detalle-solicitud/detalle-solicitud').then((m) => m.DetalleSolicitud),
@@ -35,6 +35,13 @@ export const ADMIN_ROUTES: Routes = [
         title: 'Moderación | Admin Foodies',
         loadComponent: () =>
           import('./pages/moderacion-resenas/moderacion-resenas').then((m) => m.ModeracionResenas),
+      },
+      { path: 'solicitudes', redirectTo: 'aceptar', pathMatch: 'full' },
+      {
+        path: 'entidades',
+        title: 'Entidades | Admin Foodies',
+        loadComponent: () =>
+          import('./pages/gestion-entidades/gestion-entidades').then((m) => m.GestionEntidades),
       },
     ],
   },

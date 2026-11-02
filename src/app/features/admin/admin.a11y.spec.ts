@@ -14,9 +14,11 @@ import { DashboardAdmin } from './pages/dashboard-admin/dashboard-admin';
 import { ModeracionResenas } from './pages/moderacion-resenas/moderacion-resenas';
 import { SolicitudesRestaurantes } from './pages/solicitudes-restaurantes/solicitudes-restaurantes';
 import { AdminSolicitudesService } from './services/admin-solicitudes.service';
-import { solicitud } from './services/admin-solicitudes.service.spec';
+import { solicitud } from './testing/solicitud';
 import { AdminMetricasService } from './services/admin-metricas.service';
 import { AdminModeracionService } from './services/admin-moderacion.service';
+import { AdminEntidadesService } from './services/admin-entidades.service';
+import { GestionEntidades } from './pages/gestion-entidades/gestion-entidades';
 
 @Component({ template: '<h1>Contenido</h1>' })
 class PaginaFalsa {}
@@ -54,7 +56,10 @@ describe('Accesibilidad del panel de administración', () => {
     cargandoMetricas = signal(false);
     errorMetricas = signal<string | null>(null);
     lista = signal(resenas);
-    pendientes = signal([solicitud(), solicitud({ id: 13, nombre: 'Ochiwan', fotos: [] })]);
+    pendientes = signal([
+      solicitud(),
+      solicitud({ restaurantId: 13, nombre: 'Ochiwan', fotos: [] }),
+    ]);
 
     await TestBed.configureTestingModule({
       providers: [
@@ -100,6 +105,42 @@ describe('Accesibilidad del panel de administración', () => {
             error: signal<string | null>(null).asReadonly(),
             cargar: vi.fn(() => of(resenas)),
             eliminar: vi.fn(() => of(undefined)),
+          },
+        },
+        {
+          provide: AdminEntidadesService,
+          useValue: {
+            clientes: signal([
+              {
+                id: 4,
+                nombre: 'Ana',
+                apellido: 'Gómez',
+                email: 'ana@mail.com',
+                telefono: '2231111111',
+                strikes: 1,
+                activo: true,
+                fechaRegistro: null,
+              },
+            ]).asReadonly(),
+            restaurantes: signal([
+              {
+                id: 2,
+                nombre: 'Ochiwan',
+                ubicacion: 'San Juan 229',
+                especialidad: 'ASIATICA',
+                estado: 'APROBADO',
+                strikes: 0,
+                activo: false,
+                usuarioId: 9,
+                email: 'ochiwan@mail.com',
+              },
+            ]).asReadonly(),
+            cargando: signal(false).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            cargar: vi.fn(() => of(undefined)),
+            cambiarActivoCliente: vi.fn(() => of(undefined)),
+            cambiarActivoRestaurante: vi.fn(() => of(undefined)),
+            aplicarStrike: vi.fn(() => of(undefined)),
           },
         },
       ],
@@ -149,6 +190,28 @@ describe('Accesibilidad del panel de administración', () => {
   it('ModeracionResenas vacía', async () => {
     lista.set([]);
     await sinViolaciones(TestBed.createComponent(ModeracionResenas));
+  });
+  it('GestionEntidades en la pestaña de clientes y en la de restaurantes', async () => {
+    const fixture = TestBed.createComponent(GestionEntidades);
+    await sinViolaciones(fixture);
+
+    (fixture.nativeElement.querySelector('#tab-restaurantes') as HTMLButtonElement).click();
+    await sinViolaciones(fixture);
+  });
+
+  it('GestionEntidades con el modal de strike abierto y el error de motivo visible', async () => {
+    const fixture = TestBed.createComponent(GestionEntidades);
+    await sinViolaciones(fixture);
+
+    (
+      fixture.nativeElement.querySelector('[data-testid="aplicar-strike"]') as HTMLButtonElement
+    ).click();
+    await sinViolaciones(fixture);
+
+    (
+      fixture.nativeElement.querySelector('dialog button[type="submit"]') as HTMLButtonElement
+    ).click();
+    await sinViolaciones(fixture);
   });
 
   it('SolicitudesRestaurantes con pendientes y vacía', async () => {

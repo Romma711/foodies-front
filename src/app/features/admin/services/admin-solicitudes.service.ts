@@ -1,15 +1,23 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Service, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { environment } from '../../../../environments/environment';
+import { EstadoRestaurante } from '../models/entidades-admin';
 import { SolicitudRestaurante } from '../models/solicitud-restaurante';
+import { mensajeErrorAdmin } from './mensaje-error-admin';
 
-/** Restaurantes que esperan la aprobación del admin para empezar a operar. */
+interface EstadoSolicitud {
+  restaurantId: number;
+  nombre: string;
+  estado: EstadoRestaurante;
+}
+
+/** Pending restaurant sign-ups and the approve/reject actions of the admin panel. */
 @Service()
 export class AdminSolicitudesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/admin`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/restaurantes`;
 
   private readonly _solicitudes = signal<SolicitudRestaurante[]>([]);
   private readonly _cargando = signal(false);
@@ -19,56 +27,52 @@ export class AdminSolicitudesService {
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
 
-  /** El backend responde 204 cuando no hay pendientes: eso es una lista vacía, no un error. */
   cargar(): Observable<SolicitudRestaurante[]> {
     this._cargando.set(true);
     this._error.set(null);
     return this.http
-      .get<SolicitudRestaurante[] | null>(`${this.apiUrl}/requests`, {
+      .get<SolicitudRestaurante[] | null>(`${this.apiUrl}/pendientes`, {
         context: withRole('ADMIN'),
       })
       .pipe(
-        map((solicitudes) => (Array.isArray(solicitudes) ? solicitudes : [])),
+        map((solicitudes) => solicitudes ?? []),
         tap((solicitudes) => this._solicitudes.set(solicitudes)),
         catchError((error: unknown) => {
-          this._error.set(this.mensajeError(error, 'No se pudieron cargar las solicitudes.'));
+          this._error.set(mensajeErrorAdmin(error, 'No se pudieron cargar las solicitudes.'));
           return throwError(() => error);
         }),
         finalize(() => this._cargando.set(false)),
       );
   }
 
-  /**
-   * Aprueba al restaurante: el backend pasa el rol del usuario de `ROLE_PENDIENTE` a
-   * `ROLE_ENCARGADO` y marca el restaurante como `aprobado`. Los errores llegan como un `Error`
-   * con el mensaje listo para mostrar.
-   */
-  aprobar(usuarioId: number): Observable<void> {
+  /** Publishes the restaurant and gives its manager the restaurant portal. */
+  aprobar(restaurantId: number): Observable<EstadoSolicitud> {
+    return this.resolver(restaurantId, 'aprobar', 'No se pudo aprobar la solicitud.');
+  }
+
+  rechazar(restaurantId: number): Observable<EstadoSolicitud> {
+    return this.resolver(restaurantId, 'rechazar', 'No se pudo rechazar la solicitud.');
+  }
+
+  /** Errors come back as an `Error` whose message is ready to show to the admin. */
+  private resolver(
+    restaurantId: number,
+    accion: 'aprobar' | 'rechazar',
+    porDefecto: string,
+  ): Observable<EstadoSolicitud> {
     return this.http
-      .put<unknown>(`${this.apiUrl}/approved/${usuarioId}`, null, { context: withRole('ADMIN') })
+      .put<EstadoSolicitud>(`${this.apiUrl}/${restaurantId}/${accion}`, null, {
+        context: withRole('ADMIN'),
+      })
       .pipe(
         tap(() =>
           this._solicitudes.update((solicitudes) =>
-            solicitudes.filter((solicitud) => solicitud.id !== usuarioId),
+            solicitudes.filter((solicitud) => solicitud.restaurantId !== restaurantId),
           ),
         ),
-        map(() => undefined),
         catchError((error: unknown) =>
-          throwError(
-            () => new Error(this.mensajeError(error, 'No se pudo aceptar el restaurante.')),
-          ),
+          throwError(() => new Error(mensajeErrorAdmin(error, porDefecto))),
         ),
       );
-  }
-
-  private mensajeError(error: unknown, porDefecto: string): string {
-    const status = error instanceof HttpErrorResponse ? error.status : -1;
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      401: 'Tu sesión venció. Iniciá sesión nuevamente.',
-      403: 'Tu sesión no tiene permisos de administrador.',
-      404: 'La solicitud ya no existe.',
-    };
-    return mensajes[status] ?? porDefecto;
   }
 }

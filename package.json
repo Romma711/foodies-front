@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false",
-    "format:check": "prettier --check src/app/features/resenas src/app/features/admin src/app/shared src/environments"
+    "format:check": "prettier --check src/app/features/resenas src/app/features/admin src/app/features/mapa src/app/shared src/environments"
   },
   "private": true,
   "packageManager": "npm@11.20.0",
@@ -20,6 +20,7 @@
     "@angular/platform-browser": "^22.2.0",
     "@angular/router": "^22.2.0",
     "chart.js": "^4.6.1",
+    "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -28,6 +29,7 @@
     "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.2.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/leaflet": "^1.9.20",
     "axe-core": "^4.14.0",
     "jsdom": "^30.0.0",
     "postcss": "^8.5.31",

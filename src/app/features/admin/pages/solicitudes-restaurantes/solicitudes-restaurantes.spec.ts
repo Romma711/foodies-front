@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SolicitudRestaurante } from '../../models/solicitud-restaurante';
-import { solicitud } from '../../services/admin-solicitudes.service.spec';
+import { solicitud } from '../../testing/solicitud';
 import { SolicitudesRestaurantes } from './solicitudes-restaurantes';
 
 describe('SolicitudesRestaurantes', () => {
@@ -23,13 +23,15 @@ describe('SolicitudesRestaurantes', () => {
     status = 200,
   ): Promise<HTMLElement> {
     const fixture = TestBed.createComponent(SolicitudesRestaurantes);
-    http.expectOne('/api/admin/requests').flush(respuesta, { status, statusText: 'x' });
+    http
+      .expectOne('/api/admin/restaurantes/pendientes')
+      .flush(respuesta, { status, statusText: 'x' });
     await fixture.whenStable();
     return fixture.nativeElement as HTMLElement;
   }
 
   it('lists each pending restaurant with a link to its detail', async () => {
-    const element = await render([solicitud(), solicitud({ id: 13, nombre: 'Ochiwan' })]);
+    const element = await render([solicitud(), solicitud({ restaurantId: 13, nombre: 'Ochiwan' })]);
 
     const links = Array.from(element.querySelectorAll('a'));
     expect(links.map((a) => a.getAttribute('href'))).toEqual([

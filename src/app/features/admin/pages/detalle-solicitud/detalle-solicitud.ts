@@ -14,10 +14,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { especialidadLabel } from '../../../../core/catalog/especialidades';
 import { SolicitudRestaurante } from '../../models/solicitud-restaurante';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 
-/** Detalle de un restaurante pendiente, con el botón para aceptarlo. */
+/** Detalle de un restaurante pendiente, con los botones para aceptarlo o rechazarlo. */
 @Component({
   selector: 'app-detalle-solicitud',
   imports: [RouterLink],
@@ -59,6 +60,24 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
           Ver otras solicitudes
         </a>
       </section>
+    } @else if (rechazado(); as nombre) {
+      <section
+        class="mt-6 rounded-2xl border border-line/60 bg-white px-6 py-10 text-center shadow-sm"
+        role="status"
+      >
+        <h1 #titulo tabindex="-1" class="text-2xl font-extrabold tracking-tight text-ink-900">
+          Se rechazó la solicitud de {{ nombre }}
+        </h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-500">
+          El restaurante no se publica en el catálogo.
+        </p>
+        <a
+          routerLink="/admin/aceptar"
+          class="mt-6 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+        >
+          Ver otras solicitudes
+        </a>
+      </section>
     } @else if (solicitud(); as resto) {
       <section class="mt-6" aria-labelledby="titulo-detalle">
         <div class="flex flex-wrap items-start justify-between gap-4">
@@ -75,26 +94,58 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
               {{ resto.nombre }}
             </h1>
           </div>
-          <button
-            type="button"
-            class="inline-flex items-center justify-center gap-2 rounded-full bg-green-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-progress disabled:opacity-70"
-            [disabled]="aprobando()"
-            (click)="aceptar(resto)"
-          >
-            <svg
-              class="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="m5 12 5 5L20 7" />
-            </svg>
-            {{ aprobando() ? 'Aceptando…' : 'Aceptar' }}
-          </button>
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            @if (confirmandoRechazo()) {
+              <span class="mr-1 text-sm font-semibold text-ink-900">¿Rechazar la solicitud?</span>
+              <button
+                #cancelarRechazo
+                type="button"
+                class="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
+                [disabled]="procesando()"
+                (click)="cancelar()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="rounded-full bg-red-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-70"
+                [disabled]="procesando()"
+                (click)="rechazar(resto)"
+              >
+                {{ rechazando() ? 'Rechazando…' : 'Confirmar rechazo' }}
+              </button>
+            } @else {
+              <button
+                #pedirRechazo
+                type="button"
+                class="rounded-full px-5 py-3 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100 disabled:opacity-60"
+                [disabled]="procesando()"
+                (click)="pedirConfirmacion()"
+              >
+                Rechazar
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-full bg-green-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-progress disabled:opacity-70"
+                [disabled]="procesando()"
+                (click)="aceptar(resto)"
+              >
+                <svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+                {{ aprobando() ? 'Aceptando…' : 'Aceptar' }}
+              </button>
+            }
+          </div>
         </div>
 
         @if (errorAprobar(); as mensaje) {
@@ -109,6 +160,18 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
         <dl
           class="mt-8 grid gap-4 rounded-2xl border border-line/60 bg-white p-6 shadow-sm sm:grid-cols-2"
         >
+          <div>
+            <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">Especialidad</dt>
+            <dd class="mt-1 font-semibold text-ink-900">{{ especialidad(resto) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">Dirección</dt>
+            <dd class="mt-1 font-semibold break-words text-ink-900">{{ resto.ubicacion }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">Cupo</dt>
+            <dd class="mt-1 font-semibold text-ink-900">{{ resto.cupoMaximo }} personas</dd>
+          </div>
           <div>
             <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">
               Email del encargado
@@ -168,7 +231,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
       >
         <h1 class="text-lg font-bold text-ink-900">Esta solicitud ya no está pendiente</h1>
         <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-500">
-          Puede que el restaurante ya haya sido aceptado o que el enlace no sea correcto.
+          Puede que ya haya sido aceptado o rechazado, o que el enlace no sea correcto.
         </p>
       </section>
     }
@@ -179,21 +242,30 @@ export class DetalleSolicitud {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
 
-  /** Bound from the `:usuarioId` route param. */
-  readonly usuarioId = input.required({ transform: numberAttribute });
+  /** Bound from the `:restaurantId` route param. */
+  readonly restaurantId = input.required({ transform: numberAttribute });
 
   private readonly titulo = viewChild<ElementRef<HTMLElement>>('titulo');
+  private readonly botonCancelar = viewChild<ElementRef<HTMLElement>>('cancelarRechazo');
+  private readonly botonRechazar = viewChild<ElementRef<HTMLElement>>('pedirRechazo');
 
   protected readonly cargando = this.solicitudesService.cargando;
   protected readonly error = this.solicitudesService.error;
   protected readonly solicitud = computed(() =>
-    this.solicitudesService.solicitudes().find((solicitud) => solicitud.id === this.usuarioId()),
+    this.solicitudesService
+      .solicitudes()
+      .find((solicitud) => solicitud.restaurantId === this.restaurantId()),
   );
 
   protected readonly aprobando = signal(false);
+  protected readonly rechazando = signal(false);
+  protected readonly confirmandoRechazo = signal(false);
+  /** Bloquea las dos acciones: una solicitud se resuelve una sola vez. */
+  protected readonly procesando = computed(() => this.aprobando() || this.rechazando());
   protected readonly errorAprobar = signal<string | null>(null);
   /** Nombre del restaurante recién aceptado; ya no está en la lista de pendientes. */
   protected readonly aceptado = signal<string | null>(null);
+  protected readonly rechazado = signal<string | null>(null);
 
   constructor() {
     // Siempre se recarga: la lista en memoria puede haber quedado vieja desde otra pestaña.
@@ -207,11 +279,39 @@ export class DetalleSolicitud {
       .subscribe({ error: () => undefined });
   }
 
+  protected especialidad(solicitud: SolicitudRestaurante): string {
+    return especialidadLabel(solicitud.especialidad);
+  }
+
+  protected pedirConfirmacion(): void {
+    this.confirmandoRechazo.set(true);
+    afterNextRender(() => this.botonCancelar()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  protected cancelar(): void {
+    this.confirmandoRechazo.set(false);
+    afterNextRender(() => this.botonRechazar()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  protected async rechazar(solicitud: SolicitudRestaurante): Promise<void> {
+    this.rechazando.set(true);
+    this.errorAprobar.set(null);
+    try {
+      await firstValueFrom(this.solicitudesService.rechazar(solicitud.restaurantId));
+      this.rechazado.set(solicitud.nombre);
+      afterNextRender(() => this.titulo()?.nativeElement.focus(), { injector: this.injector });
+    } catch (error) {
+      this.errorAprobar.set(error instanceof Error ? error.message : 'No se pudo rechazar.');
+    } finally {
+      this.rechazando.set(false);
+    }
+  }
+
   protected async aceptar(solicitud: SolicitudRestaurante): Promise<void> {
     this.aprobando.set(true);
     this.errorAprobar.set(null);
     try {
-      await firstValueFrom(this.solicitudesService.aprobar(solicitud.id));
+      await firstValueFrom(this.solicitudesService.aprobar(solicitud.restaurantId));
       this.aceptado.set(solicitud.nombre);
       // El botón desaparece: el foco pasa al mensaje para no perderse.
       afterNextRender(() => this.titulo()?.nativeElement.focus(), { injector: this.injector });

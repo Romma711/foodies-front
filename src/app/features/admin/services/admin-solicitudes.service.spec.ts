@@ -2,24 +2,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { AUTH_ROLE } from '../../../core/auth/auth-context';
+import { environment } from '../../../../environments/environment';
 import { SolicitudRestaurante } from '../models/solicitud-restaurante';
+import { solicitud } from '../testing/solicitud';
 import { AdminSolicitudesService } from './admin-solicitudes.service';
 
-export function solicitud(overrides: Partial<SolicitudRestaurante> = {}): SolicitudRestaurante {
-  return {
-    id: 12,
-    nombre: 'La Parrilla',
-    email: 'encargado@laparrilla.com',
-    telefono: '2235550000',
-    rol: 'ROLE_PENDIENTE',
-    fotos: [
-      { id: 1, url: '/api/files/fotos/3/a.jpg', portada: false },
-      { id: 2, url: '/api/files/fotos/3/b.jpg', portada: true },
-    ],
-    ...overrides,
-  };
-}
+const API = environment.apiUrl;
 
 describe('AdminSolicitudesService', () => {
   let service: AdminSolicitudesService;
@@ -35,53 +23,76 @@ describe('AdminSolicitudesService', () => {
 
   afterEach(() => http.verify());
 
-  it('loads the pending restaurants with the admin session', () => {
-    service.cargar().subscribe();
+  async function cargarCon(solicitudes: SolicitudRestaurante[]) {
+    const carga = firstValueFrom(service.cargar());
+    http.expectOne(`${API}/admin/restaurantes/pendientes`).flush(solicitudes);
+    await carga;
+  }
 
-    const req = http.expectOne({ method: 'GET', url: '/api/admin/requests' });
-    expect(req.request.context.get(AUTH_ROLE)).toBe('ADMIN');
-    req.flush([solicitud()]);
+  it('carga las solicitudes pendientes y maneja el estado de carga', async () => {
+    const carga = firstValueFrom(service.cargar());
+    expect(service.cargando()).toBe(true);
 
-    expect(service.solicitudes()).toEqual([solicitud()]);
+    http
+      .expectOne(`${API}/admin/restaurantes/pendientes`)
+      .flush([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
+    await carga;
+
     expect(service.cargando()).toBe(false);
+    expect(service.solicitudes().map((s) => s.nombre)).toEqual(['Pasta Nostra']);
   });
 
-  it('treats the 204 of an empty queue as an empty list', () => {
-    service.cargar().subscribe();
+  it('aprueba con PUT y saca la solicitud de la lista', async () => {
+    await cargarCon([
+      solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' }),
+      solicitud({ restaurantId: 2, nombre: 'El Muelle' }),
+    ]);
 
-    http.expectOne('/api/admin/requests').flush(null, { status: 204, statusText: 'No Content' });
+    const aprobar = firstValueFrom(service.aprobar(1));
+    const req = http.expectOne(`${API}/admin/restaurantes/1/aprobar`);
+    expect(req.request.method).toBe('PUT');
+    req.flush({ restaurantId: 1, nombre: 'Pasta Nostra', estado: 'APROBADO' });
+    await aprobar;
+
+    expect(service.solicitudes().map((s) => s.restaurantId)).toEqual([2]);
+  });
+
+  it('rechaza con PUT y saca la solicitud de la lista', async () => {
+    await cargarCon([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
+
+    const rechazar = firstValueFrom(service.rechazar(1));
+    const req = http.expectOne(`${API}/admin/restaurantes/1/rechazar`);
+    expect(req.request.method).toBe('PUT');
+    req.flush({ restaurantId: 1, nombre: 'Pasta Nostra', estado: 'RECHAZADO' });
+    await rechazar;
 
     expect(service.solicitudes()).toEqual([]);
-    expect(service.error()).toBeNull();
   });
 
-  it('reports a readable error when the list fails', () => {
-    service.cargar().subscribe({ error: () => undefined });
+  it('si falla una acción deja la solicitud y devuelve un mensaje para mostrar', async () => {
+    await cargarCon([solicitud({ restaurantId: 1, nombre: 'Pasta Nostra' })]);
 
-    http.expectOne('/api/admin/requests').flush(null, { status: 403, statusText: 'Forbidden' });
+    const rechazar = firstValueFrom(service.rechazar(1));
+    http.expectOne(`${API}/admin/restaurantes/1/rechazar`).flush(
+      { mensaje: 'Solo se pueden rechazar solicitudes pendientes' },
+      {
+        status: 400,
+        statusText: 'Bad Request',
+      },
+    );
 
+    await expect(rechazar).rejects.toThrow('Solo se pueden rechazar solicitudes pendientes');
+    expect(service.solicitudes()).toHaveLength(1);
+  });
+
+  it('expone un mensaje legible cuando no puede cargar', async () => {
+    const carga = firstValueFrom(service.cargar());
+    http.expectOne(`${API}/admin/restaurantes/pendientes`).flush(null, {
+      status: 403,
+      statusText: 'Forbidden',
+    });
+
+    await expect(carga).rejects.toBeTruthy();
     expect(service.error()).toBe('Tu sesión no tiene permisos de administrador.');
-  });
-
-  it('approves by user id and drops the restaurant from the queue', async () => {
-    service.cargar().subscribe();
-    http.expectOne('/api/admin/requests').flush([solicitud(), solicitud({ id: 13 })]);
-
-    const aprobado = firstValueFrom(service.aprobar(12));
-    const req = http.expectOne({ method: 'PUT', url: '/api/admin/approved/12' });
-    expect(req.request.context.get(AUTH_ROLE)).toBe('ADMIN');
-    req.flush({ id: 12, rol: 'ROLE_ENCARGADO' });
-    await aprobado;
-
-    expect(service.solicitudes().map((s) => s.id)).toEqual([13]);
-  });
-
-  it('turns a failed approval into a readable Error', async () => {
-    const aprobado = firstValueFrom(service.aprobar(12));
-    http
-      .expectOne('/api/admin/approved/12')
-      .flush(null, { status: 0, statusText: 'Unknown Error' });
-
-    await expect(aprobado).rejects.toThrow('No se pudo conectar con el servidor.');
   });
 });

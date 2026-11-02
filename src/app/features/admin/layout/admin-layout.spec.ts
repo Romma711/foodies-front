@@ -50,11 +50,13 @@ describe('AdminLayout', () => {
       'Dashboard',
       'Aceptar',
       'Moderación',
+      'Entidades',
     ]);
     expect(enlaces(elemento).map((enlace) => enlace.getAttribute('href'))).toEqual([
       '/admin',
       '/admin/aceptar',
       '/admin/moderacion',
+      '/admin/entidades',
     ]);
     expect(elemento.querySelector('[data-testid="contenido"]')).not.toBeNull();
   });

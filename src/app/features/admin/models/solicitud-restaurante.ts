@@ -1,16 +1,20 @@
+import { EspecialidadDeComida } from '../../../core/auth/auth.models';
 import { Foto } from '../../../core/catalog/fotos';
+import { EstadoRestaurante } from './entidades-admin';
 
-/**
- * `UsuarioRestoAAprobarDTO`: un restaurante registrado que espera aprobación.
- * `id` es el del **usuario** encargado, que es lo que pide `PUT /api/admin/approved/{usuarioId}`.
- */
+/** `SolicitudRestauranteDTO`: a restaurant sign-up waiting for review. */
 export interface SolicitudRestaurante {
-  id: number;
+  restaurantId: number;
   /** Nombre del restaurante. */
   nombre: string;
+  ubicacion: string;
+  especialidad: EspecialidadDeComida;
+  cupoMaximo: number;
+  estado: EstadoRestaurante;
+  usuarioId: number;
   email: string;
   telefono: string | null;
-  /** `ROLE_PENDIENTE` mientras no se aprueba. */
-  rol: string;
+  /** ISO date-time; null for accounts created before the column existed. */
+  fechaRegistro: string | null;
   fotos: Foto[];
 }

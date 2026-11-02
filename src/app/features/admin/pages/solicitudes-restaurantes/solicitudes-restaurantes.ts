@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Foto } from '../../../../core/catalog/fotos';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 
-/** Restaurantes pendientes de aprobación. Se aceptan desde su detalle, después de revisarlos. */
+/** Restaurantes pendientes de aprobación. Se aceptan o rechazan desde su detalle, después de revisarlos. */
 @Component({
   selector: 'app-solicitudes-restaurantes',
   imports: [RouterLink],
@@ -21,7 +21,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-6 text-ink-500">
             Estos restaurantes se registraron y esperan tu aprobación. Entrá al detalle de cada uno
-            para revisarlo y aceptarlo.
+            para revisarlo y aceptarlo o rechazarlo.
           </p>
         </div>
         @if (solicitudes().length > 0) {
@@ -56,7 +56,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
         <ul
           class="mt-8 divide-y divide-line/60 rounded-2xl border border-line/60 bg-white shadow-sm"
         >
-          @for (solicitud of solicitudes(); track solicitud.id) {
+          @for (solicitud of solicitudes(); track solicitud.restaurantId) {
             <li class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex min-w-0 items-center gap-4">
                 <span
@@ -76,7 +76,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
               </div>
               <a
                 class="inline-flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 ring-1 ring-line transition hover:bg-cream-100"
-                [routerLink]="['/admin/aceptar', solicitud.id]"
+                [routerLink]="['/admin/aceptar', solicitud.restaurantId]"
                 [attr.aria-label]="'Ver detalles de ' + solicitud.nombre"
               >
                 Ver detalles
