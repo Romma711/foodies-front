@@ -51,8 +51,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
           {{ nombre }} fue aceptado
         </h1>
         <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-green-900">
-          Ya figura en el catálogo y su encargado puede entrar al panel del restaurante. Le avisamos
-          por email.
+          Ya figura en el catálogo y su encargado puede entrar al panel del restaurante.
         </p>
         <a
           routerLink="/admin/aceptar"
