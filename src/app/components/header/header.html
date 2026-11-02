@@ -39,50 +39,44 @@
       >
         Restaurantes
       </a>
-      @if (esCliente()) {
-        <a
-          routerLink="/mis-reservas"
-          routerLinkActive="bg-white/70"
-          ariaCurrentWhenActive="page"
-          class="rounded-full px-3 py-2 text-sm font-semibold text-ink-700 transition hover:bg-white/70 hover:text-ink-900"
-        >
-          Mis reservas
-        </a>
-      }
     </nav>
 
     <div class="hidden items-center gap-2 md:flex">
       @for (role of activeRoles(); track role) {
-        <div
-          class="flex items-center gap-1 rounded-full border border-line bg-white/75 py-1 pr-1 pl-3"
-        >
-          <a
-            [routerLink]="portals[role].homePath"
-            class="text-sm font-semibold text-ink-700 transition hover:text-ink-900"
+        @if (role === 'CLIENTE') {
+          <app-cliente-menu (cerrarSesion)="logout(role)" />
+        } @else {
+          <div
+            class="flex items-center gap-1 rounded-full border border-line bg-white/75 py-1 pr-1 pl-3"
           >
-            {{ portals[role].title }}
-          </a>
-          <button
-            type="button"
-            class="grid size-8 place-items-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-            [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
-            (click)="logout(role)"
-          >
-            <svg
-              class="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
+            <a
+              [routerLink]="portals[role].homePath"
+              class="text-sm font-semibold text-ink-700 transition hover:text-ink-900"
             >
-              <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
-              <path d="M10 17l5-5-5-5M15 12H3" />
-            </svg>
-          </button>
-        </div>
+              {{ portals[role].title }}
+            </a>
+            <button
+              type="button"
+              class="grid size-8 place-items-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
+              [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
+              (click)="logout(role)"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+                <path d="M10 17l5-5-5-5M15 12H3" />
+              </svg>
+            </button>
+          </div>
+        }
       } @empty {
         <a
           routerLink="/restaurante/login"
@@ -156,38 +150,56 @@
         >
           Restaurantes
         </a>
-        @if (esCliente()) {
-          <a
-            routerLink="/mis-reservas"
-            routerLinkActive="bg-white/70"
-            ariaCurrentWhenActive="page"
-            class="rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-white/70"
-            (click)="cerrarMenu()"
-          >
-            Mis reservas
-          </a>
-        }
-
         @for (role of activeRoles(); track role) {
-          <div
-            class="flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition hover:bg-white/70"
-          >
-            <a
-              [routerLink]="portals[role].homePath"
-              class="text-sm font-semibold text-ink-700"
-              (click)="cerrarMenu()"
+          @if (role === 'CLIENTE') {
+            <div class="mt-2 border-t border-line/70 pt-3">
+              <p class="truncate px-3 text-sm font-bold text-ink-900">
+                {{ perfil.nombreCompleto() }}
+              </p>
+              <ul class="mt-1">
+                @for (opcion of opcionesCliente; track opcion.path) {
+                  <li>
+                    <a
+                      [routerLink]="opcion.path"
+                      routerLinkActive="bg-white/70"
+                      ariaCurrentWhenActive="page"
+                      class="block rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-white/70"
+                      (click)="cerrarMenu()"
+                    >
+                      {{ opcion.label }}
+                    </a>
+                  </li>
+                }
+              </ul>
+              <button
+                type="button"
+                class="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                (click)="logout(role)"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          } @else {
+            <div
+              class="flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition hover:bg-white/70"
             >
-              {{ portals[role].title }}
-            </a>
-            <button
-              type="button"
-              class="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-              [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
-              (click)="logout(role)"
-            >
-              Cerrar sesión
-            </button>
-          </div>
+              <a
+                [routerLink]="portals[role].homePath"
+                class="text-sm font-semibold text-ink-700"
+                (click)="cerrarMenu()"
+              >
+                {{ portals[role].title }}
+              </a>
+              <button
+                type="button"
+                class="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
+                [attr.aria-label]="'Cerrar sesión de ' + portals[role].title"
+                (click)="logout(role)"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          }
         } @empty {
           <a
             routerLink="/login"
