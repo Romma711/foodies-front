@@ -291,12 +291,14 @@ describe('GestionEntidades', () => {
 
     const badge = host.querySelector('tbody [data-testid="sugerir-baja"]');
     expect(badge?.textContent?.trim()).toBe('Sugerir penalización / dar de baja');
+    expect(botonStrike(host).disabled).toBe(true);
   });
 
   it('con menos de 3 strikes no muestra el badge', () => {
     const { host } = crear();
 
     expect(host.querySelector('[data-testid="sugerir-baja"]')).toBeNull();
+    expect(botonStrike(host).disabled).toBe(false);
   });
 
   it('en restaurantes el strike va al restaurante', () => {

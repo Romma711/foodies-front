@@ -296,9 +296,10 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
           </span>
           <button
             type="button"
-            class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100"
+            class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-ink-700 disabled:hover:ring-line"
             data-testid="aplicar-strike"
             [attr.aria-label]="'Aplicar strike a ' + nombre"
+            [disabled]="strikes >= limiteStrikes"
             (click)="abrir()"
           >
             + Strike
