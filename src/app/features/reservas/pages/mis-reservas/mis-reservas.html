@@ -49,7 +49,8 @@
       </div>
     }
 
-    @if (mutationError(); as message) {
+    <!-- While editing, the edit form shows the error next to its fields. -->
+    @if (editandoId() === null && mutationError(); as message) {
       <div
         role="alert"
         class="mt-6 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-800"
@@ -156,68 +157,96 @@
             </dl>
 
             <div class="mt-5">
-              @switch (reserva.estadoReserva) {
-                @case ('PENDIENTE') {
-                  @if (cancelandoId() === reserva.id) {
-                    <div
-                      class="flex flex-col gap-3 rounded-xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
-                      role="group"
-                      aria-label="Confirmar cancelación de la reserva"
-                    >
-                      <p class="text-sm font-medium text-amber-900">¿Cancelar esta reserva?</p>
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          [disabled]="saving()"
-                          class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          (click)="cerrarCancelacion()"
-                        >
-                          No, mantenerla
-                        </button>
-                        <button
-                          type="button"
-                          [disabled]="saving()"
-                          class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-progress disabled:opacity-60"
-                          (click)="confirmarCancelacion(reserva.id)"
-                        >
-                          @if (saving()) {
-                            <span
-                              class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                              aria-hidden="true"
-                            ></span>
-                          }
-                          Sí, cancelar
-                        </button>
+              @if (editandoId() === reserva.id) {
+                <app-reserva-edit-form
+                  [reserva]="reserva"
+                  (guardada)="cerrarEdicion()"
+                  (cancelada)="cerrarEdicion()"
+                />
+              } @else {
+                @switch (reserva.estadoReserva) {
+                  @case ('PENDIENTE') {
+                    @if (cancelandoId() === reserva.id) {
+                      <div
+                        class="flex flex-col gap-3 rounded-xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+                        role="group"
+                        aria-label="Confirmar cancelación de la reserva"
+                      >
+                        <p class="text-sm font-medium text-amber-900">¿Cancelar esta reserva?</p>
+                        <div class="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            [disabled]="saving()"
+                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            (click)="cerrarCancelacion()"
+                          >
+                            No, mantenerla
+                          </button>
+                          <button
+                            type="button"
+                            [disabled]="saving()"
+                            class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-progress disabled:opacity-60"
+                            (click)="confirmarCancelacion(reserva.id)"
+                          >
+                            @if (saving()) {
+                              <span
+                                class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                                aria-hidden="true"
+                              ></span>
+                            }
+                            Sí, cancelar
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  } @else {
+                    } @else {
+                      <div class="flex flex-wrap items-center justify-between gap-3">
+                        <p class="text-sm leading-6 text-ink-500">
+                          Esperando la confirmación del restaurante.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                            [attr.aria-label]="'Modificar la reserva #' + reserva.id"
+                            (click)="iniciarEdicion(reserva.id)"
+                          >
+                            Modificar
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                            (click)="iniciarCancelacion(reserva.id)"
+                          >
+                            Cancelar reserva
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  }
+                  @case ('ACEPTADA') {
                     <div class="flex flex-wrap items-center justify-between gap-3">
-                      <p class="text-sm leading-6 text-ink-500">
-                        Esperando la confirmación del restaurante.
+                      <p
+                        class="rounded-xl bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900 ring-1 ring-emerald-100"
+                      >
+                        El restaurante confirmó tu reserva. ¡Te esperamos!
                       </p>
                       <button
                         type="button"
                         class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                        (click)="iniciarCancelacion(reserva.id)"
+                        [attr.aria-label]="'Modificar la reserva #' + reserva.id"
+                        (click)="iniciarEdicion(reserva.id)"
                       >
-                        Cancelar reserva
+                        Modificar
                       </button>
                     </div>
                   }
-                }
-                @case ('ACEPTADA') {
-                  <p
-                    class="rounded-xl bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900 ring-1 ring-emerald-100"
-                  >
-                    El restaurante confirmó tu reserva. ¡Te esperamos!
-                  </p>
-                }
-                @case ('CANCELADA') {
-                  <p
-                    class="rounded-xl bg-cream-100/80 px-4 py-3 text-sm font-medium text-ink-600 ring-1 ring-line/60"
-                  >
-                    Esta reserva fue cancelada.
-                  </p>
+                  @case ('CANCELADA') {
+                    <p
+                      class="rounded-xl bg-cream-100/80 px-4 py-3 text-sm font-medium text-ink-600 ring-1 ring-line/60"
+                    >
+                      Esta reserva fue cancelada.
+                    </p>
+                  }
                 }
               }
             </div>

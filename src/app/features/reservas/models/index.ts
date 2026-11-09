@@ -30,8 +30,13 @@ export interface ReservaDetailDTO {
   nombreResto: string;
 }
 
-/** `ReservaPatchDTO` */
+/**
+ * `ReservaPatchDTO`. The owner changes date, arrival time and party size of a PENDIENTE or
+ * ACEPTADA reservation (it goes back to PENDIENTE), or cancels it with `estadoReserva`.
+ */
 export interface ReservaPatchDTO {
   cantidad?: number | null;
+  fechaReserva?: string | null;
+  horarioLlegada?: string | null;
   estadoReserva?: EstadoReserva | null;
 }

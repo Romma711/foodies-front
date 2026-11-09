@@ -99,6 +99,42 @@ export class ReservaService {
     );
   }
 
+  /** Changes date, arrival time and party size; the server returns it as PENDIENTE again. */
+  modificar(
+    id: number,
+    cambios: Required<Pick<ReservaPatchDTO, 'fechaReserva' | 'horarioLlegada' | 'cantidad'>>,
+  ): Observable<ReservaDetailDTO> {
+    const patch: ReservaPatchDTO = {
+      fechaReserva: cambios.fechaReserva,
+      horarioLlegada: cambios.horarioLlegada,
+      cantidad: cambios.cantidad,
+    };
+    return this.ejecutarEscritura(
+      this.http
+        .put<ReservaDetailDTO>(`${this.apiUrl}/${id}`, patch, {
+          context: withRole('CLIENTE'),
+        })
+        .pipe(
+          tap((actualizada) => {
+            this._reserva.set(actualizada);
+            this._reservas.update((reservas) =>
+              reservas.map((reserva) =>
+                reserva.id === actualizada.id
+                  ? {
+                      ...reserva,
+                      cantidad: actualizada.cantidad,
+                      fechaReserva: actualizada.fecha,
+                      horariollegada: actualizada.horariollegada,
+                      estadoReserva: actualizada.estadoReserva,
+                    }
+                  : reserva,
+              ),
+            );
+          }),
+        ),
+    );
+  }
+
   private ejecutarLectura<T>(request: Observable<T>): Observable<T> {
     this._loading.set(true);
     this._error.set(null);

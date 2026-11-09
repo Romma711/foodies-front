@@ -2,12 +2,13 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit-form';
 import { EstadoReserva } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
 import { estadoLabel, formatearFechaReserva, formatearHora } from '../../utils/reserva-formato';
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, ReservaEditForm],
   selector: 'app-mis-reservas',
   templateUrl: './mis-reservas.html',
 })
@@ -22,6 +23,8 @@ export class MisReservas {
   protected readonly saving = this.reservaService.saving;
   protected readonly mutationError = this.reservaService.mutationError;
   protected readonly cancelandoId = signal<number | null>(null);
+  /** Reservation whose edit form is open; only one at a time. */
+  protected readonly editandoId = signal<number | null>(null);
 
   protected readonly pendientes = computed(
     () => this.reservas().filter((reserva) => reserva.estadoReserva === 'PENDIENTE').length,
@@ -44,7 +47,19 @@ export class MisReservas {
 
   protected iniciarCancelacion(id: number): void {
     this.reservaService.limpiarErrorMutacion();
+    this.editandoId.set(null);
     this.cancelandoId.set(id);
+  }
+
+  protected iniciarEdicion(id: number): void {
+    this.reservaService.limpiarErrorMutacion();
+    this.cancelandoId.set(null);
+    this.editandoId.set(id);
+  }
+
+  protected cerrarEdicion(): void {
+    this.reservaService.limpiarErrorMutacion();
+    this.editandoId.set(null);
   }
 
   protected cerrarCancelacion(): void {
