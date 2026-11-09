@@ -8,8 +8,33 @@ export const OPCIONES_ORDEN: readonly { valor: OrdenResenas; etiqueta: string }[
   { valor: 'peores', etiqueta: 'Peor puntuación' },
 ];
 
-/** Reviews carry no date; the auto-increment id is the only reliable "newer first" signal. */
-const masRecientePrimero = (a: ResenaListDTO, b: ResenaListDTO) => b.id - a.id;
+/** Milliseconds of the review's creation date, or null when it has none or it does not parse. */
+function tiempo(resena: ResenaListDTO): number | null {
+  if (!resena.fecha) {
+    return null;
+  }
+  const valor = new Date(resena.fecha).getTime();
+  return Number.isNaN(valor) ? null : valor;
+}
+
+/**
+ * Newer first by creation date. Old reviews were saved without one, so they go after the dated
+ * ones, and the auto-increment id breaks every remaining tie.
+ */
+const masRecientePrimero = (a: ResenaListDTO, b: ResenaListDTO) => {
+  const tiempoA = tiempo(a);
+  const tiempoB = tiempo(b);
+  if (tiempoA !== null && tiempoB !== null && tiempoA !== tiempoB) {
+    return tiempoB - tiempoA;
+  }
+  if (tiempoA !== null && tiempoB === null) {
+    return -1;
+  }
+  if (tiempoA === null && tiempoB !== null) {
+    return 1;
+  }
+  return b.id - a.id;
+};
 
 const COMPARADORES: Record<OrdenResenas, (a: ResenaListDTO, b: ResenaListDTO) => number> = {
   recientes: masRecientePrimero,
