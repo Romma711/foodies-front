@@ -154,7 +154,7 @@ describe('ResenaCard', () => {
     ).toBe('5.0');
   });
   it('debería mostrar la fecha de la reseña en español', () => {
-    const fixture = crear({ ...resena, fecha: '2026-11-09T15:30:00' });
+    const fixture = crear({ ...resena, fechaCreacion: '2026-11-09T15:30:00' });
     const fecha = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="fecha"]');
 
     expect(fecha?.textContent?.trim()).toBe('9 de noviembre de 2026');
@@ -162,7 +162,7 @@ describe('ResenaCard', () => {
   });
 
   it('no debería mostrar fecha cuando la reseña no la tiene', () => {
-    const fixture = crear({ ...resena, fecha: null });
+    const fixture = crear({ ...resena, fechaCreacion: null });
 
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="fecha"]')).toBeNull();
   });

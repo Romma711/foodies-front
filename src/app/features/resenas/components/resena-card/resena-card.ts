@@ -40,7 +40,7 @@ import { StarRating } from '../star-rating/star-rating';
           @if (fecha(); as fecha) {
             <time
               class="mt-1 block text-xs text-ink-700"
-              [attr.datetime]="resena().fecha"
+              [attr.datetime]="resena().fechaCreacion"
               data-testid="fecha"
             >
               {{ fecha }}
@@ -153,7 +153,7 @@ export class ResenaCard {
   private readonly palette = ['#fde7dc', '#e7f0ff', '#e7f6ec', '#f3e8ff', '#fff4d6', '#ffe4e6'];
 
   /** Creation date in Spanish, or null for old reviews saved without one. */
-  readonly fecha = computed(() => formatearFechaResena(this.resena().fecha));
+  readonly fecha = computed(() => formatearFechaResena(this.resena().fechaCreacion));
 
   readonly nombre = computed(() => this.resena().nombreUsuario?.trim() || 'Anónimo');
 

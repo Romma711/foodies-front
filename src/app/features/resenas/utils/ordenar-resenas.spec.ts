@@ -38,9 +38,9 @@ describe('filtrarYOrdenar', () => {
   });
   it('debería ordenar por más recientes usando la fecha y dejar al final las reseñas sin fecha', () => {
     const conFecha = [
-      { ...resena(10, 4), fecha: '2026-11-01T10:00:00' },
-      { ...resena(11, 4), fecha: null },
-      { ...resena(5, 4), fecha: '2026-11-08T10:00:00' },
+      { ...resena(10, 4), fechaCreacion: '2026-11-01T10:00:00' },
+      { ...resena(11, 4), fechaCreacion: null },
+      { ...resena(5, 4), fechaCreacion: '2026-11-08T10:00:00' },
       { ...resena(12, 4) },
     ];
 

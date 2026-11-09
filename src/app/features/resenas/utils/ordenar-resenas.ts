@@ -10,10 +10,10 @@ export const OPCIONES_ORDEN: readonly { valor: OrdenResenas; etiqueta: string }[
 
 /** Milliseconds of the review's creation date, or null when it has none or it does not parse. */
 function tiempo(resena: ResenaListDTO): number | null {
-  if (!resena.fecha) {
+  if (!resena.fechaCreacion) {
     return null;
   }
-  const valor = new Date(resena.fecha).getTime();
+  const valor = new Date(resena.fechaCreacion).getTime();
   return Number.isNaN(valor) ? null : valor;
 }
 
