@@ -90,4 +90,14 @@ describe('Home', () => {
     expect(element.querySelector('#home-destacados')).toBeNull();
     expect(element.querySelector('h1')).not.toBeNull();
   });
+  it('cada especialidad lleva al catálogo filtrado por ella', () => {
+    const element = render();
+    const chips = element.querySelectorAll<HTMLAnchorElement>(
+      '[aria-label="Especialidades disponibles"] a',
+    );
+    const pastas = [...chips].find((chip) => chip.textContent?.trim() === 'Pastas');
+
+    expect(chips.length).toBe(6);
+    expect(pastas?.getAttribute('href')).toBe('/restaurantes?especialidad=PASTAS');
+  });
 });

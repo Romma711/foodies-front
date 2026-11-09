@@ -1,7 +1,9 @@
 import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { MapaRestaurantes } from '../../../features/mapa/components/mapa-restaurantes/mapa-restaurantes';
 import { CalificacionService } from '../../../features/mapa/services/calificacion.service';
 import { RestauranteListDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
@@ -141,5 +143,75 @@ describe('RestauranteList', () => {
 
     expect(host.querySelector('app-mapa-restaurantes')).toBeNull();
     expect(host.querySelectorAll('ul > li').length).toBe(2);
+  });
+  function botonFiltro(host: HTMLElement, etiqueta: string): HTMLButtonElement {
+    return [
+      ...host.querySelectorAll<HTMLButtonElement>('[data-testid="filtro-especialidad"] button'),
+    ].find((boton) => boton.textContent?.trim() === etiqueta)!;
+  }
+
+  function nombres(host: HTMLElement): string[] {
+    return [...host.querySelectorAll('ul > li h2')].map((h2) => h2.textContent?.trim() ?? '');
+  }
+
+  it('filtra por especialidad y "Todas" vuelve a mostrar todos', () => {
+    const fixture = crearComponente();
+    const host = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    expect(botonFiltro(host, 'Todas').getAttribute('aria-pressed')).toBe('true');
+
+    botonFiltro(host, 'Pastas').click();
+    fixture.detectChanges();
+
+    expect(nombres(host)).toEqual(['La Trattoria']);
+    expect(botonFiltro(host, 'Pastas').getAttribute('aria-pressed')).toBe('true');
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { especialidad: 'PASTAS' } }),
+    );
+
+    botonFiltro(host, 'Todas').click();
+    fixture.detectChanges();
+
+    expect(nombres(host)).toEqual(['Ochiwan', 'La Trattoria']);
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { especialidad: null } }),
+    );
+  });
+
+  it('aplica la especialidad que llega por la URL', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('especialidad', 'ASIATICA');
+    fixture.detectChanges();
+
+    expect(nombres(fixture.nativeElement as HTMLElement)).toEqual(['Ochiwan']);
+  });
+
+  it('avisa cuando no hay restaurantes de la especialidad elegida', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('especialidad', 'CAFE');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="sin-resultados"]')?.textContent).toContain(
+      'Todavía no hay restaurantes de Café',
+    );
+  });
+
+  it('el mapa recibe solo los restaurantes filtrados', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('especialidad', 'PASTAS');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-testid="vista-mapa"]')!.click();
+    fixture.detectChanges();
+
+    const mapa = fixture.debugElement.query(By.css('app-mapa-restaurantes'));
+    expect(
+      (mapa.componentInstance as MapaRestaurantes).restaurantes().map((r) => r.nombre),
+    ).toEqual(['La Trattoria']);
   });
 });
