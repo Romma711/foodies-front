@@ -137,7 +137,7 @@ Un solo recorrido, de punta a punta. Cada paso dice qué mostrar y qué contar.
 4. Iniciá sesión como `lucia.fernandez@demo.foodies.com`. Mostrá que el pie de página ahora refleja la sesión.
 5. Reservá para mañana a las 21:00 para 4 personas. La reserva queda **PENDIENTE**.
 6. En **Mis reservas**, modificá la cantidad: probá poner 0 para mostrar que el error aparece al instante, después dejá 3 y guardá. Contá que al modificarla vuelve a quedar pendiente.
-7. Volvé a La Brasa de Güemes y dejá una reseña de 5 estrellas.
+7. Volvé a La Brasa de Güemes y dejá una reseña de 5 estrellas. El comentario tiene que tener entre 10 y 255 caracteres (por ejemplo: "Excelente asado y muy buena atención.").
 
 ### Restaurante: confirmar la reserva
 
