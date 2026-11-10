@@ -228,6 +228,37 @@ describe('MisReservas', () => {
       expect(formulario.textContent).toContain('Reservá al menos para 1 persona.');
     });
 
+    it('muestra el error de cantidad mínima apenas el valor es inválido, sin esperar el blur', () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      const formulario = elemento.querySelector('form')!;
+      const cantidad = formulario.querySelector<HTMLInputElement>('input[type="number"]')!;
+      cantidad.value = '0';
+      cantidad.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(formulario.textContent).toContain('Reservá al menos para 1 persona.');
+      expect(cantidad.getAttribute('aria-invalid')).toBe('true');
+      expect(cantidad.getAttribute('aria-describedby')).toBe(`${cantidad.id}-error`);
+    });
+
+    it('no muestra errores de cantidad al abrir el formulario', () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      const formulario = elemento.querySelector('form')!;
+
+      expect(formulario.textContent).not.toContain('Reservá al menos para 1 persona.');
+      expect(formulario.querySelector('input[type="number"]')!.getAttribute('aria-invalid')).toBe('false');
+    });
+
     it('muestra en el formulario el mensaje de error del servidor', () => {
       reservas.set([pendiente]);
       const fixture = crearComponente();

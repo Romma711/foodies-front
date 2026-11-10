@@ -63,15 +63,11 @@
         type="number"
         inputmode="numeric"
         [formField]="editForm.cantidad"
-        [attr.aria-invalid]="editForm.cantidad().touched() && editForm.cantidad().invalid()"
-        [attr.aria-describedby]="
-          editForm.cantidad().touched() && editForm.cantidad().errors()[0]
-            ? ids().cantidad + '-error'
-            : null
-        "
+        [attr.aria-invalid]="errorCantidad() !== null"
+        [attr.aria-describedby]="errorCantidad() ? ids().cantidad + '-error' : null"
         class="mt-2 block w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
       />
-      @if (editForm.cantidad().touched() && editForm.cantidad().errors()[0]; as error) {
+      @if (errorCantidad(); as error) {
         <p [id]="ids().cantidad + '-error'" class="mt-1.5 text-xs font-medium text-red-700">
           {{ error.message }}
         </p>

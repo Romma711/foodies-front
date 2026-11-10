@@ -42,6 +42,12 @@ export class ReservaEditForm {
 
   protected readonly editForm = form(this.model, reglasReserva);
 
+  /** Party-size error, shown as soon as the user changes the value instead of waiting for blur. */
+  protected readonly errorCantidad = computed(() => {
+    const campo = this.editForm.cantidad();
+    return campo.dirty() || campo.touched() ? (campo.errors()[0] ?? null) : null;
+  });
+
   /** Unique ids per reservation, so labels never point at another card's fields. */
   protected readonly ids = computed(() => {
     const prefijo = `editar-reserva-${this.reserva().id}`;
