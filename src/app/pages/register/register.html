@@ -197,7 +197,7 @@
 
             <div>
               <label for="register-capacity" class="text-sm font-bold text-ink-900">
-                Capacidad máxima
+                Capacidad del salón principal
               </label>
               <input
                 id="register-capacity"
@@ -210,11 +210,14 @@
                 "
                 [attr.aria-describedby]="
                   registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().errors()[0]
-                    ? 'register-capacity-error'
-                    : null
+                    ? 'register-capacity-error register-capacity-hint'
+                    : 'register-capacity-hint'
                 "
                 class="mt-2 block w-full rounded-xl border border-line bg-cream-50/60 px-4 py-2.5 text-sm text-ink-900 transition placeholder:text-ink-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
               />
+              <p id="register-capacity-hint" class="mt-1.5 text-xs text-ink-500">
+                Personas por día. Después podés sumar patios, barras u otros salones desde tu panel.
+              </p>
               @if (
                 registerForm.cupoMaximo().touched() && registerForm.cupoMaximo().errors()[0];
                 as error

@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { authInterceptor } from '../../../core/auth/auth.interceptor';
 import { fakeJwt, futureExp } from '../../../core/auth/testing';
 import { toIsoDate } from './panel-errors';
-import { MiRestaurante, ReservaPanel } from './panel.models';
+import { Espacio, MiRestaurante, ReservaPanel } from './panel.models';
 
 export const RESTAURANTE_TOKEN = fakeJwt({ roles: ['ROLE_ENCARGADO'], exp: futureExp() });
 
@@ -49,6 +49,19 @@ export function reserva(overrides: Partial<ReservaPanel> = {}): ReservaPanel {
     estado: 'PENDIENTE',
     nombreCliente: 'Ana Pérez',
     telefonoCliente: '2235550000',
+    idEspacio: 3,
+    espacioNombre: 'Salón principal',
+    ...overrides,
+  };
+}
+
+export function espacio(overrides: Partial<Espacio> = {}): Espacio {
+  return {
+    id: 3,
+    tipo: 'SALON',
+    nombre: 'Salón principal',
+    capacidad: 40,
+    activo: true,
     ...overrides,
   };
 }

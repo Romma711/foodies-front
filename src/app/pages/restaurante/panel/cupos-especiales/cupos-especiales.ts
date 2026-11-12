@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength, required, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
@@ -9,16 +9,19 @@ import {
   parseLocalDate,
   toIsoDate,
 } from '../panel-errors';
-import { CupoEspecial, MAX_MOTIVO_CUPO } from '../panel.models';
+import { CupoEspecial, Espacio, MAX_MOTIVO_CUPO } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 
 interface CupoEspecialModel {
+  espacioId: string;
   fecha: string;
   cupo: number;
   motivo: string;
 }
 
-/** Días puntuales en los que el restaurante recibe menos personas que su capacidad normal. */
+const claveDe = (cupo: Pick<CupoEspecial, 'idEspacio' | 'fecha'>) => `${cupo.idEspacio}-${cupo.fecha}`;
+
+/** Días puntuales en los que un espacio recibe menos personas que su capacidad normal. */
 @Component({
   imports: [ConfirmDialog, FormField],
   selector: 'app-cupos-especiales',
@@ -35,13 +38,24 @@ export class CuposEspeciales implements OnInit {
   protected readonly loadError = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly status = signal<string | null>(null);
-  protected readonly cupoMaximo = signal(0);
+  protected readonly espacios = signal<Espacio[]>([]);
   protected readonly cupos = signal<CupoEspecial[]>([]);
-  /** Fecha del cupo que se está quitando, para deshabilitar solo su botón. */
+  /** Clave (espacio + fecha) del cupo que se está quitando, para deshabilitar solo su botón. */
   protected readonly quitando = signal<string | null>(null);
+  protected readonly clave = claveDe;
 
-  private readonly model = signal<CupoEspecialModel>({ fecha: '', cupo: 0, motivo: '' });
+  /** Solo se cargan cupos especiales en espacios activos. */
+  protected readonly espaciosActivos = computed(() => this.espacios().filter((e) => e.activo));
+
+  private readonly model = signal<CupoEspecialModel>({ espacioId: '', fecha: '', cupo: 0, motivo: '' });
+
+  /** Espacio elegido en el formulario. */
+  protected readonly espacioElegido = computed(
+    () => this.espacios().find((e) => String(e.id) === this.model().espacioId) ?? null,
+  );
+
   protected readonly cupoForm = form(this.model, (path) => {
+    required(path.espacioId, { message: 'Elegí un espacio.' });
     required(path.fecha, { message: 'Elegí un día.' });
     validate(path.fecha, ({ value }) =>
       value() && value() < this.hoy
@@ -50,8 +64,9 @@ export class CuposEspeciales implements OnInit {
     );
     validate(path.cupo, ({ value }) => {
       const cupo = value();
-      return cupo === null || cupo === undefined || cupo < 0 || cupo > this.cupoMaximo()
-        ? { kind: 'rango', message: `El cupo debe estar entre 0 y ${this.cupoMaximo()}.` }
+      const capacidad = this.espacioElegido()?.capacidad ?? 0;
+      return cupo === null || cupo === undefined || cupo < 0 || cupo > capacidad
+        ? { kind: 'rango', message: `El cupo debe estar entre 0 y ${capacidad}.` }
         : null;
     });
     maxLength(path.motivo, MAX_MOTIVO_CUPO, {
@@ -69,15 +84,22 @@ export class CuposEspeciales implements OnInit {
     this.loading.set(true);
     this.loadError.set(null);
     try {
-      const { restaurante, cupos } = await firstValueFrom(
+      const { espacios, cupos } = await firstValueFrom(
         forkJoin({
-          restaurante: this.panel.getMiRestaurante(),
+          espacios: this.panel.getEspacios(),
           cupos: this.panel.getCuposEspeciales(),
         }),
       );
-      this.cupoMaximo.set(restaurante.cupoMaximo);
+      this.espacios.set(espacios);
       this.cupos.set(cupos);
-      this.model.update((model) => ({ ...model, cupo: restaurante.cupoMaximo }));
+      const primero = espacios.find((e) => e.activo);
+      if (primero) {
+        this.model.update((model) => ({
+          ...model,
+          espacioId: String(primero.id),
+          cupo: primero.capacidad,
+        }));
+      }
     } catch (error) {
       this.loadError.set(panelErrorMessage(error, 'No pudimos cargar la capacidad especial.'));
     } finally {
@@ -90,14 +112,17 @@ export class CuposEspeciales implements OnInit {
     this.error.set(null);
     this.status.set(null);
     await submit(this.cupoForm, async () => {
-      const { fecha, cupo, motivo } = this.model();
+      const { espacioId, fecha, cupo, motivo } = this.model();
       try {
         const guardado = await firstValueFrom(
-          this.panel.guardarCupoEspecial(fecha, { cupo, motivo: motivo.trim() || null }),
+          this.panel.guardarCupoEspecial(Number(espacioId), fecha, {
+            cupo,
+            motivo: motivo.trim() || null,
+          }),
         );
         this.cupos.update((cupos) =>
-          [...cupos.filter((c) => c.fecha !== guardado.fecha), guardado].sort((a, b) =>
-            a.fecha.localeCompare(b.fecha),
+          [...cupos.filter((c) => claveDe(c) !== claveDe(guardado)), guardado].sort(
+            (a, b) => a.fecha.localeCompare(b.fecha) || a.idEspacio - b.idEspacio,
           ),
         );
         this.status.set('Capacidad especial guardada.');
@@ -114,18 +139,21 @@ export class CuposEspeciales implements OnInit {
   protected async quitar(cupo: CupoEspecial): Promise<void> {
     this.error.set(null);
     this.status.set(null);
+    const capacidad = this.espacios().find((e) => e.id === cupo.idEspacio)?.capacidad;
     const confirmado = await this.confirm().open({
       heading: '¿Quitar la capacidad especial?',
-      message: `${this.formatearFecha(cupo.fecha)} vuelve a tu capacidad normal de ${this.cupoMaximo()} personas.`,
+      message:
+        `${this.formatearFecha(cupo.fecha)}, ${cupo.espacioNombre} vuelve a su capacidad normal` +
+        (capacidad === undefined ? '.' : ` de ${capacidad} personas.`),
       confirmLabel: 'Quitar',
     });
     if (!confirmado) {
       return;
     }
-    this.quitando.set(cupo.fecha);
+    this.quitando.set(claveDe(cupo));
     try {
-      await firstValueFrom(this.panel.eliminarCupoEspecial(cupo.fecha));
-      this.cupos.update((cupos) => cupos.filter((c) => c.fecha !== cupo.fecha));
+      await firstValueFrom(this.panel.eliminarCupoEspecial(cupo.idEspacio, cupo.fecha));
+      this.cupos.update((cupos) => cupos.filter((c) => claveDe(c) !== claveDe(cupo)));
       this.status.set('Capacidad especial quitada.');
     } catch (error) {
       this.error.set(

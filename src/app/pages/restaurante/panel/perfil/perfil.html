@@ -70,19 +70,11 @@
     </div>
 
     <div class="field">
-      <label for="perfil-cupo">Capacidad máxima por día</label>
-      <input
-        id="perfil-cupo"
-        type="number"
-        inputmode="numeric"
-        [formField]="perfilForm.cupoMaximo"
-        [attr.aria-invalid]="perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().invalid()"
-        aria-describedby="perfil-cupo-hint perfil-cupo-error"
-      />
-      <p id="perfil-cupo-hint" class="muted">Total de personas que podés recibir en un día.</p>
-      @if (perfilForm.cupoMaximo().touched() && perfilForm.cupoMaximo().errors()[0]; as error) {
-        <p id="perfil-cupo-error" class="field-error">{{ error.message }}</p>
-      }
+      <p class="label">Capacidad total por día</p>
+      <p id="perfil-cupo">
+        {{ capacidadTotal() }} personas por día, sumando tus espacios activos.
+        <a routerLink="../espacios">Configurar espacios</a>
+      </p>
     </div>
 
     <fieldset class="field">
@@ -97,8 +89,8 @@
         Aceptar reservas automáticamente
       </label>
       <p id="perfil-auto-hint" class="muted">
-        Las reservas se aceptan solas hasta el porcentaje de la capacidad que elijas. Las que superen
-        ese límite quedan pendientes para que las revises.
+        Las reservas se aceptan solas hasta el porcentaje que elijas del cupo de cada espacio. Las que
+        superen ese límite quedan pendientes para que las revises.
       </p>
 
       @if (!perfilForm.porcentajeAutoAceptacion().hidden()) {
@@ -115,8 +107,8 @@
           aria-describedby="perfil-porcentaje-hint perfil-porcentaje-error"
         />
         <p id="perfil-porcentaje-hint" class="muted">
-          Con tu capacidad actual se aceptan solas hasta {{ personasAutoAceptadas() }} personas por
-          día.
+          Con tu capacidad total actual se aceptan solas hasta {{ personasAutoAceptadas() }} personas
+          por día, repartidas según el cupo de cada espacio.
         </p>
         @if (
           perfilForm.porcentajeAutoAceptacion().touched() &&

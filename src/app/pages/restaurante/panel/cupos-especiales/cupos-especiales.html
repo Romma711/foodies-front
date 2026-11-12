@@ -1,8 +1,8 @@
 <header class="page-header">
   <h1>Capacidad especial</h1>
   <p class="subtitle">
-    Reducí la capacidad de un día puntual, por ejemplo por un evento privado. Los clientes no ven
-    la capacidad: solo se enteran si hay lugar o no.
+    Reducí la capacidad de un espacio en un día puntual, por ejemplo el patio por lluvia o el salón
+    por un evento privado. Los clientes no ven la capacidad: solo se enteran si hay lugar o no.
   </p>
 </header>
 
@@ -24,7 +24,27 @@
     }
 
     <form class="card stack" novalidate (submit)="onSubmit($event)">
-      <p class="muted">Tu capacidad normal es de {{ cupoMaximo() }} personas por día.</p>
+      <div class="field">
+        <label for="cupo-espacio">Espacio</label>
+        <select
+          id="cupo-espacio"
+          [formField]="cupoForm.espacioId"
+          [attr.aria-invalid]="cupoForm.espacioId().touched() && cupoForm.espacioId().invalid()"
+          aria-describedby="cupo-espacio-hint cupo-espacio-error"
+        >
+          @for (espacio of espaciosActivos(); track espacio.id) {
+            <option [value]="espacio.id">{{ espacio.nombre }}</option>
+          }
+        </select>
+        @if (espacioElegido(); as espacio) {
+          <p id="cupo-espacio-hint" class="muted">
+            La capacidad normal de {{ espacio.nombre }} es de {{ espacio.capacidad }} personas por día.
+          </p>
+        }
+        @if (cupoForm.espacioId().touched() && cupoForm.espacioId().errors()[0]; as error) {
+          <p id="cupo-espacio-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
 
       <div class="fields">
         <div class="field">
@@ -83,10 +103,11 @@
       <h2 id="cupos-proximos">Próximos días</h2>
       @if (cupos().length) {
         <ul class="list">
-          @for (cupo of cupos(); track cupo.fecha) {
+          @for (cupo of cupos(); track clave(cupo)) {
             <li class="card cupo">
               <div>
                 <p class="dia">{{ formatearFecha(cupo.fecha) }}</p>
+                <p class="espacio">{{ cupo.espacioNombre }}</p>
                 <p class="muted">
                   {{ cupo.cupo }} {{ cupo.cupo === 1 ? 'persona' : 'personas' }} ·
                   {{ cupo.reservadas }} ya reservadas
@@ -98,8 +119,10 @@
               <button
                 type="button"
                 class="btn btn-secondary"
-                [disabled]="quitando() === cupo.fecha"
-                [attr.aria-label]="'Quitar la capacidad especial del ' + formatearFecha(cupo.fecha)"
+                [disabled]="quitando() === clave(cupo)"
+                [attr.aria-label]="
+                  'Quitar la capacidad especial de ' + cupo.espacioNombre + ' del ' + formatearFecha(cupo.fecha)
+                "
                 (click)="quitar(cupo)"
               >
                 Quitar

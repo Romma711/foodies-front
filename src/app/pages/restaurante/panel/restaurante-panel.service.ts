@@ -8,6 +8,8 @@ import {
   Carta,
   CupoEspecial,
   CupoEspecialRequest,
+  Espacio,
+  EspacioRequest,
   EstadoReserva,
   MiRestaurante,
   MiRestaurantePatch,
@@ -58,21 +60,51 @@ export class RestaurantePanelService {
     });
   }
 
+  getEspacios(): Observable<Espacio[]> {
+    return this.http.get<Espacio[]>(`${this.meUrl}/espacios`, { context: withRole('RESTAURANTE') });
+  }
+
+  crearEspacio(request: EspacioRequest): Observable<Espacio> {
+    return this.http.post<Espacio>(`${this.meUrl}/espacios`, request, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  actualizarEspacio(espacioId: number, request: EspacioRequest): Observable<Espacio> {
+    return this.http.put<Espacio>(`${this.meUrl}/espacios/${espacioId}`, request, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  cambiarActivoEspacio(espacioId: number, activo: boolean): Observable<Espacio> {
+    return this.http.patch<Espacio>(
+      `${this.meUrl}/espacios/${espacioId}/activo`,
+      { activo },
+      { context: withRole('RESTAURANTE') },
+    );
+  }
+
   getCuposEspeciales(): Observable<CupoEspecial[]> {
     return this.http.get<CupoEspecial[]>(`${this.meUrl}/cupos-especiales`, {
       context: withRole('RESTAURANTE'),
     });
   }
 
-  /** Crea o modifica el cupo especial de `fecha` (`yyyy-MM-dd`). */
-  guardarCupoEspecial(fecha: string, request: CupoEspecialRequest): Observable<CupoEspecial> {
-    return this.http.put<CupoEspecial>(`${this.meUrl}/cupos-especiales/${fecha}`, request, {
-      context: withRole('RESTAURANTE'),
-    });
+  /** Crea o modifica el cupo especial del espacio en `fecha` (`yyyy-MM-dd`). */
+  guardarCupoEspecial(
+    espacioId: number,
+    fecha: string,
+    request: CupoEspecialRequest,
+  ): Observable<CupoEspecial> {
+    return this.http.put<CupoEspecial>(
+      `${this.meUrl}/espacios/${espacioId}/cupos-especiales/${fecha}`,
+      request,
+      { context: withRole('RESTAURANTE') },
+    );
   }
 
-  eliminarCupoEspecial(fecha: string): Observable<void> {
-    return this.http.delete<void>(`${this.meUrl}/cupos-especiales/${fecha}`, {
+  eliminarCupoEspecial(espacioId: number, fecha: string): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/espacios/${espacioId}/cupos-especiales/${fecha}`, {
       context: withRole('RESTAURANTE'),
     });
   }

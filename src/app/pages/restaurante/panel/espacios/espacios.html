@@ -1,0 +1,128 @@
+<header class="page-header">
+  <h1>Espacios</h1>
+  <p class="subtitle">
+    Cargá tus salones, patios y barras con la cantidad de personas que recibe cada uno por día. Al
+    reservar, el cliente elige el espacio y solo ve si hay lugar.
+  </p>
+</header>
+
+@if (loading()) {
+  <p role="status">Cargando tus espacios…</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+  </div>
+} @else {
+  <div class="stack">
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    <p class="visually-hidden" role="status">{{ status() }}</p>
+    @if (status(); as message) {
+      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+    }
+
+    <p class="total">Capacidad total: {{ capacidadTotal() }} personas por día</p>
+
+    <form class="card stack" novalidate aria-labelledby="espacio-form-titulo" (submit)="onSubmit($event)">
+      <h2 id="espacio-form-titulo">
+        {{ editando() ? 'Editar ' + editando()!.nombre : 'Agregar un espacio' }}
+      </h2>
+
+      <div class="fields">
+        <div class="field">
+          <label for="espacio-tipo">Tipo</label>
+          <select id="espacio-tipo" [formField]="espacioForm.tipo">
+            @for (tipo of tipos; track tipo) {
+              <option [value]="tipo">{{ tipoLabels[tipo] }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="espacio-capacidad">Personas por día</label>
+          <input
+            id="espacio-capacidad"
+            type="number"
+            inputmode="numeric"
+            [formField]="espacioForm.capacidad"
+            [attr.aria-invalid]="espacioForm.capacidad().touched() && espacioForm.capacidad().invalid()"
+            aria-describedby="espacio-capacidad-error"
+          />
+          @if (espacioForm.capacidad().touched() && espacioForm.capacidad().errors()[0]; as error) {
+            <p id="espacio-capacidad-error" class="field-error">{{ error.message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="espacio-nombre">Nombre</label>
+        <input
+          id="espacio-nombre"
+          type="text"
+          placeholder="Por ejemplo: Patio trasero"
+          [formField]="espacioForm.nombre"
+          [attr.aria-invalid]="espacioForm.nombre().touched() && espacioForm.nombre().invalid()"
+          aria-describedby="espacio-nombre-error"
+        />
+        @if (espacioForm.nombre().touched() && espacioForm.nombre().errors()[0]; as error) {
+          <p id="espacio-nombre-error" class="field-error">{{ error.message }}</p>
+        }
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="espacioForm().submitting()">
+          {{ espacioForm().submitting() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Agregar' }}
+        </button>
+        @if (editando()) {
+          <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">Cancelar</button>
+        }
+      </div>
+    </form>
+
+    @for (grupo of grupos(); track grupo.tipo) {
+      <section class="stack" [attr.aria-labelledby]="'grupo-' + grupo.tipo">
+        <h3 [id]="'grupo-' + grupo.tipo">{{ grupo.titulo }}</h3>
+        <ul class="list">
+          @for (espacio of grupo.espacios; track espacio.id) {
+            <li class="card espacio" [class.inactivo]="!espacio.activo">
+              <div>
+                <p class="nombre">
+                  {{ espacio.nombre }}
+                  @if (!espacio.activo) {
+                    <span class="badge">Inactivo</span>
+                  }
+                </p>
+                <p class="muted">
+                  {{ espacio.capacidad }} {{ espacio.capacidad === 1 ? 'persona' : 'personas' }} por día
+                </p>
+              </div>
+              <div class="actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [attr.aria-label]="'Editar ' + espacio.nombre"
+                  (click)="editar(espacio)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [disabled]="cambiando() === espacio.id"
+                  [attr.aria-label]="(espacio.activo ? 'Desactivar ' : 'Activar ') + espacio.nombre"
+                  (click)="cambiarActivo(espacio)"
+                >
+                  {{ espacio.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+}
+
+<app-confirm-dialog />

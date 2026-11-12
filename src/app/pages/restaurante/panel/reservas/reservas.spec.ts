@@ -76,6 +76,12 @@ describe('Reservas', () => {
     expect(element.querySelector('.badge')?.textContent?.trim()).toBe('Pendiente');
   });
 
+  it('muestra en qué espacio es cada reserva', async () => {
+    await render([reserva({ espacioNombre: 'Patio trasero' })]);
+
+    expect(element.querySelector('.espacio')?.textContent?.trim()).toBe('Patio trasero');
+  });
+
   it('accepts a reservation after confirmation and updates it in place', async () => {
     vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(true);
     await render([reserva({ id: 9, nombreCliente: 'Ana Pérez' })]);

@@ -1,10 +1,26 @@
 import { required, schema, validate } from '@angular/forms/signals';
+import { EspacioPublico } from '../../../core/catalog/espacios';
 
 /** Fields the client chooses when creating or modifying a reservation. */
 export interface ReservaFormModel {
+  /** Id del espacio elegido, como texto ('' mientras no se eligió). */
+  idEspacio: string;
   fechaReserva: string;
   horarioLlegada: string;
   cantidad: number;
+}
+
+export const MENSAJE_SIN_LUGAR = 'No hay lugar en ese espacio para esa fecha y cantidad. Elegí otro.';
+
+/** True cuando el espacio elegido ya informó que no hay lugar para la fecha y cantidad pedidas. */
+export function espacioSinLugar(espacios: readonly EspacioPublico[], idEspacio: string): boolean {
+  return espacios.some((e) => String(e.id) === idEspacio && e.hayLugar === false);
+}
+
+/** Primer espacio con lugar (o el primero, si ninguno informa lugar), para preseleccionarlo. */
+export function espacioSugerido(espacios: readonly EspacioPublico[]): string {
+  const elegido = espacios.find((e) => e.hayLugar !== false) ?? espacios[0];
+  return elegido ? String(elegido.id) : '';
 }
 
 /** Arrival times offered by the forms: every half hour from 12:00 to 23:00. */
@@ -27,6 +43,7 @@ export function fechaLocal(diasDesdeHoy: number): string {
 
 /** Validation shared by the create and modify forms; the server checks capacity. */
 export const reglasReserva = schema<ReservaFormModel>((path) => {
+  required(path.idEspacio, { message: 'Elegí un espacio.' });
   required(path.fechaReserva, { message: 'Elegí una fecha.' });
   validate(path.fechaReserva, ({ value }) => {
     const fecha = value();

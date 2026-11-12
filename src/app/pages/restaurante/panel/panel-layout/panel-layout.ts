@@ -49,6 +49,12 @@ export class PanelLayout {
       icono: 'M5 5h14v15H5V5Zm0 5h14M9 3v4m6-4v4',
     },
     {
+      path: 'espacios',
+      label: 'Espacios',
+      exact: false,
+      icono: 'M3 21V9l9-6 9 6v12M3 21h18M9 21v-5h6v5M7 12h2m6 0h2',
+    },
+    {
       path: 'capacidad',
       label: 'Capacidad',
       exact: false,

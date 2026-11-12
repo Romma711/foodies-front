@@ -45,7 +45,10 @@ describe('Perfil', () => {
     await render();
     expect(input('perfil-nombre').value).toBe('La Parrilla');
     expect(input('perfil-ubicacion').value).toBe('Calle 1');
-    expect(input('perfil-cupo').value).toBe('40');
+    expect(element.querySelector('#perfil-cupo')?.textContent).toContain('40 personas por día');
+    expect(element.querySelector<HTMLAnchorElement>('#perfil-cupo a')?.getAttribute('href')).toContain(
+      'espacios',
+    );
     expect(element.querySelector<HTMLSelectElement>('#perfil-especialidad')!.value).toBe(
       'PARRILLA',
     );
@@ -54,31 +57,30 @@ describe('Perfil', () => {
   it('saves the changes', async () => {
     await render();
     type('perfil-nombre', '  Nueva Parrilla ');
-    type('perfil-cupo', '55');
 
     await submitForm();
     const req = http.expectOne({ method: 'PATCH', url: '/api/restaurantes/me' });
     expect(req.request.body).toEqual({
       nombre: 'Nueva Parrilla',
       ubicacion: 'Calle 1',
-      cupoMaximo: 55,
       especialidad: 'PARRILLA',
       porcentajeAutoAceptacion: 0,
     });
-    req.flush(miRestaurante({ nombre: 'Nueva Parrilla', cupoMaximo: 55 }));
+    req.flush(miRestaurante({ nombre: 'Nueva Parrilla' }));
     await settle(fixture);
 
     expect(element.querySelector('[role="status"]')?.textContent).toContain('Cambios guardados.');
   });
 
-  it('does not save an invalid capacity', async () => {
+  it('ya no edita la capacidad: no hay input y el PATCH no la envía', async () => {
     await render();
-    type('perfil-cupo', '0');
 
+    expect(element.querySelector('input#perfil-cupo')).toBeNull();
     await submitForm();
-
-    http.expectNone({ method: 'PATCH' });
-    expect(element.textContent).toContain('La capacidad debe ser al menos 1.');
+    const req = http.expectOne({ method: 'PATCH', url: '/api/restaurantes/me' });
+    expect(req.request.body).not.toHaveProperty('cupoMaximo');
+    req.flush(miRestaurante());
+    await settle(fixture);
   });
 
   it('muestra la aceptación automática apagada por defecto, sin pedir porcentaje', async () => {

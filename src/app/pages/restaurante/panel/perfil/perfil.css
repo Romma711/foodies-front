@@ -35,3 +35,12 @@ legend {
   height: 1.25rem;
   accent-color: var(--color-primary);
 }
+
+.label,
+#perfil-cupo {
+  margin: 0;
+}
+
+.label {
+  font-weight: 600;
+}

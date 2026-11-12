@@ -13,6 +13,9 @@ describe('ReservaService.modificar', () => {
     horariollegada: '21:30:00',
     estadoReserva: 'ACEPTADA',
     nombreResto: 'La Trattoria',
+    idRestaurant: 5,
+    idEspacio: 3,
+    espacioNombre: 'Salón principal',
   };
   const otra: ReservaListDTO = { ...aceptada, id: 8, nombreResto: 'Ochiwan' };
 
@@ -35,11 +38,16 @@ describe('ReservaService.modificar', () => {
     http.expectOne('/api/reservas/usuario/29').flush([aceptada, otra]);
   }
 
-  it('envía el PUT con fecha, horario y cantidad, y actualiza la reserva en la lista', async () => {
+  it('envía el PUT con fecha, horario, cantidad y espacio, y actualiza la reserva en la lista', async () => {
     cargarLista();
 
     const resultado = firstValueFrom(
-      service.modificar(7, { fechaReserva: '2026-11-25', horarioLlegada: '20:00', cantidad: 3 }),
+      service.modificar(7, {
+        fechaReserva: '2026-11-25',
+        horarioLlegada: '20:00',
+        cantidad: 3,
+        idEspacio: 4,
+      }),
     );
     const req = http.expectOne('/api/reservas/7');
     expect(req.request.method).toBe('PUT');
@@ -47,6 +55,7 @@ describe('ReservaService.modificar', () => {
       fechaReserva: '2026-11-25',
       horarioLlegada: '20:00',
       cantidad: 3,
+      idEspacio: 4,
     });
     const actualizada: ReservaDetailDTO = {
       id: 7,
@@ -56,6 +65,8 @@ describe('ReservaService.modificar', () => {
       estadoReserva: 'PENDIENTE',
       nombreUsuario: 'Ana',
       nombreResto: 'La Trattoria',
+      idEspacio: 4,
+      espacioNombre: 'Patio',
     };
     req.flush(actualizada);
 
@@ -68,6 +79,9 @@ describe('ReservaService.modificar', () => {
         horariollegada: '20:00:00',
         estadoReserva: 'PENDIENTE',
         nombreResto: 'La Trattoria',
+        idRestaurant: 5,
+        idEspacio: 4,
+        espacioNombre: 'Patio',
       },
       otra,
     ]);
@@ -79,7 +93,12 @@ describe('ReservaService.modificar', () => {
     cargarLista();
 
     const resultado = firstValueFrom(
-      service.modificar(7, { fechaReserva: '2026-11-25', horarioLlegada: '20:00', cantidad: 50 }),
+      service.modificar(7, {
+        fechaReserva: '2026-11-25',
+        horarioLlegada: '20:00',
+        cantidad: 50,
+        idEspacio: 3,
+      }),
     );
     http
       .expectOne('/api/reservas/7')
