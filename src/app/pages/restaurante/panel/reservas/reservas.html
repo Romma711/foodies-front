@@ -56,6 +56,9 @@
                 <p class="name">{{ reserva.nombreCliente || 'Cliente' }}</p>
                 <p class="muted">
                   {{ reserva.cantidad }} {{ reserva.cantidad === 1 ? 'persona' : 'personas' }}
+                  @if (reserva.espacioNombre) {
+                    · <span class="espacio">{{ reserva.espacioNombre }}</span>
+                  }
                   @if (reserva.telefonoCliente) {
                     · <a [href]="'tel:' + reserva.telefonoCliente">{{ reserva.telefonoCliente }}</a>
                   }

@@ -7,6 +7,8 @@ export interface ReservaRequestDTO {
   horarioLlegada: string;
   idUsuario: number;
   idRestaurant: number;
+  /** Espacio elegido (salón, patio o barra). Obligatorio. */
+  idEspacio: number;
 }
 
 /** `ReservaListDTO` */
@@ -17,6 +19,10 @@ export interface ReservaListDTO {
   horariollegada: string;
   estadoReserva: EstadoReserva;
   nombreResto: string;
+  idRestaurant: number;
+  /** Null solo en reservas anteriores a los espacios que todavía no se migraron. */
+  idEspacio: number | null;
+  espacioNombre: string | null;
 }
 
 /** `ReservaDetailDTO` */
@@ -28,6 +34,8 @@ export interface ReservaDetailDTO {
   estadoReserva: EstadoReserva;
   nombreUsuario: string;
   nombreResto: string;
+  idEspacio: number | null;
+  espacioNombre: string | null;
 }
 
 /**
@@ -38,5 +46,7 @@ export interface ReservaPatchDTO {
   cantidad?: number | null;
   fechaReserva?: string | null;
   horarioLlegada?: string | null;
+  /** Otro espacio del mismo restaurante; null o ausente mantiene el actual. */
+  idEspacio?: number | null;
   estadoReserva?: EstadoReserva | null;
 }

@@ -247,6 +247,9 @@
                 {{ formatearFecha(reserva.fecha) }} a las
                 {{ formatearHora(reserva.horariollegada) }} · {{ reserva.cantidad }}
                 {{ reserva.cantidad === 1 ? 'persona' : 'personas' }}
+                @if (reserva.espacioNombre) {
+                  · {{ reserva.espacioNombre }}
+                }
               </p>
               <p class="mt-2 text-sm leading-6 text-emerald-800">
                 Queda pendiente de confirmación por el restaurante.

@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ReservaDetailDTO, ReservaListDTO } from '../../models';
+import { EspaciosService } from '../../services/espacios.service';
 import { ReservaService } from '../../services/reserva.service';
 import { fechaLocal } from '../../utils/reserva-reglas';
 import { MisReservas } from './mis-reservas';
@@ -17,6 +18,9 @@ describe('MisReservas', () => {
       horariollegada: '20:00:00',
       estadoReserva: 'PENDIENTE',
       nombreResto: 'Ochiwan',
+      idRestaurant: 5,
+      idEspacio: 3,
+      espacioNombre: 'Salón principal',
     },
     {
       id: 7,
@@ -25,6 +29,9 @@ describe('MisReservas', () => {
       horariollegada: '21:30:00',
       estadoReserva: 'ACEPTADA',
       nombreResto: 'La Trattoria',
+      idRestaurant: 5,
+      idEspacio: 3,
+      espacioNombre: 'Salón principal',
     },
   ];
 
@@ -36,6 +43,8 @@ describe('MisReservas', () => {
     estadoReserva: 'CANCELADA',
     nombreUsuario: 'Demo',
     nombreResto: 'Ochiwan',
+    idEspacio: 3,
+    espacioNombre: 'Salón principal',
   };
 
   let reservas: WritableSignal<ReservaListDTO[]>;
@@ -68,6 +77,18 @@ describe('MisReservas', () => {
           useValue: { userId: vi.fn(() => 29) },
         },
         {
+          provide: EspaciosService,
+          useValue: {
+            listar: vi.fn(() =>
+              of([
+                { id: 3, tipo: 'SALON', nombre: 'Salón principal', hayLugar: true },
+                { id: 4, tipo: 'PATIO', nombre: 'Patio', hayLugar: false },
+                { id: 5, tipo: 'BARRA', nombre: 'Barra', hayLugar: true },
+              ]),
+            ),
+          },
+        },
+        {
           provide: ReservaService,
           useValue: {
             reservas: reservas.asReadonly(),
@@ -98,6 +119,7 @@ describe('MisReservas', () => {
     expect(listarPorUsuario).toHaveBeenCalledWith(29);
     expect(fixture.nativeElement.querySelectorAll('li').length).toBe(2);
     expect(texto).toContain('Ochiwan');
+    expect(texto).toContain('Salón principal');
     expect(texto).toContain('La Trattoria');
     expect(texto).toContain('Pendiente');
     expect(texto).toContain('Confirmada');
@@ -154,6 +176,9 @@ describe('MisReservas', () => {
       horariollegada: '20:00:00',
       estadoReserva: 'PENDIENTE',
       nombreResto: 'Ochiwan',
+      idRestaurant: 5,
+      idEspacio: 3,
+      espacioNombre: 'Salón principal',
     };
 
     function botonesModificar(elemento: HTMLElement): HTMLButtonElement[] {
@@ -205,8 +230,39 @@ describe('MisReservas', () => {
         fechaReserva: fecha,
         horarioLlegada: '20:00',
         cantidad: 3,
+        idEspacio: 3,
       });
       expect(elemento.querySelector('form[aria-label="Modificar la reserva #6"]')).toBeNull();
+    });
+
+    it('permite cambiar a otro espacio con lugar y no a uno sin lugar', async () => {
+      reservas.set([pendiente]);
+      modificar.mockReturnValue(of({ ...cancelada, fecha, estadoReserva: 'PENDIENTE' }));
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      const radio = (valor: string) =>
+        formulario.querySelector<HTMLInputElement>(`input[type="radio"][value="${valor}"]`)!;
+      expect(radio('3').checked).toBe(true);
+      expect(formulario.textContent).toContain('Sin lugar para esa fecha y cantidad');
+
+      radio('4').click();
+      fixture.detectChanges();
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(modificar).not.toHaveBeenCalled();
+      expect(formulario.textContent).toContain('No hay lugar en ese espacio para esa fecha y cantidad.');
+
+      radio('5').click();
+      fixture.detectChanges();
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      expect(modificar).toHaveBeenCalledWith(6, expect.objectContaining({ idEspacio: 5 }));
     });
 
     it('lleva el foco a la fecha al abrir y avisa y vuelve a "Modificar" al guardar', async () => {

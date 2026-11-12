@@ -148,7 +148,7 @@
               </span>
             </div>
 
-            <dl class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <dl class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
                 <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Fecha</dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">
@@ -164,6 +164,12 @@
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
                 <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Personas</dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">{{ reserva.cantidad }}</dd>
+              </div>
+              <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
+                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Espacio</dt>
+                <dd class="mt-1 text-sm font-semibold text-ink-900">
+                  {{ reserva.espacioNombre ?? 'Sin asignar' }}
+                </dd>
               </div>
             </dl>
 
