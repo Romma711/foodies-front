@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Role, ROLES } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -10,6 +10,9 @@ import { ClienteMenu } from './cliente-menu/cliente-menu';
   imports: [ClienteMenu, RouterLink, RouterLinkActive],
   selector: 'app-header',
   templateUrl: './header.html',
+  host: {
+    '(document:keydown.escape)': 'cerrarMenuConEscape()',
+  },
 })
 export class Header {
   private readonly auth = inject(AuthService);
@@ -18,6 +21,7 @@ export class Header {
 
   protected readonly portals = PORTALS;
   protected readonly menuAbierto = signal(false);
+  private readonly toggleMenuMovil = viewChild<ElementRef<HTMLButtonElement>>('toggleMenuMovil');
 
   /** Accesos de la cuenta del cliente en el menú móvil (en desktop están en su popup). */
   protected readonly opcionesCliente = [
@@ -37,6 +41,15 @@ export class Header {
 
   protected cerrarMenu(): void {
     this.menuAbierto.set(false);
+  }
+
+  /** Escape closes the mobile menu and returns focus to its toggle button. */
+  protected cerrarMenuConEscape(): void {
+    if (!this.menuAbierto()) {
+      return;
+    }
+    this.cerrarMenu();
+    this.toggleMenuMovil()?.nativeElement.focus();
   }
 
   protected async logout(role: Role): Promise<void> {

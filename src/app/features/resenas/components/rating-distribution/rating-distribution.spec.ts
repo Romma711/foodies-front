@@ -87,6 +87,7 @@ describe('RatingDistribution', () => {
     expect(elemento.querySelector('canvas')?.getAttribute('aria-hidden')).toBe('true');
     expect(filas[0]).toBe('5 estrellas | 3 reseñas');
     expect(filas[1]).toBe('4 estrellas | 1 reseña');
+    expect(filas[4]).toBe('1 estrella | 1 reseña');
     expect(filas).toHaveLength(5);
   });
 });

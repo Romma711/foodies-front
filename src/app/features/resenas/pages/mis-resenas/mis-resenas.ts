@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { ResenaService } from '../../services/resena.service';
+import { formatearFechaResena } from '../../utils/fecha-resena';
 
 /** Reseñas que escribió el cliente, cada una con el restaurante al que corresponde. */
 @Component({
@@ -75,6 +76,14 @@ import { ResenaService } from '../../services/resena.service';
                   </h2>
                   <app-star-rating [value]="resena.calificacion" size="sm" [mostrarValor]="true" />
                 </div>
+                @if (formatearFecha(resena.fechaCreacion); as fecha) {
+                  <time
+                    class="mt-1 block text-xs text-ink-700"
+                    [attr.datetime]="resena.fechaCreacion"
+                  >
+                    {{ fecha }}
+                  </time>
+                }
                 <p class="mt-3 leading-7 break-words text-ink-700">{{ resena.comentario }}</p>
               </li>
             }
@@ -90,6 +99,7 @@ export class MisResenas {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly resenas = this.resenaService.misResenas;
+  protected readonly formatearFecha = formatearFechaResena;
   protected readonly cargando = this.resenaService.loading;
   protected readonly error = this.resenaService.error;
 

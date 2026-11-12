@@ -166,6 +166,21 @@ describe('Header', () => {
     ).toBe(true);
   });
 
+  it('cierra el menú móvil con Escape y devuelve el foco al botón', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    const toggle = element.querySelector('button[aria-controls="menu-movil"]') as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(element.querySelector('#menu-movil')).toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(toggle);
+  });
+
   it('abre y cierra el menú móvil', async () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;

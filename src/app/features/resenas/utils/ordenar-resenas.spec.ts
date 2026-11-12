@@ -36,4 +36,14 @@ describe('filtrarYOrdenar', () => {
 
     expect(resenas).toEqual(original);
   });
+  it('debería ordenar por más recientes usando la fecha y dejar al final las reseñas sin fecha', () => {
+    const conFecha = [
+      { ...resena(10, 4), fechaCreacion: '2026-11-01T10:00:00' },
+      { ...resena(11, 4), fechaCreacion: null },
+      { ...resena(5, 4), fechaCreacion: '2026-11-08T10:00:00' },
+      { ...resena(12, 4) },
+    ];
+
+    expect(ids(filtrarYOrdenar(conFecha, 'recientes', null))).toEqual([5, 10, 12, 11]);
+  });
 });

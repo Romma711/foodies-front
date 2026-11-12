@@ -38,18 +38,29 @@
       >
         Restaurantes
       </a>
-      <a
-        routerLink="/login"
-        class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"
-      >
-        Iniciar sesión
-      </a>
-      <a
-        routerLink="/register"
-        class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"
-      >
-        Crear cuenta
-      </a>
+      @if (clienteLogueado()) {
+        @for (enlace of enlacesCliente; track enlace.path) {
+          <a
+            [routerLink]="enlace.path"
+            class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"
+          >
+            {{ enlace.label }}
+          </a>
+        }
+      } @else {
+        <a
+          routerLink="/login"
+          class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"
+        >
+          Iniciar sesión
+        </a>
+        <a
+          routerLink="/register"
+          class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"
+        >
+          Crear cuenta
+        </a>
+      }
       <a
         routerLink="/restaurante/login"
         class="text-sm font-semibold text-ink-700 transition hover:text-brand-700"

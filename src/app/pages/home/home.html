@@ -69,11 +69,15 @@
     </div>
 
     <ul class="mt-12 flex flex-wrap gap-2" aria-label="Especialidades disponibles">
-      @for (especialidad of especialidades; track especialidad) {
-        <li
-          class="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line"
-        >
-          {{ especialidad }}
+      @for (especialidad of especialidades; track especialidad.valor) {
+        <li>
+          <a
+            routerLink="/restaurantes"
+            [queryParams]="{ especialidad: especialidad.valor }"
+            class="inline-flex rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+          >
+            {{ especialidad.etiqueta }}
+          </a>
         </li>
       }
     </ul>

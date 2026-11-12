@@ -1,6 +1,7 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ESPECIALIDADES } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
 import { RestauranteService } from '../restaurante/services/restaurante.service';
@@ -18,7 +19,11 @@ export class Home {
   private readonly restauranteService = inject(RestauranteService);
 
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
-  protected readonly especialidades = Object.values(ESPECIALIDAD_LABELS);
+  /** Each chip opens the catalog already filtered by its specialty. */
+  protected readonly especialidades = ESPECIALIDADES.map((valor) => ({
+    valor,
+    etiqueta: ESPECIALIDAD_LABELS[valor],
+  }));
   protected readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
 
   protected readonly cargando = this.restauranteService.loading;

@@ -3,4 +3,6 @@ export interface ResenaListDTO {
   nombreUsuario: string;
   comentario: string;
   calificacion: number;
+  /** Fecha y hora de creación (ISO-8601); null en reseñas anteriores a que se guardara. */
+  fechaCreacion?: string | null;
 }

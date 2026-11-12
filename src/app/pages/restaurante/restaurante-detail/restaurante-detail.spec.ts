@@ -1,4 +1,7 @@
 import { Component, input } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { ReservaForm } from '../../../features/reservas/components/reserva-form/reserva-form';
+import { ReservaDetailDTO } from '../../../features/reservas/models';
 import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
 import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -201,6 +204,62 @@ describe('RestauranteDetail', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-reserva-form')).not.toBeNull();
+  });
+
+  describe('foco del formulario de reserva', () => {
+    function abrir(fixture: ReturnType<typeof crearComponente>) {
+      Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+        .find((item) => item.textContent?.includes('Reservar mesa'))!
+        .click();
+      fixture.detectChanges();
+    }
+
+    beforeEach(() => {
+      cliente.set(true);
+      usuarioId.set(29);
+    });
+
+    it('lleva el foco al formulario al abrirlo y a la confirmación al enviarlo', async () => {
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      abrir(fixture);
+      await fixture.whenStable();
+      expect(elemento.querySelector('app-reserva-form')?.contains(document.activeElement)).toBe(
+        true,
+      );
+
+      (
+        fixture.debugElement.query(By.directive(ReservaForm)).componentInstance as ReservaForm
+      ).creada.emit({
+        id: 9,
+        fecha: '2026-11-20',
+        horariollegada: '21:00:00',
+        cantidad: 4,
+      } as ReservaDetailDTO);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement?.textContent?.trim()).toBe('Reserva enviada');
+      elemento.remove();
+    });
+
+    it('devuelve el foco a "Reservar mesa" al cancelar', async () => {
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      abrir(fixture);
+      (
+        fixture.debugElement.query(By.directive(ReservaForm)).componentInstance as ReservaForm
+      ).cancelada.emit();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement?.textContent?.trim()).toBe('Reservar mesa');
+      elemento.remove();
+    });
   });
 
   it('debería mostrar el error y permitir reintentar', () => {

@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ReservaDetailDTO, ReservaListDTO } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
+import { fechaLocal } from '../../utils/reserva-reglas';
 import { MisReservas } from './mis-reservas';
 
 describe('MisReservas', () => {
@@ -45,6 +46,7 @@ describe('MisReservas', () => {
   let listarPorUsuario: ReturnType<typeof vi.fn>;
   let cancelar: ReturnType<typeof vi.fn>;
   let limpiarErrorMutacion: ReturnType<typeof vi.fn>;
+  let modificar: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     reservas = signal(reservasMock);
@@ -55,6 +57,7 @@ describe('MisReservas', () => {
     listarPorUsuario = vi.fn(() => of(reservas()));
     cancelar = vi.fn(() => of(cancelada));
     limpiarErrorMutacion = vi.fn();
+    modificar = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [MisReservas],
@@ -74,6 +77,7 @@ describe('MisReservas', () => {
             mutationError: mutationError.asReadonly(),
             listarPorUsuario,
             cancelar,
+            modificar,
             limpiarErrorMutacion,
           },
         },
@@ -140,5 +144,185 @@ describe('MisReservas', () => {
     fixture.detectChanges();
 
     expect(listarPorUsuario).toHaveBeenCalledTimes(2);
+  });
+  describe('modificar', () => {
+    const fecha = fechaLocal(5);
+    const pendiente: ReservaListDTO = {
+      id: 6,
+      cantidad: 2,
+      fechaReserva: fecha,
+      horariollegada: '20:00:00',
+      estadoReserva: 'PENDIENTE',
+      nombreResto: 'Ochiwan',
+    };
+
+    function botonesModificar(elemento: HTMLElement): HTMLButtonElement[] {
+      return [...elemento.querySelectorAll<HTMLButtonElement>('button')].filter(
+        (boton) => boton.textContent?.trim() === 'Modificar',
+      );
+    }
+
+    it('ofrece modificar las pendientes y confirmadas, nunca las canceladas', () => {
+      reservas.set([
+        pendiente,
+        { ...pendiente, id: 7, estadoReserva: 'ACEPTADA' },
+        { ...pendiente, id: 8, estadoReserva: 'CANCELADA' },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+
+      expect(botonesModificar(elemento).map((b) => b.getAttribute('aria-label'))).toEqual([
+        'Modificar la reserva #6',
+        'Modificar la reserva #7',
+      ]);
+    });
+
+    it('envía la fecha, el horario y la cantidad nuevos y cierra el formulario', async () => {
+      reservas.set([pendiente]);
+      modificar.mockReturnValue(
+        of({ ...cancelada, cantidad: 3, fecha, estadoReserva: 'PENDIENTE' }),
+      );
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      const fechaInput = formulario.querySelector<HTMLInputElement>('input[type="date"]')!;
+      const cantidad = formulario.querySelector<HTMLInputElement>('input[type="number"]')!;
+      expect(fechaInput.value).toBe(fecha);
+      expect(formulario.querySelector<HTMLSelectElement>('select')!.value).toBe('20:00');
+      expect(cantidad.value).toBe('2');
+
+      cantidad.value = '3';
+      cantidad.dispatchEvent(new Event('input'));
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(modificar).toHaveBeenCalledWith(6, {
+        fechaReserva: fecha,
+        horarioLlegada: '20:00',
+        cantidad: 3,
+      });
+      expect(elemento.querySelector('form[aria-label="Modificar la reserva #6"]')).toBeNull();
+    });
+
+    it('lleva el foco a la fecha al abrir y avisa y vuelve a "Modificar" al guardar', async () => {
+      reservas.set([pendiente]);
+      modificar.mockReturnValue(
+        of({ ...cancelada, cantidad: 3, fecha, estadoReserva: 'PENDIENTE' }),
+      );
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      expect(document.activeElement).toBe(formulario.querySelector('input[type="date"]'));
+
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const aviso = elemento.querySelector('[data-testid="aviso-modificacion"]');
+      expect(aviso?.closest('[role="status"]')).not.toBeNull();
+      expect(aviso?.textContent).toContain('Guardamos los cambios de la reserva #6.');
+      expect(document.activeElement).toBe(botonesModificar(elemento)[0]);
+      elemento.remove();
+    });
+
+    it('vuelve el foco a "Modificar" al cancelar la edición', async () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      [...elemento.querySelectorAll<HTMLButtonElement>('form button')]
+        .find((boton) => boton.type === 'button')!
+        .click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(botonesModificar(elemento)[0]);
+      expect(elemento.querySelector('[data-testid="aviso-modificacion"]')).toBeNull();
+      elemento.remove();
+    });
+
+    it('no envía una cantidad menor a 1', async () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      const formulario = elemento.querySelector('form')!;
+      const cantidad = formulario.querySelector<HTMLInputElement>('input[type="number"]')!;
+      cantidad.value = '0';
+      cantidad.dispatchEvent(new Event('input'));
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(modificar).not.toHaveBeenCalled();
+      expect(formulario.textContent).toContain('Reservá al menos para 1 persona.');
+    });
+
+    it('muestra el error de cantidad mínima apenas el valor es inválido, sin esperar el blur', () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      const formulario = elemento.querySelector('form')!;
+      const cantidad = formulario.querySelector<HTMLInputElement>('input[type="number"]')!;
+      cantidad.value = '0';
+      cantidad.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(formulario.textContent).toContain('Reservá al menos para 1 persona.');
+      expect(cantidad.getAttribute('aria-invalid')).toBe('true');
+      expect(cantidad.getAttribute('aria-describedby')).toBe(`${cantidad.id}-error`);
+    });
+
+    it('no muestra errores de cantidad al abrir el formulario', () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      const formulario = elemento.querySelector('form')!;
+
+      expect(formulario.textContent).not.toContain('Reservá al menos para 1 persona.');
+      expect(formulario.querySelector('input[type="number"]')!.getAttribute('aria-invalid')).toBe(
+        'false',
+      );
+    });
+
+    it('muestra en el formulario el mensaje de error del servidor', () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      mutationError.set('No hay cupo disponible para esa fecha.');
+      fixture.detectChanges();
+
+      const alertas = elemento.querySelectorAll('[role="alert"]');
+      expect(alertas).toHaveLength(1);
+      expect(
+        elemento.querySelector('[data-testid="error-modificacion"]')?.textContent?.trim(),
+      ).toBe('No hay cupo disponible para esa fecha.');
+    });
   });
 });

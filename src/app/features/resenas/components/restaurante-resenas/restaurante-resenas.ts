@@ -1,7 +1,18 @@
-import { Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { enfocarTrasRender } from '../../../../shared/a11y/enfocar';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
 import { OPCIONES_ORDEN, OrdenResenas, filtrarYOrdenar } from '../../utils/ordenar-resenas';
@@ -24,6 +35,8 @@ export class RestauranteResenas {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toasts = inject(ToastService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
 
   readonly restauranteId = input.required<number>();
   readonly nombreRestaurante = input('');
@@ -151,10 +164,13 @@ export class RestauranteResenas {
 
   cerrarFormulario(): void {
     this.mostrarFormulario.set(false);
+    enfocarTrasRender(this.host, '[data-foco="escribir-resena"]', this.injector);
   }
 
   alCrear(resena: ResenaDetailDTO): void {
     this.mostrarFormulario.set(false);
+    // The "write a review" box disappears once the client has reviewed, so focus goes to the title.
+    enfocarTrasRender(this.host, '#titulo-resenas', this.injector);
     const nombre = resena.nombreUsuario?.trim();
     this.toasts.exito(
       nombre
