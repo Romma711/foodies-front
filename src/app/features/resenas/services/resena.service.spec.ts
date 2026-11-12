@@ -77,6 +77,22 @@ describe('ResenaService', () => {
     expect(service.mutationError()).toBeNull();
   });
 
+  it('debería conservar la fecha de creación al agregar la reseña nueva a la lista', () => {
+    const creada: ResenaDetailDTO = {
+      id: 16,
+      comentario: 'Excelente atención',
+      calificacion: 5,
+      nombreUsuario: 'Ana',
+      nombreRestaurant: 'La Trattoria',
+      fechaCreacion: '2026-11-12T10:30:00',
+    };
+
+    service.crear({ comentario: creada.comentario, calificacion: 5, restaurantId: 7 }).subscribe();
+    httpMock.expectOne(apiUrl).flush(creada, { status: 201, statusText: 'Created' });
+
+    expect(service.resenas()[0].fechaCreacion).toBe('2026-11-12T10:30:00');
+  });
+
   it('debería devolver una lista vacía cuando el backend responde 204', () => {
     let resultado: ResenaUsuarioDTO[] | undefined;
 

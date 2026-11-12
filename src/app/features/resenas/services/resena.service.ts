@@ -129,6 +129,7 @@ export class ResenaService {
                 nombreUsuario: creada.nombreUsuario,
                 comentario: creada.comentario,
                 calificacion: creada.calificacion,
+                fechaCreacion: creada.fechaCreacion,
               },
             ]);
           }),
