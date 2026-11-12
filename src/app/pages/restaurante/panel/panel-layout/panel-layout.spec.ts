@@ -34,7 +34,7 @@ describe('PanelLayout', () => {
       (a) => a.textContent?.trim(),
     );
 
-    expect(labels).toEqual(['Resumen', 'Perfil', 'Carta', 'Fotos', 'Reservas', 'Capacidad']);
+    expect(labels).toEqual(['Resumen', 'Perfil', 'Carta', 'Fotos', 'Reservas', 'Espacios', 'Capacidad']);
   });
 
   it('shows the restaurant name at the bottom of the sidebar', () => {

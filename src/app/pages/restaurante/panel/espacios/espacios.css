@@ -1,0 +1,65 @@
+@import '../panel-page.css';
+
+form {
+  max-width: 36rem;
+}
+
+.muted {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.total {
+  margin: 0;
+  font-weight: 600;
+}
+
+.fields {
+  display: grid;
+  gap: var(--space-4);
+}
+
+h2,
+h3 {
+  margin: 0;
+  font-size: var(--text-lg, 1.125rem);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.espacio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+}
+
+.espacio p {
+  margin: 0;
+}
+
+.nombre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  font-weight: 600;
+}
+
+.inactivo .nombre {
+  color: var(--color-muted-fg);
+}
+
+@media (min-width: 40rem) {
+  .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}

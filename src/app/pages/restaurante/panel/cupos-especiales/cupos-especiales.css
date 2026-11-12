@@ -55,3 +55,8 @@ h2 {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.espacio {
+  font-weight: 600;
+  color: var(--color-muted-fg);
+}

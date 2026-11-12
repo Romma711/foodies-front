@@ -23,6 +23,11 @@ export const panelRoutes: Routes = [
         loadComponent: () => import('./carta/carta').then((m) => m.CartaPanel),
       },
       {
+        path: 'espacios',
+        title: 'Espacios · Foodies',
+        loadComponent: () => import('./espacios/espacios').then((m) => m.EspaciosPanel),
+      },
+      {
         path: 'capacidad',
         title: 'Capacidad · Foodies',
         loadComponent: () =>
