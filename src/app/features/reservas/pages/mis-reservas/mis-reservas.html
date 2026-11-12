@@ -49,6 +49,17 @@
       </div>
     }
 
+    <div role="status" aria-live="polite">
+      @if (avisoModificacion(); as aviso) {
+        <p
+          class="mt-6 rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900"
+          data-testid="aviso-modificacion"
+        >
+          {{ aviso }}
+        </p>
+      }
+    </div>
+
     <!-- While editing, the edit form shows the error next to its fields. -->
     @if (editandoId() === null && mutationError(); as message) {
       <div
@@ -160,7 +171,7 @@
               @if (editandoId() === reserva.id) {
                 <app-reserva-edit-form
                   [reserva]="reserva"
-                  (guardada)="cerrarEdicion()"
+                  (guardada)="edicionGuardada()"
                   (cancelada)="cerrarEdicion()"
                 />
               } @else {

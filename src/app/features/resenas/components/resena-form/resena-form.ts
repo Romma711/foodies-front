@@ -1,4 +1,14 @@
-import { Component, computed, inject, input, linkedSignal, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
+  output,
+} from '@angular/core';
+import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
 import {
   form,
   FormField,
@@ -26,6 +36,11 @@ interface ResenaFormModel {
 })
 export class ResenaForm {
   private readonly resenaService = inject(ResenaService);
+
+  constructor() {
+    // The form replaces the button that opened it, so focus moves to its first field.
+    enfocarTrasRender(inject(ElementRef), PRIMER_CAMPO, inject(Injector));
+  }
 
   readonly restauranteId = input.required<number>();
   readonly nombreRestaurante = input('');

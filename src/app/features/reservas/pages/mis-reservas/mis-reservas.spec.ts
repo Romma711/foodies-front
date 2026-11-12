@@ -209,6 +209,54 @@ describe('MisReservas', () => {
       expect(elemento.querySelector('form[aria-label="Modificar la reserva #6"]')).toBeNull();
     });
 
+    it('lleva el foco a la fecha al abrir y avisa y vuelve a "Modificar" al guardar', async () => {
+      reservas.set([pendiente]);
+      modificar.mockReturnValue(
+        of({ ...cancelada, cantidad: 3, fecha, estadoReserva: 'PENDIENTE' }),
+      );
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      expect(document.activeElement).toBe(formulario.querySelector('input[type="date"]'));
+
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const aviso = elemento.querySelector('[data-testid="aviso-modificacion"]');
+      expect(aviso?.closest('[role="status"]')).not.toBeNull();
+      expect(aviso?.textContent).toContain('Guardamos los cambios de la reserva #6.');
+      expect(document.activeElement).toBe(botonesModificar(elemento)[0]);
+      elemento.remove();
+    });
+
+    it('vuelve el foco a "Modificar" al cancelar la edición', async () => {
+      reservas.set([pendiente]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      [...elemento.querySelectorAll<HTMLButtonElement>('form button')]
+        .find((boton) => boton.type === 'button')!
+        .click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(botonesModificar(elemento)[0]);
+      expect(elemento.querySelector('[data-testid="aviso-modificacion"]')).toBeNull();
+      elemento.remove();
+    });
+
     it('no envía una cantidad menor a 1', async () => {
       reservas.set([pendiente]);
       const fixture = crearComponente();
@@ -256,7 +304,9 @@ describe('MisReservas', () => {
       const formulario = elemento.querySelector('form')!;
 
       expect(formulario.textContent).not.toContain('Reservá al menos para 1 persona.');
-      expect(formulario.querySelector('input[type="number"]')!.getAttribute('aria-invalid')).toBe('false');
+      expect(formulario.querySelector('input[type="number"]')!.getAttribute('aria-invalid')).toBe(
+        'false',
+      );
     });
 
     it('muestra en el formulario el mensaje de error del servidor', () => {

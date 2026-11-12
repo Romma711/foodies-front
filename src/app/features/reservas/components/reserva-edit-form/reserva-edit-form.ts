@@ -1,4 +1,14 @@
-import { Component, computed, inject, input, linkedSignal, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
+  output,
+} from '@angular/core';
+import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
 import { form, FormField, submit } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { ReservaDetailDTO, ReservaListDTO } from '../../models';
@@ -19,6 +29,11 @@ function soloFecha(value: string): string {
 })
 export class ReservaEditForm {
   private readonly reservaService = inject(ReservaService);
+
+  constructor() {
+    // The form replaces the button that opened it, so focus moves to its first field.
+    enfocarTrasRender(inject(ElementRef), PRIMER_CAMPO, inject(Injector));
+  }
 
   readonly reserva = input.required<ReservaListDTO>();
 

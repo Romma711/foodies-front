@@ -1,4 +1,5 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, inject, Injector, input, output, signal } from '@angular/core';
+import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
 import { form, FormField, submit } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { ReservaDetailDTO } from '../../models';
@@ -12,6 +13,11 @@ import { fechaLocal, HORARIOS, ReservaFormModel, reglasReserva } from '../../uti
 })
 export class ReservaForm {
   private readonly reservaService = inject(ReservaService);
+
+  constructor() {
+    // The form replaces the button that opened it, so focus moves to its first field.
+    enfocarTrasRender(inject(ElementRef), PRIMER_CAMPO, inject(Injector));
+  }
 
   readonly restauranteId = input.required<number>();
   readonly usuarioId = input.required<number>();

@@ -14,7 +14,7 @@ import { BAR_CHART_FACTORY, BarChart } from '../../../../shared/charts/bar-chart
 // Chart.js draws on a canvas, so it cannot read Tailwind classes; these mirror the @theme tokens.
 const COLOR_STAR = '#f5a524';
 const COLOR_TRACK = '#f4ede3';
-const COLOR_INK_500 = '#7a7167';
+const COLOR_INK_500 = '#6e655b';
 
 @Component({
   selector: 'app-rating-distribution',
@@ -34,7 +34,9 @@ const COLOR_INK_500 = '#7a7167';
         <tbody>
           @for (item of distribucion(); track item.estrellas) {
             <tr>
-              <th scope="row">{{ item.estrellas }} estrellas</th>
+              <th scope="row">
+                {{ item.estrellas }} {{ item.estrellas === 1 ? 'estrella' : 'estrellas' }}
+              </th>
               <td>{{ item.cantidad }} {{ item.cantidad === 1 ? 'reseña' : 'reseñas' }}</td>
             </tr>
           }

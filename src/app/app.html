@@ -1,8 +1,15 @@
 <div class="flex min-h-dvh flex-col">
   @if (!portal.esDashboard()) {
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      (click)="saltarAlContenido($event)"
+    >
+      Saltar al contenido
+    </a>
     <app-header />
   }
-  <div class="flex-1">
+  <div #contenido id="contenido" class="flex-1 focus:outline-none" tabindex="-1">
     <router-outlet />
   </div>
   @if (!portal.esDashboard()) {

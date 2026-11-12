@@ -16,7 +16,7 @@ import { ItemRanking } from '../../models/metricas-admin';
 // Chart.js paints on a canvas and cannot read Tailwind classes; these mirror the @theme tokens.
 const COLOR_BRAND = '#f26b3a';
 const COLOR_TRACK = '#f4ede3';
-const COLOR_INK_500 = '#7a7167';
+const COLOR_INK_500 = '#6e655b';
 const COLOR_INK_700 = '#3f3a33';
 const COLOR_INK_900 = '#1f1b16';
 /** Pie slices, one per ranking position: brand, star, ink-700, brand-700, ink-400. */

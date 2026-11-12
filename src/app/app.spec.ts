@@ -28,6 +28,20 @@ describe('App', () => {
     expect(element.querySelector('app-footer footer')).not.toBeNull();
   });
 
+  it('offers a skip link that moves focus to the main content', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(element);
+
+    const skip = element.querySelector('a') as HTMLAnchorElement;
+    expect(skip.textContent?.trim()).toBe('Saltar al contenido');
+    skip.click();
+
+    expect(document.activeElement?.id).toBe('contenido');
+    element.remove();
+  });
+
   it('hides the public header and footer on the dashboard host', async () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({

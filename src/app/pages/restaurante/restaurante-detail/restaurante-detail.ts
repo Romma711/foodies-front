@@ -1,8 +1,19 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
 import { ReservaForm } from '../../../features/reservas/components/reserva-form/reserva-form';
 import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
@@ -24,6 +35,8 @@ export class RestauranteDetail {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
 
   readonly restauranteId = input.required<string>();
 
@@ -70,11 +83,13 @@ export class RestauranteDetail {
 
   protected cerrarFormulario(): void {
     this.mostrarFormulario.set(false);
+    enfocarTrasRender(this.host, '[data-foco="reservar"]', this.injector);
   }
 
   protected alCrear(reserva: ReservaDetailDTO): void {
     this.mostrarFormulario.set(false);
     this.reservaCreada.set(reserva);
+    enfocarTrasRender(this.host, '[data-foco="reserva-enviada"]', this.injector);
   }
 
   protected nuevaReserva(): void {

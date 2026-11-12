@@ -1,7 +1,11 @@
 <section id="resenas" class="scroll-mt-24" aria-labelledby="titulo-resenas">
   <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
     <div class="max-w-xl">
-      <h2 id="titulo-resenas" class="text-2xl font-extrabold tracking-tight text-ink-900">
+      <h2
+        id="titulo-resenas"
+        class="text-2xl font-extrabold tracking-tight text-ink-900 focus:outline-none"
+        tabindex="-1"
+      >
         Reseñas
       </h2>
       <p class="mt-2 text-sm leading-6 text-ink-500">
@@ -77,6 +81,7 @@
             <button
               type="button"
               class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
+              data-foco="escribir-resena"
               (click)="abrirFormulario()"
             >
               Escribir reseña
@@ -218,7 +223,7 @@
               [attr.aria-pressed]="filtroEstrellas() === item.estrellas"
               [attr.aria-label]="
                 item.estrellas +
-                ' estrellas, ' +
+                (item.estrellas === 1 ? ' estrella, ' : ' estrellas, ') +
                 item.cantidad +
                 (item.cantidad === 1 ? ' reseña' : ' reseñas')
               "
@@ -255,7 +260,8 @@
           class="flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white px-6 py-12 text-center shadow-sm"
         >
           <p class="text-base font-bold text-ink-900">
-            No hay reseñas de {{ filtroEstrellas() }} estrellas
+            No hay reseñas de {{ filtroEstrellas() }}
+            {{ filtroEstrellas() === 1 ? 'estrella' : 'estrellas' }}
           </p>
           <button
             type="button"

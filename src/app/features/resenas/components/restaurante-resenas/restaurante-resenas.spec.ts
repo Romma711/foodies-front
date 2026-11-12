@@ -238,6 +238,54 @@ describe('RestauranteResenas', () => {
     expect(fixture.nativeElement.querySelector('app-resena-form')).toBeNull();
   });
 
+  describe('foco del formulario', () => {
+    function abrir(fixture: ReturnType<typeof crearComponente>) {
+      Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+        .find((item) => item.textContent?.includes('Escribir reseña'))!
+        .click();
+      fixture.detectChanges();
+    }
+
+    it('lleva el foco al formulario al abrirlo y al título al publicar', async () => {
+      autenticado.set(true);
+      const fixture = crearComponente('5');
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      abrir(fixture);
+      await fixture.whenStable();
+      expect(elemento.querySelector('app-resena-form')?.contains(document.activeElement)).toBe(
+        true,
+      );
+
+      (
+        fixture.debugElement.query(By.directive(ResenaForm)).componentInstance as ResenaForm
+      ).creada.emit(detalle);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement?.id).toBe('titulo-resenas');
+      elemento.remove();
+    });
+
+    it('devuelve el foco a "Escribir reseña" al cancelar', async () => {
+      autenticado.set(true);
+      const fixture = crearComponente('5');
+      const elemento = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(elemento);
+
+      abrir(fixture);
+      (
+        fixture.debugElement.query(By.directive(ResenaForm)).componentInstance as ResenaForm
+      ).cancelada.emit();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement?.textContent?.trim()).toBe('Escribir reseña');
+      elemento.remove();
+    });
+  });
+
   describe('con reseñas propias', () => {
     beforeEach(() => {
       autenticado.set(true);
@@ -406,6 +454,16 @@ describe('RestauranteResenas', () => {
       expect(
         fixture.nativeElement.querySelector('[data-testid="resultado-filtro"]')?.textContent,
       ).toContain('Mostrando 1 de 2 reseñas');
+    });
+
+    it('debería usar el singular para una estrella', () => {
+      const fixture = crearComponente('5');
+
+      expect(filtro(fixture, '1').getAttribute('aria-label')).toBe('1 estrella, 0 reseñas');
+      filtro(fixture, '1').click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('No hay reseñas de 1 estrella');
+      expect(fixture.nativeElement.textContent).not.toContain('1 estrellas');
     });
 
     it('debería explicar un filtro sin resultados y permitir volver a todas', () => {
