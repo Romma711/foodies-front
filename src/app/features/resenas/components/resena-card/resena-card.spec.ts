@@ -164,6 +164,8 @@ describe('ResenaCard', () => {
   it('no debería mostrar fecha cuando la reseña no la tiene', () => {
     const fixture = crear({ ...resena, fechaCreacion: null });
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="fecha"]')).toBeNull();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="fecha"]'),
+    ).toBeNull();
   });
 });

@@ -77,7 +77,10 @@ import { formatearFechaResena } from '../../utils/fecha-resena';
                   <app-star-rating [value]="resena.calificacion" size="sm" [mostrarValor]="true" />
                 </div>
                 @if (formatearFecha(resena.fechaCreacion); as fecha) {
-                  <time class="mt-1 block text-xs text-ink-700" [attr.datetime]="resena.fechaCreacion">
+                  <time
+                    class="mt-1 block text-xs text-ink-700"
+                    [attr.datetime]="resena.fechaCreacion"
+                  >
                     {{ fecha }}
                   </time>
                 }
