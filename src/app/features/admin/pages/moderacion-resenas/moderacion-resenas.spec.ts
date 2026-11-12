@@ -187,7 +187,9 @@ describe('ModeracionResenas', () => {
 
   describe('filtros', () => {
     const elegir = (fixture: ReturnType<typeof crear>, id: string, valor: string) => {
-      const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(`#${id}`)!;
+      const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+        `#${id}`,
+      )!;
       select.value = valor;
       select.dispatchEvent(new Event('change'));
       fixture.detectChanges();
@@ -198,7 +200,9 @@ describe('ModeracionResenas', () => {
 
       expect(cargar).toHaveBeenCalledWith({ texto: '', calificacion: null, restauranteId: null });
       const opciones = Array.from(
-        (fixture.nativeElement as HTMLElement).querySelectorAll('#filtro-resenas-restaurante option'),
+        (fixture.nativeElement as HTMLElement).querySelectorAll(
+          '#filtro-resenas-restaurante option',
+        ),
       ).map((o) => o.textContent?.trim());
       expect(opciones).toEqual(['Todos', 'La Casona', 'Ochiwan']);
     });
@@ -212,13 +216,25 @@ describe('ModeracionResenas', () => {
       input.dispatchEvent(new Event('input'));
       expect(cargar).toHaveBeenCalledTimes(1);
       host.querySelector('form')!.dispatchEvent(new Event('submit'));
-      expect(cargar).toHaveBeenLastCalledWith({ texto: 'sushi', calificacion: null, restauranteId: null });
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: null,
+        restauranteId: null,
+      });
 
       elegir(fixture, 'filtro-resenas-calificacion', '1');
-      expect(cargar).toHaveBeenLastCalledWith({ texto: 'sushi', calificacion: 1, restauranteId: null });
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: 1,
+        restauranteId: null,
+      });
 
       elegir(fixture, 'filtro-resenas-restaurante', '5');
-      expect(cargar).toHaveBeenLastCalledWith({ texto: 'sushi', calificacion: 1, restauranteId: 5 });
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: 1,
+        restauranteId: 5,
+      });
     });
 
     it('debería avisar cuando nada coincide y limpiar los filtros', () => {
@@ -231,7 +247,11 @@ describe('ModeracionResenas', () => {
       boton(host, 'Limpiar filtros')!.click();
       fixture.detectChanges();
 
-      expect(cargar).toHaveBeenLastCalledWith({ texto: '', calificacion: null, restauranteId: null });
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: '',
+        calificacion: null,
+        restauranteId: null,
+      });
       expect(host.querySelector<HTMLSelectElement>('#filtro-resenas-calificacion')!.value).toBe('');
     });
 

@@ -86,7 +86,9 @@ import {
           />
         </div>
         <div>
-          <label for="filtro-resenas-calificacion" class="text-xs font-bold text-ink-700">Calificación</label>
+          <label for="filtro-resenas-calificacion" class="text-xs font-bold text-ink-700"
+            >Calificación</label
+          >
           <select
             id="filtro-resenas-calificacion"
             class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -102,7 +104,9 @@ import {
           </select>
         </div>
         <div>
-          <label for="filtro-resenas-restaurante" class="text-xs font-bold text-ink-700">Restaurante</label>
+          <label for="filtro-resenas-restaurante" class="text-xs font-bold text-ink-700"
+            >Restaurante</label
+          >
           <select
             id="filtro-resenas-restaurante"
             class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -115,9 +119,21 @@ import {
             }
           </select>
         </div>
-        <button type="submit" class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:opacity-60" [disabled]="cargando()">Buscar</button>
+        <button
+          type="submit"
+          class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:opacity-60"
+          [disabled]="cargando()"
+        >
+          Buscar
+        </button>
         @if (hayFiltros()) {
-          <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60" (click)="limpiar()">Limpiar filtros</button>
+          <button
+            type="button"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+            (click)="limpiar()"
+          >
+            Limpiar filtros
+          </button>
         }
       </form>
 
@@ -210,7 +226,12 @@ import {
         </div>
         @if (hayMas()) {
           <div class="mt-4 flex justify-center">
-            <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60" [disabled]="cargando()" (click)="cargarMas()">
+            <button
+              type="button"
+              class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+              [disabled]="cargando()"
+              (click)="cargarMas()"
+            >
               {{ cargando() ? 'Cargando…' : 'Cargar más' }}
             </button>
           </div>
@@ -240,7 +261,13 @@ import {
             <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
               Probá con otro texto o sacá algún filtro.
             </p>
-            <button type="button" class="mt-4 rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60" (click)="limpiar()">Limpiar filtros</button>
+            <button
+              type="button"
+              class="mt-4 rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+              (click)="limpiar()"
+            >
+              Limpiar filtros
+            </button>
           } @else {
             <h2 class="text-lg font-bold text-ink-900">No hay reseñas para moderar</h2>
             <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">

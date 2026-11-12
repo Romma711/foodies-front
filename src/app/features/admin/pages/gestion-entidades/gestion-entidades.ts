@@ -126,7 +126,9 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         @if (pestana() === 'clientes') {
           <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
             <div class="min-w-56 flex-1">
-              <label for="filtro-clientes-texto" class="text-xs font-bold text-ink-700">Buscar</label>
+              <label for="filtro-clientes-texto" class="text-xs font-bold text-ink-700"
+                >Buscar</label
+              >
               <input
                 id="filtro-clientes-texto"
                 type="search"
@@ -137,7 +139,9 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               />
             </div>
             <div>
-              <label for="filtro-clientes-estado" class="text-xs font-bold text-ink-700">Estado</label>
+              <label for="filtro-clientes-estado" class="text-xs font-bold text-ink-700"
+                >Estado</label
+              >
               <select
                 id="filtro-clientes-estado"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -149,7 +153,10 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 <option value="inactivos">Dados de baja</option>
               </select>
             </div>
-            <label for="filtro-clientes-strikes" class="flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-700">
+            <label
+              for="filtro-clientes-strikes"
+              class="flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-700"
+            >
               <input
                 id="filtro-clientes-strikes"
                 type="checkbox"
@@ -160,7 +167,11 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               Con strikes
             </label>
             @if (hayFiltrosClientes()) {
-              <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700" (click)="limpiarFiltrosClientes()">
+              <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                (click)="limpiarFiltrosClientes()"
+              >
                 Limpiar filtros
               </button>
             }
@@ -169,75 +180,81 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
             Mostrando {{ clientesFiltrados().length }} de {{ clientes().length }} clientes
           </p>
           <div class="overflow-x-auto">
-          <table class="w-full min-w-[46rem] text-left text-sm">
-            <caption class="sr-only">
-              Clientes registrados
-            </caption>
-            <thead
-              class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
-            >
-              <tr>
-                <th scope="col" class="px-4 py-3">Cliente</th>
-                <th scope="col" class="px-4 py-3">Teléfono</th>
-                <th scope="col" class="px-4 py-3">Strikes</th>
-                <th scope="col" class="px-4 py-3 text-right">Activo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line/60">
-              @for (cliente of clientesFiltrados(); track cliente.id) {
-                <tr [class.opacity-60]="!cliente.activo">
-                  <td class="px-4 py-3">
-                    <p class="font-semibold text-ink-900">{{ nombreCliente(cliente) }}</p>
-                    <p class="text-xs text-ink-500">{{ cliente.email }}</p>
-                  </td>
-                  <td class="px-4 py-3 text-ink-700">{{ cliente.telefono }}</td>
-                  <td class="px-4 py-3">
-                    <ng-container
-                      *ngTemplateOutlet="
-                        celdaStrikes;
-                        context: {
-                          strikes: cliente.strikes,
-                          nombre: nombreCliente(cliente),
-                          abrir: abrirStrike(
-                            'cliente',
-                            cliente.id,
-                            nombreCliente(cliente),
-                            cliente.strikes
-                          ),
-                        }
-                      "
-                    />
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end">
+            <table class="w-full min-w-[46rem] text-left text-sm">
+              <caption class="sr-only">
+                Clientes registrados
+              </caption>
+              <thead
+                class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
+              >
+                <tr>
+                  <th scope="col" class="px-4 py-3">Cliente</th>
+                  <th scope="col" class="px-4 py-3">Teléfono</th>
+                  <th scope="col" class="px-4 py-3">Strikes</th>
+                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line/60">
+                @for (cliente of clientesFiltrados(); track cliente.id) {
+                  <tr [class.opacity-60]="!cliente.activo">
+                    <td class="px-4 py-3">
+                      <p class="font-semibold text-ink-900">{{ nombreCliente(cliente) }}</p>
+                      <p class="text-xs text-ink-500">{{ cliente.email }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-ink-700">{{ cliente.telefono }}</td>
+                    <td class="px-4 py-3">
                       <ng-container
                         *ngTemplateOutlet="
-                          interruptor;
+                          celdaStrikes;
                           context: {
-                            activo: cliente.activo,
+                            strikes: cliente.strikes,
                             nombre: nombreCliente(cliente),
-                            clave: 'c' + cliente.id,
-                            cambiar: cambiarCliente(cliente),
+                            abrir: abrirStrike(
+                              'cliente',
+                              cliente.id,
+                              nombreCliente(cliente),
+                              cliente.strikes
+                            ),
                           }
                         "
                       />
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="px-4 py-10 text-center text-ink-500">
-                    {{ hayFiltrosClientes() ? 'Ningún cliente coincide con los filtros.' : 'Todavía no hay clientes.' }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex justify-end">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            interruptor;
+                            context: {
+                              activo: cliente.activo,
+                              nombre: nombreCliente(cliente),
+                              clave: 'c' + cliente.id,
+                              cambiar: cambiarCliente(cliente),
+                            }
+                          "
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-4 py-10 text-center text-ink-500">
+                      {{
+                        hayFiltrosClientes()
+                          ? 'Ningún cliente coincide con los filtros.'
+                          : 'Todavía no hay clientes.'
+                      }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         } @else {
           <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
             <div class="min-w-56 flex-1">
-              <label for="filtro-restaurantes-texto" class="text-xs font-bold text-ink-700">Buscar</label>
+              <label for="filtro-restaurantes-texto" class="text-xs font-bold text-ink-700"
+                >Buscar</label
+              >
               <input
                 id="filtro-restaurantes-texto"
                 type="search"
@@ -248,7 +265,9 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               />
             </div>
             <div>
-              <label for="filtro-restaurantes-estado" class="text-xs font-bold text-ink-700">Estado</label>
+              <label for="filtro-restaurantes-estado" class="text-xs font-bold text-ink-700"
+                >Estado</label
+              >
               <select
                 id="filtro-restaurantes-estado"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -262,7 +281,9 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               </select>
             </div>
             <div>
-              <label for="filtro-restaurantes-especialidad" class="text-xs font-bold text-ink-700">Especialidad</label>
+              <label for="filtro-restaurantes-especialidad" class="text-xs font-bold text-ink-700"
+                >Especialidad</label
+              >
               <select
                 id="filtro-restaurantes-especialidad"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -276,7 +297,9 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               </select>
             </div>
             <div>
-              <label for="filtro-restaurantes-activo" class="text-xs font-bold text-ink-700">Activo</label>
+              <label for="filtro-restaurantes-activo" class="text-xs font-bold text-ink-700"
+                >Activo</label
+              >
               <select
                 id="filtro-restaurantes-activo"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
@@ -289,94 +312,99 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               </select>
             </div>
             @if (hayFiltrosRestaurantes()) {
-              <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700" (click)="limpiarFiltrosRestaurantes()">
+              <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                (click)="limpiarFiltrosRestaurantes()"
+              >
                 Limpiar filtros
               </button>
             }
           </div>
           <p class="px-4 pt-3 text-xs text-ink-500" role="status" data-testid="resultado-filtros">
-            Mostrando {{ restaurantesFiltrados().length }} de {{ restaurantes().length }} restaurantes
+            Mostrando {{ restaurantesFiltrados().length }} de
+            {{ restaurantes().length }} restaurantes
           </p>
           <div class="overflow-x-auto">
-          <table class="w-full min-w-[52rem] text-left text-sm">
-            <caption class="sr-only">
-              Restaurantes registrados
-            </caption>
-            <thead
-              class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
-            >
-              <tr>
-                <th scope="col" class="px-4 py-3">Restaurante</th>
-                <th scope="col" class="px-4 py-3">Estado</th>
-                <th scope="col" class="px-4 py-3">Encargado</th>
-                <th scope="col" class="px-4 py-3">Strikes</th>
-                <th scope="col" class="px-4 py-3 text-right">Activo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line/60">
-              @for (restaurante of restaurantesFiltrados(); track restaurante.id) {
-                <tr [class.opacity-60]="!restaurante.activo">
-                  <td class="px-4 py-3">
-                    <p class="font-semibold text-ink-900">{{ restaurante.nombre }}</p>
-                    <p class="text-xs text-ink-500">
-                      {{ especialidad(restaurante) }} · {{ restaurante.ubicacion }}
-                    </p>
-                  </td>
-                  <td class="px-4 py-3">
-                    <span
-                      class="rounded-full px-2.5 py-1 text-xs font-semibold ring-1"
-                      [class]="estados[restaurante.estado].clases"
-                    >
-                      {{ estados[restaurante.estado].texto }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
-                  <td class="px-4 py-3">
-                    <ng-container
-                      *ngTemplateOutlet="
-                        celdaStrikes;
-                        context: {
-                          strikes: restaurante.strikes,
-                          nombre: restaurante.nombre,
-                          abrir: abrirStrike(
-                            'restaurante',
-                            restaurante.id,
-                            restaurante.nombre,
-                            restaurante.strikes
-                          ),
-                        }
-                      "
-                    />
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end">
+            <table class="w-full min-w-[52rem] text-left text-sm">
+              <caption class="sr-only">
+                Restaurantes registrados
+              </caption>
+              <thead
+                class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
+              >
+                <tr>
+                  <th scope="col" class="px-4 py-3">Restaurante</th>
+                  <th scope="col" class="px-4 py-3">Estado</th>
+                  <th scope="col" class="px-4 py-3">Encargado</th>
+                  <th scope="col" class="px-4 py-3">Strikes</th>
+                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line/60">
+                @for (restaurante of restaurantesFiltrados(); track restaurante.id) {
+                  <tr [class.opacity-60]="!restaurante.activo">
+                    <td class="px-4 py-3">
+                      <p class="font-semibold text-ink-900">{{ restaurante.nombre }}</p>
+                      <p class="text-xs text-ink-500">
+                        {{ especialidad(restaurante) }} · {{ restaurante.ubicacion }}
+                      </p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span
+                        class="rounded-full px-2.5 py-1 text-xs font-semibold ring-1"
+                        [class]="estados[restaurante.estado].clases"
+                      >
+                        {{ estados[restaurante.estado].texto }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
+                    <td class="px-4 py-3">
                       <ng-container
                         *ngTemplateOutlet="
-                          interruptor;
+                          celdaStrikes;
                           context: {
-                            activo: restaurante.activo,
+                            strikes: restaurante.strikes,
                             nombre: restaurante.nombre,
-                            clave: 'r' + restaurante.id,
-                            cambiar: cambiarRestaurante(restaurante),
+                            abrir: abrirStrike(
+                              'restaurante',
+                              restaurante.id,
+                              restaurante.nombre,
+                              restaurante.strikes
+                            ),
                           }
                         "
                       />
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="px-4 py-10 text-center text-ink-500">
-                    {{
-                      hayFiltrosRestaurantes()
-                        ? 'Ningún restaurante coincide con los filtros.'
-                        : 'Todavía no hay restaurantes.'
-                    }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex justify-end">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            interruptor;
+                            context: {
+                              activo: restaurante.activo,
+                              nombre: restaurante.nombre,
+                              clave: 'r' + restaurante.id,
+                              cambiar: cambiarRestaurante(restaurante),
+                            }
+                          "
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-4 py-10 text-center text-ink-500">
+                      {{
+                        hayFiltrosRestaurantes()
+                          ? 'Ningún restaurante coincide con los filtros.'
+                          : 'Todavía no hay restaurantes.'
+                      }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         }
       </div>
@@ -552,7 +580,9 @@ export class GestionEntidades {
   }
 
   protected especialidadDe(valor: string): EspecialidadDeComida | '' {
-    return (ESPECIALIDADES as readonly string[]).includes(valor) ? (valor as EspecialidadDeComida) : '';
+    return (ESPECIALIDADES as readonly string[]).includes(valor)
+      ? (valor as EspecialidadDeComida)
+      : '';
   }
 
   protected nombreCliente(cliente: EntidadCliente): string {

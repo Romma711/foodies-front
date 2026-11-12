@@ -33,7 +33,15 @@ describe('filtros de entidades', () => {
 
   describe('clientes', () => {
     const ana = cliente();
-    const bruno = cliente({ id: 2, nombre: 'Bruno', apellido: 'Díaz', email: 'bruno@mail.com', telefono: '1144443333', strikes: 2, activo: false });
+    const bruno = cliente({
+      id: 2,
+      nombre: 'Bruno',
+      apellido: 'Díaz',
+      email: 'bruno@mail.com',
+      telefono: '1144443333',
+      strikes: 2,
+      activo: false,
+    });
     const lista = [ana, bruno];
 
     it('sin filtros devuelve todos', () => {
@@ -50,9 +58,15 @@ describe('filtros de entidades', () => {
     });
 
     it('filtra por activos o dados de baja y por "con strikes"', () => {
-      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, estado: 'activos' })).toEqual([ana]);
-      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, estado: 'inactivos' })).toEqual([bruno]);
-      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, conStrikes: true })).toEqual([bruno]);
+      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, estado: 'activos' })).toEqual([
+        ana,
+      ]);
+      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, estado: 'inactivos' })).toEqual([
+        bruno,
+      ]);
+      expect(filtrarClientes(lista, { ...FILTRO_CLIENTES_VACIO, conStrikes: true })).toEqual([
+        bruno,
+      ]);
     });
   });
 
@@ -74,7 +88,8 @@ describe('filtros de entidades', () => {
     });
 
     it('busca por nombre, dirección o email del encargado sin distinguir acentos', () => {
-      const con = (texto: string) => filtrarRestaurantes(lista, { ...FILTRO_RESTAURANTES_VACIO, texto });
+      const con = (texto: string) =>
+        filtrarRestaurantes(lista, { ...FILTRO_RESTAURANTES_VACIO, texto });
       expect(con('trattoria')).toEqual([trattoria]);
       expect(con('olavarria')).toEqual([trattoria]);
       expect(con('OCHIWAN@')).toEqual([ochiwan]);

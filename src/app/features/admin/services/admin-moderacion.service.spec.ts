@@ -97,7 +97,10 @@ describe('AdminModeracionService', () => {
     service.listarRestaurantes().subscribe((lista) => (nombres = lista.map((r) => r.nombre)));
     const req = httpMock.expectOne('/api/admin/entidades/restaurantes');
     expect(req.request.context.get(AUTH_ROLE)).toBe('ADMIN');
-    req.flush([{ id: 5, nombre: 'Ochiwan' }, { id: 3, nombre: 'La Casona' }]);
+    req.flush([
+      { id: 5, nombre: 'Ochiwan' },
+      { id: 3, nombre: 'La Casona' },
+    ]);
 
     expect(nombres).toEqual(['La Casona', 'Ochiwan']);
   });

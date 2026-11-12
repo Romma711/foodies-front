@@ -14,7 +14,11 @@ export interface FiltroResenas {
   restauranteId: number | null;
 }
 
-export const FILTRO_RESENAS_VACIO: FiltroResenas = { texto: '', calificacion: null, restauranteId: null };
+export const FILTRO_RESENAS_VACIO: FiltroResenas = {
+  texto: '',
+  calificacion: null,
+  restauranteId: null,
+};
 
 /** Restaurante elegible en el filtro de la moderación. */
 export interface RestauranteFiltro {

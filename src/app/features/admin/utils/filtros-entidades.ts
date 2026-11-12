@@ -22,7 +22,11 @@ export interface FiltroRestaurantes {
   activo: FiltroActivo;
 }
 
-export const FILTRO_CLIENTES_VACIO: FiltroClientes = { texto: '', estado: 'todos', conStrikes: false };
+export const FILTRO_CLIENTES_VACIO: FiltroClientes = {
+  texto: '',
+  estado: 'todos',
+  conStrikes: false,
+};
 
 export const FILTRO_RESTAURANTES_VACIO: FiltroRestaurantes = {
   texto: '',
@@ -45,7 +49,10 @@ function coincideActivo(filtro: FiltroActivo, activo: boolean): boolean {
   return filtro === 'todos' || (filtro === 'activos') === activo;
 }
 
-export function filtrarClientes(lista: readonly EntidadCliente[], filtro: FiltroClientes): EntidadCliente[] {
+export function filtrarClientes(
+  lista: readonly EntidadCliente[],
+  filtro: FiltroClientes,
+): EntidadCliente[] {
   return lista.filter(
     (c) =>
       coincideTexto(filtro.texto, [c.nombre, c.apellido, c.email, c.telefono]) &&
@@ -73,6 +80,9 @@ export function hayFiltrosClientes(filtro: FiltroClientes): boolean {
 
 export function hayFiltrosRestaurantes(filtro: FiltroRestaurantes): boolean {
   return (
-    filtro.texto.trim() !== '' || filtro.estado !== '' || filtro.especialidad !== '' || filtro.activo !== 'todos'
+    filtro.texto.trim() !== '' ||
+    filtro.estado !== '' ||
+    filtro.especialidad !== '' ||
+    filtro.activo !== 'todos'
   );
 }
