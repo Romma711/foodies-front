@@ -44,7 +44,7 @@ describe('AdminModeracionService', () => {
   }
 
   it('debería pedir las reseñas recientes con el token de admin', () => {
-    service.cargar(20).subscribe();
+    service.cargar().subscribe();
     expect(service.cargando()).toBe(true);
 
     const req = httpMock.expectOne((request) => request.url === '/api/admin/resenas');
@@ -55,6 +55,54 @@ describe('AdminModeracionService', () => {
 
     expect(service.resenas()).toEqual(resenas);
     expect(service.cargando()).toBe(false);
+    expect(req.request.params.has('texto')).toBe(false);
+    expect(req.request.params.get('pagina')).toBe('0');
+  });
+
+  it('debería enviar los filtros completos y omitir los vacíos', () => {
+    service.cargar({ texto: '  sushi ', calificacion: 1, restauranteId: 5 }).subscribe();
+    const req = httpMock.expectOne((request) => request.url === '/api/admin/resenas');
+    expect(req.request.params.get('texto')).toBe('sushi');
+    expect(req.request.params.get('calificacion')).toBe('1');
+    expect(req.request.params.get('restauranteId')).toBe('5');
+    req.flush([]);
+
+    service.cargar({ texto: '   ', calificacion: null, restauranteId: null }).subscribe();
+    const vacia = httpMock.expectOne((request) => request.url === '/api/admin/resenas');
+    expect(vacia.request.params.keys().sort()).toEqual(['limite', 'pagina']);
+    vacia.flush([]);
+  });
+
+  it('debería agregar la página siguiente al cargar más y saber si quedan', () => {
+    const pagina = (desde: number, cantidad: number): ResenaModeracion[] =>
+      Array.from({ length: cantidad }, (_, i) => ({ ...resenas[0], id: desde - i }));
+    const filtro = { texto: 'rico', calificacion: null, restauranteId: null };
+
+    service.cargar(filtro).subscribe();
+    httpMock.expectOne((r) => r.url === '/api/admin/resenas').flush(pagina(100, 20));
+    expect(service.hayMas()).toBe(true);
+
+    service.cargarMas().subscribe();
+    const req = httpMock.expectOne((r) => r.url === '/api/admin/resenas');
+    expect(req.request.params.get('pagina')).toBe('1');
+    expect(req.request.params.get('texto')).toBe('rico');
+    req.flush(pagina(80, 3));
+
+    expect(service.resenas().length).toBe(23);
+    expect(service.hayMas()).toBe(false);
+  });
+
+  it('debería listar los restaurantes para el filtro', () => {
+    let nombres: string[] = [];
+    service.listarRestaurantes().subscribe((lista) => (nombres = lista.map((r) => r.nombre)));
+    const req = httpMock.expectOne('/api/admin/entidades/restaurantes');
+    expect(req.request.context.get(AUTH_ROLE)).toBe('ADMIN');
+    req.flush([
+      { id: 5, nombre: 'Ochiwan' },
+      { id: 3, nombre: 'La Casona' },
+    ]);
+
+    expect(nombres).toEqual(['La Casona', 'Ochiwan']);
   });
 
   it('debería eliminar con DELETE como admin y sacar la fila', () => {

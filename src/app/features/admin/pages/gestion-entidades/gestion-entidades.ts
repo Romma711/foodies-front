@@ -1,6 +1,7 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
+  computed,
   DestroyRef,
   Injector,
   afterNextRender,
@@ -10,7 +11,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
-import { especialidadLabel } from '../../../../core/catalog/especialidades';
+import { EspecialidadDeComida, ESPECIALIDADES } from '../../../../core/auth/auth.models';
+import { ESPECIALIDAD_LABELS, especialidadLabel } from '../../../../core/catalog/especialidades';
 import { ToastService } from '../../../../shared/toast/toast.service';
 import { ToastOutlet } from '../../../../shared/toast/toast-outlet';
 import {
@@ -20,6 +22,17 @@ import {
 } from '../../models/entidades-admin';
 import { LIMITE_STRIKES, StrikeModal } from '../../components/strike-modal/strike-modal';
 import { AdminEntidadesService, TipoEntidad } from '../../services/admin-entidades.service';
+import {
+  FILTRO_CLIENTES_VACIO,
+  FILTRO_RESTAURANTES_VACIO,
+  FiltroActivo,
+  FiltroClientes,
+  FiltroRestaurantes,
+  filtrarClientes,
+  filtrarRestaurantes,
+  hayFiltrosClientes,
+  hayFiltrosRestaurantes,
+} from '../../utils/filtros-entidades';
 
 type Pestana = 'clientes' | 'restaurantes';
 
@@ -105,152 +118,294 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
       </div>
 
       <div
-        class="mt-4 overflow-x-auto rounded-2xl border border-line/60 bg-white shadow-sm"
+        class="mt-4 rounded-2xl border border-line/60 bg-white shadow-sm"
         role="tabpanel"
         [id]="'panel-' + pestana()"
         [attr.aria-labelledby]="'tab-' + pestana()"
       >
         @if (pestana() === 'clientes') {
-          <table class="w-full min-w-[46rem] text-left text-sm">
-            <caption class="sr-only">
-              Clientes registrados
-            </caption>
-            <thead
-              class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
+          <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
+            <div class="min-w-56 flex-1">
+              <label for="filtro-clientes-texto" class="text-xs font-bold text-ink-700"
+                >Buscar</label
+              >
+              <input
+                id="filtro-clientes-texto"
+                type="search"
+                placeholder="Nombre, email o teléfono"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroClientes().texto"
+                (input)="filtrarClientes({ texto: valor($event) })"
+              />
+            </div>
+            <div>
+              <label for="filtro-clientes-estado" class="text-xs font-bold text-ink-700"
+                >Estado</label
+              >
+              <select
+                id="filtro-clientes-estado"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroClientes().estado"
+                (change)="filtrarClientes({ estado: activoDe(valor($event)) })"
+              >
+                <option value="todos">Todos</option>
+                <option value="activos">Activos</option>
+                <option value="inactivos">Dados de baja</option>
+              </select>
+            </div>
+            <label
+              for="filtro-clientes-strikes"
+              class="flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-700"
             >
-              <tr>
-                <th scope="col" class="px-4 py-3">Cliente</th>
-                <th scope="col" class="px-4 py-3">Teléfono</th>
-                <th scope="col" class="px-4 py-3">Strikes</th>
-                <th scope="col" class="px-4 py-3 text-right">Activo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line/60">
-              @for (cliente of clientes(); track cliente.id) {
-                <tr [class.opacity-60]="!cliente.activo">
-                  <td class="px-4 py-3">
-                    <p class="font-semibold text-ink-900">{{ nombreCliente(cliente) }}</p>
-                    <p class="text-xs text-ink-500">{{ cliente.email }}</p>
-                  </td>
-                  <td class="px-4 py-3 text-ink-700">{{ cliente.telefono }}</td>
-                  <td class="px-4 py-3">
-                    <ng-container
-                      *ngTemplateOutlet="
-                        celdaStrikes;
-                        context: {
-                          strikes: cliente.strikes,
-                          nombre: nombreCliente(cliente),
-                          abrir: abrirStrike(
-                            'cliente',
-                            cliente.id,
-                            nombreCliente(cliente),
-                            cliente.strikes
-                          ),
-                        }
-                      "
-                    />
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end">
+              <input
+                id="filtro-clientes-strikes"
+                type="checkbox"
+                class="size-4 accent-ink-900"
+                [checked]="filtroClientes().conStrikes"
+                (change)="filtrarClientes({ conStrikes: marcado($event) })"
+              />
+              Con strikes
+            </label>
+            @if (hayFiltrosClientes()) {
+              <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                (click)="limpiarFiltrosClientes()"
+              >
+                Limpiar filtros
+              </button>
+            }
+          </div>
+          <p class="px-4 pt-3 text-xs text-ink-500" role="status" data-testid="resultado-filtros">
+            Mostrando {{ clientesFiltrados().length }} de {{ clientes().length }} clientes
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[46rem] text-left text-sm">
+              <caption class="sr-only">
+                Clientes registrados
+              </caption>
+              <thead
+                class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
+              >
+                <tr>
+                  <th scope="col" class="px-4 py-3">Cliente</th>
+                  <th scope="col" class="px-4 py-3">Teléfono</th>
+                  <th scope="col" class="px-4 py-3">Strikes</th>
+                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line/60">
+                @for (cliente of clientesFiltrados(); track cliente.id) {
+                  <tr [class.opacity-60]="!cliente.activo">
+                    <td class="px-4 py-3">
+                      <p class="font-semibold text-ink-900">{{ nombreCliente(cliente) }}</p>
+                      <p class="text-xs text-ink-500">{{ cliente.email }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-ink-700">{{ cliente.telefono }}</td>
+                    <td class="px-4 py-3">
                       <ng-container
                         *ngTemplateOutlet="
-                          interruptor;
+                          celdaStrikes;
                           context: {
-                            activo: cliente.activo,
+                            strikes: cliente.strikes,
                             nombre: nombreCliente(cliente),
-                            clave: 'c' + cliente.id,
-                            cambiar: cambiarCliente(cliente),
+                            abrir: abrirStrike(
+                              'cliente',
+                              cliente.id,
+                              nombreCliente(cliente),
+                              cliente.strikes
+                            ),
                           }
                         "
                       />
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="px-4 py-10 text-center text-ink-500">
-                    Todavía no hay clientes.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex justify-end">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            interruptor;
+                            context: {
+                              activo: cliente.activo,
+                              nombre: nombreCliente(cliente),
+                              clave: 'c' + cliente.id,
+                              cambiar: cambiarCliente(cliente),
+                            }
+                          "
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-4 py-10 text-center text-ink-500">
+                      {{
+                        hayFiltrosClientes()
+                          ? 'Ningún cliente coincide con los filtros.'
+                          : 'Todavía no hay clientes.'
+                      }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         } @else {
-          <table class="w-full min-w-[52rem] text-left text-sm">
-            <caption class="sr-only">
-              Restaurantes registrados
-            </caption>
-            <thead
-              class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
-            >
-              <tr>
-                <th scope="col" class="px-4 py-3">Restaurante</th>
-                <th scope="col" class="px-4 py-3">Estado</th>
-                <th scope="col" class="px-4 py-3">Encargado</th>
-                <th scope="col" class="px-4 py-3">Strikes</th>
-                <th scope="col" class="px-4 py-3 text-right">Activo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line/60">
-              @for (restaurante of restaurantes(); track restaurante.id) {
-                <tr [class.opacity-60]="!restaurante.activo">
-                  <td class="px-4 py-3">
-                    <p class="font-semibold text-ink-900">{{ restaurante.nombre }}</p>
-                    <p class="text-xs text-ink-500">
-                      {{ especialidad(restaurante) }} · {{ restaurante.ubicacion }}
-                    </p>
-                  </td>
-                  <td class="px-4 py-3">
-                    <span
-                      class="rounded-full px-2.5 py-1 text-xs font-semibold ring-1"
-                      [class]="estados[restaurante.estado].clases"
-                    >
-                      {{ estados[restaurante.estado].texto }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
-                  <td class="px-4 py-3">
-                    <ng-container
-                      *ngTemplateOutlet="
-                        celdaStrikes;
-                        context: {
-                          strikes: restaurante.strikes,
-                          nombre: restaurante.nombre,
-                          abrir: abrirStrike(
-                            'restaurante',
-                            restaurante.id,
-                            restaurante.nombre,
-                            restaurante.strikes
-                          ),
-                        }
-                      "
-                    />
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end">
+          <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
+            <div class="min-w-56 flex-1">
+              <label for="filtro-restaurantes-texto" class="text-xs font-bold text-ink-700"
+                >Buscar</label
+              >
+              <input
+                id="filtro-restaurantes-texto"
+                type="search"
+                placeholder="Nombre, dirección o email del encargado"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroRestaurantes().texto"
+                (input)="filtrarRestaurantes({ texto: valor($event) })"
+              />
+            </div>
+            <div>
+              <label for="filtro-restaurantes-estado" class="text-xs font-bold text-ink-700"
+                >Estado</label
+              >
+              <select
+                id="filtro-restaurantes-estado"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroRestaurantes().estado"
+                (change)="filtrarRestaurantes({ estado: estadoDe(valor($event)) })"
+              >
+                <option value="">Todos</option>
+                @for (estado of estadosLista; track estado) {
+                  <option [value]="estado">{{ estados[estado].texto }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label for="filtro-restaurantes-especialidad" class="text-xs font-bold text-ink-700"
+                >Especialidad</label
+              >
+              <select
+                id="filtro-restaurantes-especialidad"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroRestaurantes().especialidad"
+                (change)="filtrarRestaurantes({ especialidad: especialidadDe(valor($event)) })"
+              >
+                <option value="">Todas</option>
+                @for (especialidad of especialidades; track especialidad) {
+                  <option [value]="especialidad">{{ especialidadLabels[especialidad] }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label for="filtro-restaurantes-activo" class="text-xs font-bold text-ink-700"
+                >Activo</label
+              >
+              <select
+                id="filtro-restaurantes-activo"
+                class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+                [value]="filtroRestaurantes().activo"
+                (change)="filtrarRestaurantes({ activo: activoDe(valor($event)) })"
+              >
+                <option value="todos">Todos</option>
+                <option value="activos">Activos</option>
+                <option value="inactivos">Dados de baja</option>
+              </select>
+            </div>
+            @if (hayFiltrosRestaurantes()) {
+              <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                (click)="limpiarFiltrosRestaurantes()"
+              >
+                Limpiar filtros
+              </button>
+            }
+          </div>
+          <p class="px-4 pt-3 text-xs text-ink-500" role="status" data-testid="resultado-filtros">
+            Mostrando {{ restaurantesFiltrados().length }} de
+            {{ restaurantes().length }} restaurantes
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[52rem] text-left text-sm">
+              <caption class="sr-only">
+                Restaurantes registrados
+              </caption>
+              <thead
+                class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
+              >
+                <tr>
+                  <th scope="col" class="px-4 py-3">Restaurante</th>
+                  <th scope="col" class="px-4 py-3">Estado</th>
+                  <th scope="col" class="px-4 py-3">Encargado</th>
+                  <th scope="col" class="px-4 py-3">Strikes</th>
+                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line/60">
+                @for (restaurante of restaurantesFiltrados(); track restaurante.id) {
+                  <tr [class.opacity-60]="!restaurante.activo">
+                    <td class="px-4 py-3">
+                      <p class="font-semibold text-ink-900">{{ restaurante.nombre }}</p>
+                      <p class="text-xs text-ink-500">
+                        {{ especialidad(restaurante) }} · {{ restaurante.ubicacion }}
+                      </p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span
+                        class="rounded-full px-2.5 py-1 text-xs font-semibold ring-1"
+                        [class]="estados[restaurante.estado].clases"
+                      >
+                        {{ estados[restaurante.estado].texto }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
+                    <td class="px-4 py-3">
                       <ng-container
                         *ngTemplateOutlet="
-                          interruptor;
+                          celdaStrikes;
                           context: {
-                            activo: restaurante.activo,
+                            strikes: restaurante.strikes,
                             nombre: restaurante.nombre,
-                            clave: 'r' + restaurante.id,
-                            cambiar: cambiarRestaurante(restaurante),
+                            abrir: abrirStrike(
+                              'restaurante',
+                              restaurante.id,
+                              restaurante.nombre,
+                              restaurante.strikes
+                            ),
                           }
                         "
                       />
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="px-4 py-10 text-center text-ink-500">
-                    Todavía no hay restaurantes.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex justify-end">
+                        <ng-container
+                          *ngTemplateOutlet="
+                            interruptor;
+                            context: {
+                              activo: restaurante.activo,
+                              nombre: restaurante.nombre,
+                              clave: 'r' + restaurante.id,
+                              cambiar: cambiarRestaurante(restaurante),
+                            }
+                          "
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-4 py-10 text-center text-ink-500">
+                      {{
+                        hayFiltrosRestaurantes()
+                          ? 'Ningún restaurante coincide con los filtros.'
+                          : 'Todavía no hay restaurantes.'
+                      }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       </div>
     </section>
@@ -341,6 +496,23 @@ export class GestionEntidades {
   protected readonly error = this.servicio.error;
 
   protected readonly pestana = signal<Pestana>('clientes');
+
+  /** Filtros de cada pestaña; se aplican en el navegador porque las listas llegan completas. */
+  protected readonly filtroClientes = signal<FiltroClientes>(FILTRO_CLIENTES_VACIO);
+  protected readonly filtroRestaurantes = signal<FiltroRestaurantes>(FILTRO_RESTAURANTES_VACIO);
+  protected readonly clientesFiltrados = computed(() =>
+    filtrarClientes(this.clientes(), this.filtroClientes()),
+  );
+  protected readonly restaurantesFiltrados = computed(() =>
+    filtrarRestaurantes(this.restaurantes(), this.filtroRestaurantes()),
+  );
+  protected readonly hayFiltrosClientes = computed(() => hayFiltrosClientes(this.filtroClientes()));
+  protected readonly hayFiltrosRestaurantes = computed(() =>
+    hayFiltrosRestaurantes(this.filtroRestaurantes()),
+  );
+  protected readonly estadosLista = Object.keys(ESTADOS) as EstadoRestaurante[];
+  protected readonly especialidades = ESPECIALIDADES;
+  protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   /** Keys of the switches whose request is in flight ("c4", "r2"), each disabled until its own ends. */
   protected readonly procesando = signal<ReadonlySet<string>>(new Set());
   protected readonly estados = ESTADOS;
@@ -373,6 +545,44 @@ export class GestionEntidades {
       .cargar()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+  }
+
+  protected filtrarClientes(cambios: Partial<FiltroClientes>): void {
+    this.filtroClientes.update((filtro) => ({ ...filtro, ...cambios }));
+  }
+
+  protected filtrarRestaurantes(cambios: Partial<FiltroRestaurantes>): void {
+    this.filtroRestaurantes.update((filtro) => ({ ...filtro, ...cambios }));
+  }
+
+  protected limpiarFiltrosClientes(): void {
+    this.filtroClientes.set(FILTRO_CLIENTES_VACIO);
+  }
+
+  protected limpiarFiltrosRestaurantes(): void {
+    this.filtroRestaurantes.set(FILTRO_RESTAURANTES_VACIO);
+  }
+
+  protected valor(event: Event): string {
+    return (event.target as HTMLInputElement | HTMLSelectElement).value;
+  }
+
+  protected marcado(event: Event): boolean {
+    return (event.target as HTMLInputElement).checked;
+  }
+
+  protected activoDe(valor: string): FiltroActivo {
+    return valor === 'activos' || valor === 'inactivos' ? valor : 'todos';
+  }
+
+  protected estadoDe(valor: string): EstadoRestaurante | '' {
+    return valor in ESTADOS ? (valor as EstadoRestaurante) : '';
+  }
+
+  protected especialidadDe(valor: string): EspecialidadDeComida | '' {
+    return (ESPECIALIDADES as readonly string[]).includes(valor)
+      ? (valor as EspecialidadDeComida)
+      : '';
   }
 
   protected nombreCliente(cliente: EntidadCliente): string {

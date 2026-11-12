@@ -1,13 +1,26 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../../../shared/toast/toast.service';
 import { ToastOutlet } from '../../../../shared/toast/toast-outlet';
 import { StarRating } from '../../../resenas/components/star-rating/star-rating';
-import { AdminModeracionService } from '../../services/admin-moderacion.service';
+import {
+  AdminModeracionService,
+  FILTRO_RESENAS_VACIO,
+  FiltroResenas,
+  RestauranteFiltro,
+} from '../../services/admin-moderacion.service';
 
-/** Recent reviews from every restaurant, with a confirmed quick delete per row. */
+/** Recent reviews from every restaurant, with server-side filters, "load more" and a confirmed quick delete per row. */
 @Component({
   selector: 'app-moderacion-resenas',
   imports: [RouterLink, StarRating, ToastOutlet],
@@ -55,8 +68,77 @@ import { AdminModeracionService } from '../../services/admin-moderacion.service'
         </div>
       }
 
+      <form
+        role="search"
+        aria-label="Filtrar reseñas"
+        class="mt-8 flex flex-wrap items-end gap-3 rounded-2xl border border-line/60 bg-white p-4 shadow-sm"
+        (submit)="buscar($event)"
+      >
+        <div class="min-w-56 flex-1">
+          <label for="filtro-resenas-texto" class="text-xs font-bold text-ink-700">Buscar</label>
+          <input
+            id="filtro-resenas-texto"
+            type="search"
+            placeholder="Comentario, autor o restaurante"
+            class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+            [value]="textoBuscado()"
+            (input)="textoBuscado.set(valor($event))"
+          />
+        </div>
+        <div>
+          <label for="filtro-resenas-calificacion" class="text-xs font-bold text-ink-700"
+            >Calificación</label
+          >
+          <select
+            id="filtro-resenas-calificacion"
+            class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+            [value]="filtro().calificacion ?? ''"
+            (change)="aplicar({ calificacion: numero(valor($event)) })"
+          >
+            <option value="">Todas</option>
+            @for (estrellas of calificaciones; track estrellas) {
+              <option [value]="estrellas">
+                {{ estrellas }} {{ estrellas === 1 ? 'estrella' : 'estrellas' }}
+              </option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="filtro-resenas-restaurante" class="text-xs font-bold text-ink-700"
+            >Restaurante</label
+          >
+          <select
+            id="filtro-resenas-restaurante"
+            class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+            [value]="filtro().restauranteId ?? ''"
+            (change)="aplicar({ restauranteId: numero(valor($event)) })"
+          >
+            <option value="">Todos</option>
+            @for (restaurante of restaurantesFiltro(); track restaurante.id) {
+              <option [value]="restaurante.id">{{ restaurante.nombre }}</option>
+            }
+          </select>
+        </div>
+        <button
+          type="submit"
+          class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:opacity-60"
+          [disabled]="cargando()"
+        >
+          Buscar
+        </button>
+        @if (hayFiltros()) {
+          <button
+            type="button"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+            (click)="limpiar()"
+          >
+            Limpiar filtros
+          </button>
+        }
+      </form>
+
       @if (resenas().length > 0) {
-        <div class="mt-8 overflow-x-auto rounded-2xl border border-line/60 bg-white shadow-sm">
+        <div class="mt-4 overflow-x-auto rounded-2xl border border-line/60 bg-white shadow-sm">
           <table class="w-full min-w-[36rem] text-left text-sm">
             <caption class="sr-only">
               Reseñas recientes, de la más nueva a la más vieja
@@ -142,6 +224,18 @@ import { AdminModeracionService } from '../../services/admin-moderacion.service'
             </tbody>
           </table>
         </div>
+        @if (hayMas()) {
+          <div class="mt-4 flex justify-center">
+            <button
+              type="button"
+              class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+              [disabled]="cargando()"
+              (click)="cargarMas()"
+            >
+              {{ cargando() ? 'Cargando…' : 'Cargar más' }}
+            </button>
+          </div>
+        }
       } @else if (cargando()) {
         <div class="mt-8" role="status" data-testid="moderacion-cargando">
           <span class="sr-only">Cargando reseñas…</span>
@@ -162,10 +256,24 @@ import { AdminModeracionService } from '../../services/admin-moderacion.service'
         <div
           class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white px-6 py-16 text-center shadow-sm"
         >
-          <h2 class="text-lg font-bold text-ink-900">No hay reseñas para moderar</h2>
-          <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-            Cuando la comunidad publique reseñas nuevas van a aparecer acá.
-          </p>
+          @if (hayFiltros()) {
+            <h2 class="text-lg font-bold text-ink-900">Ninguna reseña coincide con los filtros</h2>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
+              Probá con otro texto o sacá algún filtro.
+            </p>
+            <button
+              type="button"
+              class="mt-4 rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
+              (click)="limpiar()"
+            >
+              Limpiar filtros
+            </button>
+          } @else {
+            <h2 class="text-lg font-bold text-ink-900">No hay reseñas para moderar</h2>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
+              Cuando la comunidad publique reseñas nuevas van a aparecer acá.
+            </p>
+          }
         </div>
       }
     </section>
@@ -183,6 +291,18 @@ export class ModeracionResenas {
   protected readonly resenas = this.moderacion.resenas;
   protected readonly cargando = this.moderacion.cargando;
   protected readonly error = this.moderacion.error;
+  protected readonly hayMas = this.moderacion.hayMas;
+
+  /** Filtros aplicados; el texto se aplica al buscar, los selects al cambiar. */
+  protected readonly filtro = signal<FiltroResenas>(FILTRO_RESENAS_VACIO);
+  /** Texto escrito en el buscador, todavía sin aplicar. */
+  protected readonly textoBuscado = signal('');
+  protected readonly hayFiltros = computed(() => {
+    const { texto, calificacion, restauranteId } = this.filtro();
+    return texto.trim() !== '' || calificacion !== null || restauranteId !== null;
+  });
+  protected readonly restaurantesFiltro = signal<RestauranteFiltro[]>([]);
+  protected readonly calificaciones = [5, 4, 3, 2, 1];
 
   protected readonly confirmandoId = signal<number | null>(null);
   protected readonly eliminandoId = signal<number | null>(null);
@@ -190,13 +310,49 @@ export class ModeracionResenas {
 
   constructor() {
     this.recargar();
+    // Sin la lista el filtro por restaurante queda en "Todos"; el resto de la página funciona igual.
+    this.moderacion
+      .listarRestaurantes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (lista) => this.restaurantesFiltro.set(lista), error: () => undefined });
   }
 
   protected recargar(): void {
     this.moderacion
-      .cargar()
+      .cargar(this.filtro())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+  }
+
+  protected cargarMas(): void {
+    this.moderacion
+      .cargarMas()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
+  }
+
+  protected buscar(event: Event): void {
+    event.preventDefault();
+    this.aplicar({ texto: this.textoBuscado() });
+  }
+
+  protected aplicar(cambios: Partial<FiltroResenas>): void {
+    this.filtro.update((filtro) => ({ ...filtro, ...cambios }));
+    this.recargar();
+  }
+
+  protected limpiar(): void {
+    this.textoBuscado.set('');
+    this.filtro.set(FILTRO_RESENAS_VACIO);
+    this.recargar();
+  }
+
+  protected valor(event: Event): string {
+    return (event.target as HTMLInputElement | HTMLSelectElement).value;
+  }
+
+  protected numero(valor: string): number | null {
+    return valor === '' ? null : Number(valor);
   }
 
   protected pedirConfirmacion(id: number): void {

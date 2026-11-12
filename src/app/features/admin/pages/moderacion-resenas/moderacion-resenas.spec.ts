@@ -30,13 +30,17 @@ describe('ModeracionResenas', () => {
   let cargando: WritableSignal<boolean>;
   let error: WritableSignal<string | null>;
   let cargar: ReturnType<typeof vi.fn>;
+  let cargarMas: ReturnType<typeof vi.fn>;
   let eliminar: ReturnType<typeof vi.fn>;
+  let hayMas: WritableSignal<boolean>;
 
   beforeEach(async () => {
     lista = signal<ResenaModeracion[]>([]);
     cargando = signal(false);
     error = signal<string | null>(null);
     cargar = vi.fn(() => of(resenas));
+    cargarMas = vi.fn(() => of([]));
+    hayMas = signal(false);
     eliminar = vi.fn(() => of(undefined));
 
     await TestBed.configureTestingModule({
@@ -49,8 +53,16 @@ describe('ModeracionResenas', () => {
             resenas: lista.asReadonly(),
             cargando: cargando.asReadonly(),
             error: error.asReadonly(),
+            hayMas: hayMas.asReadonly(),
             cargar,
+            cargarMas,
             eliminar,
+            listarRestaurantes: vi.fn(() =>
+              of([
+                { id: 3, nombre: 'La Casona' },
+                { id: 5, nombre: 'Ochiwan' },
+              ]),
+            ),
           },
         },
       ],
@@ -171,5 +183,89 @@ describe('ModeracionResenas', () => {
     boton(alerta, 'Reintentar')?.click();
 
     expect(cargar).toHaveBeenCalledTimes(2);
+  });
+
+  describe('filtros', () => {
+    const elegir = (fixture: ReturnType<typeof crear>, id: string, valor: string) => {
+      const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+        `#${id}`,
+      )!;
+      select.value = valor;
+      select.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    };
+
+    it('debería pedir sin filtros al entrar y ofrecer los restaurantes', () => {
+      const fixture = crear();
+
+      expect(cargar).toHaveBeenCalledWith({ texto: '', calificacion: null, restauranteId: null });
+      const opciones = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll(
+          '#filtro-resenas-restaurante option',
+        ),
+      ).map((o) => o.textContent?.trim());
+      expect(opciones).toEqual(['Todos', 'La Casona', 'Ochiwan']);
+    });
+
+    it('debería buscar el texto al enviar y combinarlo con calificación y restaurante', () => {
+      const fixture = crear();
+      const host = fixture.nativeElement as HTMLElement;
+      const input = host.querySelector<HTMLInputElement>('#filtro-resenas-texto')!;
+
+      input.value = 'sushi';
+      input.dispatchEvent(new Event('input'));
+      expect(cargar).toHaveBeenCalledTimes(1);
+      host.querySelector('form')!.dispatchEvent(new Event('submit'));
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: null,
+        restauranteId: null,
+      });
+
+      elegir(fixture, 'filtro-resenas-calificacion', '1');
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: 1,
+        restauranteId: null,
+      });
+
+      elegir(fixture, 'filtro-resenas-restaurante', '5');
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: 'sushi',
+        calificacion: 1,
+        restauranteId: 5,
+      });
+    });
+
+    it('debería avisar cuando nada coincide y limpiar los filtros', () => {
+      cargar.mockReturnValue(of([]));
+      const fixture = crear();
+      elegir(fixture, 'filtro-resenas-calificacion', '3');
+      const host = fixture.nativeElement as HTMLElement;
+
+      expect(host.textContent).toContain('Ninguna reseña coincide con los filtros');
+      boton(host, 'Limpiar filtros')!.click();
+      fixture.detectChanges();
+
+      expect(cargar).toHaveBeenLastCalledWith({
+        texto: '',
+        calificacion: null,
+        restauranteId: null,
+      });
+      expect(host.querySelector<HTMLSelectElement>('#filtro-resenas-calificacion')!.value).toBe('');
+    });
+
+    it('debería ofrecer cargar más solo cuando quedan reseñas', () => {
+      lista.set(resenas);
+      const fixture = crear();
+      const host = fixture.nativeElement as HTMLElement;
+      expect(boton(host, 'Cargar más')).toBeUndefined();
+
+      hayMas.set(true);
+      fixture.detectChanges();
+      boton(host, 'Cargar más')!.click();
+
+      expect(cargarMas).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -103,8 +103,11 @@ describe('Accesibilidad del panel de administración', () => {
             resenas: lista.asReadonly(),
             cargando: signal(false).asReadonly(),
             error: signal<string | null>(null).asReadonly(),
+            hayMas: signal(true).asReadonly(),
             cargar: vi.fn(() => of(resenas)),
+            cargarMas: vi.fn(() => of([])),
             eliminar: vi.fn(() => of(undefined)),
+            listarRestaurantes: vi.fn(() => of([{ id: 5, nombre: 'Ochiwan' }])),
           },
         },
         {
