@@ -326,4 +326,102 @@ describe('GestionEntidades', () => {
       'Reservas canceladas sin aviso',
     );
   });
+
+  describe('filtros', () => {
+    const BRUNO: EntidadCliente = {
+      ...ANA,
+      id: 5,
+      nombre: 'Bruno',
+      apellido: 'Díaz',
+      email: 'bruno@mail.com',
+      strikes: 0,
+      activo: false,
+    };
+    const TRATTORIA: EntidadRestaurante = {
+      ...OCHIWAN,
+      id: 3,
+      nombre: 'La Trattoria',
+      especialidad: 'PASTAS',
+      estado: 'PENDIENTE',
+      activo: true,
+      email: 'nonna@mail.com',
+    };
+
+    const filas = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll('tbody tr')).map((tr) => tr.textContent ?? '');
+    const escribir = (host: HTMLElement, id: string, valor: string) => {
+      const input = host.querySelector<HTMLInputElement>(`#${id}`)!;
+      input.value = valor;
+      input.dispatchEvent(new Event('input'));
+    };
+    const elegir = (host: HTMLElement, id: string, valor: string) => {
+      const select = host.querySelector<HTMLSelectElement>(`#${id}`)!;
+      select.value = valor;
+      select.dispatchEvent(new Event('change'));
+    };
+
+    it('filtra clientes por texto, estado y strikes y muestra cuántos coinciden', () => {
+      clientes.set([ANA, BRUNO]);
+      const { fixture, host } = crear();
+
+      escribir(host, 'filtro-clientes-texto', 'diaz');
+      fixture.detectChanges();
+      expect(filas(host)).toHaveLength(1);
+      expect(filas(host)[0]).toContain('Bruno');
+      expect(host.querySelector('[data-testid="resultado-filtros"]')?.textContent).toContain(
+        'Mostrando 1 de 2 clientes',
+      );
+
+      escribir(host, 'filtro-clientes-texto', '');
+      elegir(host, 'filtro-clientes-estado', 'activos');
+      fixture.detectChanges();
+      expect(filas(host)[0]).toContain('Ana');
+      expect(filas(host)).toHaveLength(1);
+
+      elegir(host, 'filtro-clientes-estado', 'todos');
+      const strikes = host.querySelector<HTMLInputElement>('#filtro-clientes-strikes')!;
+      strikes.click();
+      fixture.detectChanges();
+      expect(filas(host)).toHaveLength(1);
+      expect(filas(host)[0]).toContain('Ana');
+    });
+
+    it('muestra un mensaje cuando nada coincide y limpia los filtros', () => {
+      clientes.set([ANA, BRUNO]);
+      const { fixture, host } = crear();
+
+      escribir(host, 'filtro-clientes-texto', 'nadie');
+      fixture.detectChanges();
+      expect(host.textContent).toContain('Ningún cliente coincide con los filtros.');
+
+      const limpiar = Array.from(host.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === 'Limpiar filtros',
+      )!;
+      limpiar.click();
+      fixture.detectChanges();
+      expect(filas(host)).toHaveLength(2);
+      expect(host.querySelector<HTMLInputElement>('#filtro-clientes-texto')!.value).toBe('');
+    });
+
+    it('filtra restaurantes por estado, especialidad y activo', () => {
+      restaurantes.set([OCHIWAN, TRATTORIA]);
+      const { fixture, host } = crear();
+      pestana(host, 'Restaurantes').click();
+      fixture.detectChanges();
+
+      elegir(host, 'filtro-restaurantes-estado', 'PENDIENTE');
+      fixture.detectChanges();
+      expect(filas(host)).toHaveLength(1);
+      expect(filas(host)[0]).toContain('La Trattoria');
+
+      elegir(host, 'filtro-restaurantes-estado', '');
+      elegir(host, 'filtro-restaurantes-especialidad', 'ASIATICA');
+      fixture.detectChanges();
+      expect(filas(host)[0]).toContain('Ochiwan');
+
+      elegir(host, 'filtro-restaurantes-activo', 'activos');
+      fixture.detectChanges();
+      expect(host.textContent).toContain('Ningún restaurante coincide con los filtros.');
+    });
+  });
 });
