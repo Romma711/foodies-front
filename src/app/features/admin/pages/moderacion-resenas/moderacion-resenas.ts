@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ToastOutlet } from '../../../../shared/ui/toast/toast-outlet';
-import { StarRating } from '../../../resenas/components/star-rating/star-rating';
+import { StarRating } from '../../../../resenas/components/star-rating/star-rating';
 import {
   AdminModeracionService,
   FILTRO_RESENAS_VACIO,

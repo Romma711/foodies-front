@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { AUTH_ROLE } from '../../../core/auth/auth-context';
+import { AUTH_ROLE } from '../../core/auth/auth-context';
 import { ResenaDetailDTO, ResenaListDTO, ResenaRequestDTO, ResenaUsuarioDTO } from '../models';
 import { ResenaService } from './resena.service';
 

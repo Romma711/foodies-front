@@ -11,17 +11,17 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { enfocarTrasRender } from '../../../../shared/a11y/enfocar';
+import { AuthService } from '../../../core/auth/auth.service';
+import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
 import { OPCIONES_ORDEN, OrdenResenas, filtrarYOrdenar } from '../../utils/ordenar-resenas';
-import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { RatingDistribution } from '../rating-distribution/rating-distribution';
 import { ResenaCard } from '../resena-card/resena-card';
 import { ResenaForm } from '../resena-form/resena-form';
 import { StarRating } from '../star-rating/star-rating';
-import { ToastOutlet } from '../../../../shared/ui/toast/toast-outlet';
+import { ToastOutlet } from '../../../shared/ui/toast/toast-outlet';
 
 /** Reviews block of a restaurant: summary, chart, write/edit/delete flows and the review grid. */
 @Component({

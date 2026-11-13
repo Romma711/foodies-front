@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { CLIENTE_TOKEN } from '../../../perfil/services/cliente-perfil.service.spec';
-import { violacionesAxe } from '../../../../shared/testing/axe';
+import { CLIENTE_TOKEN } from '../../../features/perfil/services/cliente-perfil.service.spec';
+import { violacionesAxe } from '../../../shared/testing/axe';
 import { ResenaUsuarioDTO } from '../../models';
 import { MisResenas } from './mis-resenas';
 

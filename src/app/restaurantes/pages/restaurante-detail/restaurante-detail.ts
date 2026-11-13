@@ -16,7 +16,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ESPECIALIDAD_LABELS } from '../../models/especialidades';
 import { ReservaForm } from '../../../reservas/components/reserva-form/reserva-form';
-import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
+import { RestauranteResenas } from '../../../resenas/components/restaurante-resenas/restaurante-resenas';
 import { ReservaDetailDTO } from '../../../reservas/models';
 import {
   formatearFechaReserva,

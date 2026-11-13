@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ReservaForm } from '../../../reservas/components/reserva-form/reserva-form';
 import { ReservaDetailDTO } from '../../../reservas/models';
-import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
+import { RestauranteResenas } from '../../../resenas/components/restaurante-resenas/restaurante-resenas';
 import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';

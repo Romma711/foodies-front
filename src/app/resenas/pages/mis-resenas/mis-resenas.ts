@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../../core/auth/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { ResenaService } from '../../services/resena.service';
 import { formatearFechaResena } from '../../utils/fecha-resena';

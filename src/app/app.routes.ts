@@ -56,7 +56,7 @@ export const APP_ROUTES: Routes = [
     path: 'mis-resenas',
     title: 'Mis reseñas | Foodies',
     loadComponent: () =>
-      import('./features/resenas/pages/mis-resenas/mis-resenas').then(
+      import('./resenas/pages/mis-resenas/mis-resenas').then(
         (module) => module.MisResenas,
       ),
     canMatch: [roleGuard('CLIENTE')],

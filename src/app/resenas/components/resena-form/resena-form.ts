@@ -8,7 +8,7 @@ import {
   linkedSignal,
   output,
 } from '@angular/core';
-import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
+import { enfocarTrasRender, PRIMER_CAMPO } from '../../../shared/a11y/enfocar';
 import {
   form,
   FormField,
