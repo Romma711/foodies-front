@@ -1,0 +1,54 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router, withComponentInputBinding } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { DASHBOARD_ROUTES } from '../app.routes';
+import { RESTAURANTE_TOKEN } from './testing/panel.testing';
+
+describe('restaurant panel routes', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [
+        // The panel is served on the dashboard host.
+        provideRouter(DASHBOARD_ROUTES, withComponentInputBinding()),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+  });
+
+  it('keeps the restaurant login reachable for guests', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/restaurante/login');
+
+    expect(TestBed.inject(Router).url).toBe('/restaurante/login');
+  });
+
+  it('sends guests from a panel section to the restaurant login', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/restaurante/reservas');
+
+    expect(TestBed.inject(Router).url).toBe(
+      '/restaurante/login?returnUrl=%2Frestaurante%2Freservas',
+    );
+  });
+
+  it('opens panel sections for a signed in manager', async () => {
+    localStorage.setItem('foodies.token.RESTAURANTE', RESTAURANTE_TOKEN);
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/restaurante/carta');
+
+    expect(TestBed.inject(Router).url).toBe('/restaurante/carta');
+    expect(
+      harness.routeNativeElement?.querySelector('nav[aria-label="Panel del restaurante"]'),
+    ).not.toBeNull();
+    expect(
+      harness.routeNativeElement?.querySelector('a[aria-current="page"]')?.textContent?.trim(),
+    ).toBe('Carta');
+  });
+});

@@ -120,7 +120,7 @@ export const DASHBOARD_ROUTES: Routes = [
   {
     path: 'restaurante',
     canMatch: [roleGuard('RESTAURANTE')],
-    loadChildren: () => import('./pages/restaurante/panel/panel.routes').then((m) => m.panelRoutes),
+    loadChildren: () => import('./panel-restaurante/panel-restaurante.routes').then((m) => m.panelRoutes),
   },
   {
     path: 'admin/login',
