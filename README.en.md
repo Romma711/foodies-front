@@ -4,7 +4,7 @@
 
 Front end of **Foodies**, a restaurant booking and review platform for Mar del Plata, Argentina. Clients, restaurants and administrators use the same application, each in their own portal and with their own session.
 
-Built with **Angular 22** without zone.js, **signals**, **Signal Forms** and **Tailwind CSS v4**, and tested with **442 tests** in Vitest. The UI is in Spanish.
+Built with **Angular 22** without zone.js, **signals**, **Signal Forms** and **Tailwind CSS v4**, and tested with **494 tests** in Vitest. The UI is in Spanish.
 
 [![CI](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml/badge.svg)](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml)
 
@@ -12,9 +12,9 @@ Built with **Angular 22** without zone.js, **signals**, **Signal Forms** and **T
 
 | Role | What they can do |
 |---|---|
-| Visitor | Browse the catalog as a list or a map, filter by cuisine, see photos, menu and reviews |
+| Visitor | Browse the catalog as a list or a map, search by name, filter by cuisine, see photos, menu, opening hours and reviews |
 | Client | Book a table, change or cancel the booking, write and edit reviews, manage their profile |
-| Restaurant | Accept or cancel bookings, set special capacity for specific dates, upload photos and menu |
+| Restaurant | Accept or cancel bookings, set opening hours, set special capacity for specific dates, upload photos and menu |
 | Administrator | Approve restaurants, moderate reviews, apply strikes and see metrics in a separate dashboard |
 
 The back end is a Spring Boot REST API: [Romma711/foodies](https://github.com/Romma711/foodies).
@@ -56,22 +56,28 @@ For sample data, run the back-end seed (`node docs/db/seed-demo.mjs` in the `foo
 
 ## Architecture
 
-### Feature-based structure
+### Domain-based structure
 
 ```text
 src/app/
-├─ core/        session, interceptor, guards and host configuration
-├─ features/    reservas, resenas, mapa, perfil, admin
-├─ pages/       home, login, sign-up, catalog and restaurant panel
-├─ shared/      a11y, charts, toast: code two or more features use
-└─ components/  header and footer
+├─ auth/               login and sign-up
+├─ home/               landing page
+├─ restaurantes/       catalog, search and detail
+├─ reservas/           book, change and cancel
+├─ resenas/            reviews and ratings
+├─ mapa/               catalog on a map
+├─ perfil/             client profile
+├─ panel-restaurante/  the restaurant's bookings, hours, capacity, photos and menu
+├─ admin/              moderation and metrics dashboard
+├─ core/               session, interceptor, guards, hosts and layout
+└─ shared/             a11y, charts and UI components
 ```
 
-Each feature keeps its components, services, models, utilities and tests together. A change to bookings lives in one folder, and the structure shows what the system is about before it shows the framework.
+This is Screaming Architecture: opening `src/app` shows what the system is about (restaurants, bookings, reviews) before it shows the framework. Each domain keeps its pages, components, services, models, utilities and tests together, so a change to bookings lives in one folder.
 
-`shared/` only takes code that two modules already use. The toast and the chart factory started in reviews and moved when the admin dashboard needed them.
+Each domain has its own import alias (`@reservas/*`, `@resenas/*`, `@core/*`, `@shared/*`, …), so an import says which domain it comes from without counting `../`.
 
-The oldest screens (catalog, login and restaurant panel) are still in `pages/`. Moving them into `features/` is the next structural improvement.
+`shared/` only takes code that two domains already use. The toast and the chart factory started in reviews and moved when the admin dashboard needed them.
 
 ### State with signals
 
@@ -104,7 +110,7 @@ On startup the app reads the hostname. If it starts with `dashboard.` it loads t
 
 ### Routes
 
-Every route is lazy loaded (`loadComponent` or `loadChildren`) and has its own `title`. The initial bundle has a budget: the build warns at 500 kB and fails at 1 MB.
+All 37 routes are lazy loaded (`loadComponent` or `loadChildren`) and has its own `title`. The initial bundle has a budget: the build warns at 500 kB and fails at 1 MB.
 
 ## Styles
 
@@ -126,11 +132,11 @@ axe-core reports no violations on the client pages, on desktop or mobile.
 
 | Kind | Files | What they check |
 |---|---|---|
-| Components (TestBed) | 64 | Rendering, interaction and the resulting DOM |
-| Services (`HttpTestingController`) | 26 | URL, method, body and role of each request |
-| Accessibility (axe-core) | 4 | WCAG violations inside the tests |
+| Components (TestBed) | 42 | Rendering, interaction and the resulting DOM |
+| Services (`HttpTestingController`) | 28 | URL, method, body and role of each request |
+| Accessibility (axe-core) | 13 | WCAG violations inside the tests |
 
-There are 442 tests in 70 files, and the whole suite runs in about 25 seconds. Test names are in Spanish and describe the rule they check. Dependencies jsdom cannot run, such as the Chart.js canvas, come in through an `InjectionToken` and are replaced by test doubles.
+There are 494 tests in 74 files, and the whole suite runs in about 25 seconds. Test names are in Spanish and describe the rule they check. Dependencies jsdom cannot run, such as the Chart.js canvas, come in through an `InjectionToken` and are replaced by test doubles.
 
 ## Team
 

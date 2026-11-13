@@ -4,7 +4,7 @@
 
 Front-end de **Foodies**, una plataforma de reservas y reseñas de restaurantes de Mar del Plata. Clientes, restaurantes y administradores usan la misma aplicación, cada uno en su propio portal y con su propia sesión.
 
-Hecho con **Angular 22** sin zone.js, **signals**, **Signal Forms** y **Tailwind CSS v4**, y probado con **442 tests** en Vitest.
+Hecho con **Angular 22** sin zone.js, **signals**, **Signal Forms** y **Tailwind CSS v4**, y probado con **494 tests** en Vitest.
 
 [![CI](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml/badge.svg)](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml)
 
@@ -12,9 +12,9 @@ Hecho con **Angular 22** sin zone.js, **signals**, **Signal Forms** y **Tailwind
 
 | Rol | Qué puede hacer |
 |---|---|
-| Visitante | Ver el catálogo en lista o en mapa, filtrar por especialidad, ver fotos, carta y reseñas |
+| Visitante | Ver el catálogo en lista o en mapa, buscar por nombre, filtrar por especialidad, ver fotos, carta, horarios y reseñas |
 | Cliente | Reservar mesa, modificar o cancelar la reserva, escribir y editar reseñas, gestionar su perfil |
-| Restaurante | Aceptar o cancelar reservas, definir cupos especiales por fecha, subir fotos y carta |
+| Restaurante | Aceptar o cancelar reservas, configurar el horario de atención, definir cupos especiales por fecha, subir fotos y carta |
 | Administrador | Aprobar restaurantes, moderar reseñas, aplicar strikes y ver métricas en un dashboard propio |
 
 El back-end es una API REST en Spring Boot: [Romma711/foodies](https://github.com/Romma711/foodies).
@@ -56,22 +56,28 @@ Para tener datos de prueba, corré el seed del back-end (`node docs/db/seed-demo
 
 ## Arquitectura
 
-### Estructura por features
+### Estructura por dominios
 
 ```text
 src/app/
-├─ core/        sesión, interceptor, guards y configuración de hosts
-├─ features/    reservas, resenas, mapa, perfil, admin
-├─ pages/       home, login, registro, catálogo y panel del restaurante
-├─ shared/      a11y, gráficos, toast: lo que usan dos o más features
-└─ components/  header y footer
+├─ auth/               login y registro
+├─ home/               página de inicio
+├─ restaurantes/       catálogo, búsqueda y detalle
+├─ reservas/           reservar, modificar y cancelar
+├─ resenas/            reseñas y calificaciones
+├─ mapa/               catálogo en el mapa
+├─ perfil/             perfil del cliente
+├─ panel-restaurante/  reservas, horarios, cupos, fotos y carta del local
+├─ admin/              dashboard de moderación y métricas
+├─ core/               sesión, interceptor, guards, hosts y layout
+└─ shared/             a11y, gráficos y componentes de UI
 ```
 
-Cada feature agrupa sus componentes, servicios, modelos, utilidades y tests. Un cambio en reservas vive en una sola carpeta, y la estructura muestra de qué trata el sistema antes que el framework que usa.
+Es Screaming Architecture: al abrir `src/app` se ve de qué trata el sistema (restaurantes, reservas, reseñas) antes que el framework que usa. Cada dominio agrupa sus páginas, componentes, servicios, modelos, utilidades y tests, y un cambio en reservas vive en una sola carpeta.
 
-`shared/` solo recibe código que ya usan dos módulos. El toast y la fábrica de gráficos nacieron en reseñas y se movieron cuando el panel de administración los necesitó.
+Cada dominio tiene su alias de importación (`@reservas/*`, `@resenas/*`, `@core/*`, `@shared/*`, …), así que un import dice de qué dominio viene sin contar `../`.
 
-Las pantallas más antiguas (catálogo, login y panel del restaurante) siguen en `pages/`. Moverlas a `features/` es la próxima mejora de estructura.
+`shared/` solo recibe código que ya usan dos dominios. El toast y la fábrica de gráficos nacieron en reseñas y se movieron cuando el panel de administración los necesitó.
 
 ### Estado con signals
 
@@ -104,7 +110,7 @@ Al arrancar, la app mira el hostname. Si empieza con `dashboard.` carga las ruta
 
 ### Rutas
 
-Todas las rutas usan carga diferida (`loadComponent` o `loadChildren`) y tienen su propio `title`. El bundle inicial tiene un presupuesto: el build avisa en 500 kB y falla en 1 MB.
+Las 37 rutas usan carga diferida (`loadComponent` o `loadChildren`) y tienen su propio `title`. El bundle inicial tiene un presupuesto: el build avisa en 500 kB y falla en 1 MB.
 
 ## Estilos
 
@@ -126,11 +132,11 @@ axe-core no reporta violaciones en las páginas del cliente, en escritorio ni en
 
 | Tipo | Archivos | Qué prueban |
 |---|---|---|
-| Componentes (TestBed) | 64 | Render, interacción y DOM resultante |
-| Servicios (`HttpTestingController`) | 26 | URL, método, cuerpo y rol de cada pedido |
-| Accesibilidad (axe-core) | 4 | Violaciones WCAG dentro de los tests |
+| Componentes (TestBed) | 42 | Render, interacción y DOM resultante |
+| Servicios (`HttpTestingController`) | 28 | URL, método, cuerpo y rol de cada pedido |
+| Accesibilidad (axe-core) | 13 | Violaciones WCAG dentro de los tests |
 
-Son 442 tests en 70 archivos, y la suite completa tarda unos 25 segundos. Los nombres de los tests están en español y describen la regla que prueban. Las dependencias que jsdom no puede ejecutar, como el canvas de Chart.js, entran por un `InjectionToken` y en los tests se reemplazan por dobles.
+Son 494 tests en 74 archivos, y la suite completa tarda unos 25 segundos. Los nombres de los tests están en español y describen la regla que prueban. Las dependencias que jsdom no puede ejecutar, como el canvas de Chart.js, entran por un `InjectionToken` y en los tests se reemplazan por dobles.
 
 ## Equipo
 
