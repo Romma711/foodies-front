@@ -12,18 +12,18 @@ import {
 } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable } from 'rxjs';
-import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../core/auth/auth.models';
-import { AuthService } from '../../core/auth/auth.service';
-import { PORTALS } from '../../core/auth/portals';
-import { VolverAlInicio } from '../../shared/ui/volver-al-inicio/volver-al-inicio';
-import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
-import { errorDeFotosRegistro } from '../../core/catalog/fotos';
+import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../../core/auth/auth.models';
+import { AuthService } from '../../../core/auth/auth.service';
+import { PORTALS } from '../../../core/auth/portals';
+import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
+import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
+import { errorDeFotosRegistro } from '../../../core/catalog/fotos';
 import {
   backendMessage,
   CONNECTION_ERROR_MESSAGE,
   isConnectionError,
-} from '../../core/http/api-error';
-import { RegistroFotos } from './registro-fotos/registro-fotos';
+} from '../../../core/http/api-error';
+import { RegistroFotos } from '../../components/registro-fotos/registro-fotos';
 
 interface RegisterFormModel {
   nombre: string;

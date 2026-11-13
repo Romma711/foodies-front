@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { RegistrableRole } from '../../core/auth/auth.models';
+import { RegistrableRole } from '../../../core/auth/auth.models';
 import { Register } from './register';
 
 describe('Register', () => {

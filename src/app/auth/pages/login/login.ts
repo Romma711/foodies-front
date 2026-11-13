@@ -8,13 +8,13 @@ import {
   PendingApprovalError,
   Role,
   RoleMismatchError,
-} from '../../core/auth/auth.models';
-import { AuthService } from '../../core/auth/auth.service';
-import { PORTALS } from '../../core/auth/portals';
-import { VolverAlInicio } from '../../shared/ui/volver-al-inicio/volver-al-inicio';
-import { PortalNavigation } from '../../core/auth/portal-navigation';
-import { safeReturnUrl } from '../../core/auth/return-url';
-import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../core/http/api-error';
+} from '../../../core/auth/auth.models';
+import { AuthService } from '../../../core/auth/auth.service';
+import { PORTALS } from '../../../core/auth/portals';
+import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
+import { PortalNavigation } from '../../../core/auth/portal-navigation';
+import { safeReturnUrl } from '../../../core/auth/return-url';
+import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../../core/http/api-error';
 
 @Component({
   imports: [FormField, RouterLink, VolverAlInicio],

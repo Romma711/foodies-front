@@ -6,8 +6,8 @@ import { roleGuard } from './core/auth/role.guard';
 import { esDashboardHost } from './core/config/host.config';
 import { adminGuard } from './features/admin/guards/admin.guard';
 
-const loadLogin = () => import('./pages/login/login').then((m) => m.Login);
-const loadRegister = () => import('./pages/register/register').then((m) => m.Register);
+const loadLogin = () => import('./auth/pages/login/login').then((m) => m.Login);
+const loadRegister = () => import('./auth/pages/register/register').then((m) => m.Register);
 
 /**
  * Rutas de la app pública, servida en el host principal (`localhost:4200` en desarrollo):
