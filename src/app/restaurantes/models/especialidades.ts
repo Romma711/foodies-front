@@ -1,4 +1,4 @@
-import { EspecialidadDeComida } from '../auth/auth.models';
+import { EspecialidadDeComida } from '../../core/auth/auth.models';
 
 export const ESPECIALIDAD_LABELS: Record<EspecialidadDeComida, string> = {
   PESCADOS: 'Pescados',

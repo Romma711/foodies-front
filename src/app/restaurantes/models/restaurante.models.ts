@@ -1,4 +1,4 @@
-import { EspecialidadDeComida } from '../../../core/auth/auth.models';
+import { EspecialidadDeComida } from '../../core/auth/auth.models';
 
 /** `RestaurantListDTO` */
 export interface RestauranteListDTO {

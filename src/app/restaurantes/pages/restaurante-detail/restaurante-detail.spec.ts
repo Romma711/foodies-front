@@ -13,8 +13,8 @@ import {
   CartaPublicaDTO,
   FotoPublicaDTO,
   RestauranteDetailDTO,
-} from '../models/restaurante.models';
-import { RestauranteService } from '../services/restaurante.service';
+} from '../../models/restaurante.models';
+import { RestauranteService } from '../../services/restaurante.service';
 import { HorariosService } from '../../../features/reservas/services/horarios.service';
 import { RestauranteDetail } from './restaurante-detail';
 

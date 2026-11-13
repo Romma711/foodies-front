@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { Foto } from '../../../../core/catalog/fotos';
+import { Foto } from '../../../../restaurantes/utils/fotos';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 
 /** Restaurantes pendientes de aprobación. Se aceptan o rechazan desde su detalle, después de revisarlos. */

@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { RestauranteListDTO } from '../../../pages/restaurante/models/restaurante.models';
-import { RestauranteService } from '../../../pages/restaurante/services/restaurante.service';
+import { RestauranteListDTO } from '../../../restaurantes/models/restaurante.models';
+import { RestauranteService } from '../../../restaurantes/services/restaurante.service';
 import { Home } from './home';
 
 describe('Home', () => {

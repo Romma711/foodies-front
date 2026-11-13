@@ -1,5 +1,5 @@
 import { EspecialidadDeComida } from '../../../core/auth/auth.models';
-import { Foto } from '../../../core/catalog/fotos';
+import { Foto } from '../../../restaurantes/utils/fotos';
 import { EstadoRestaurante } from './entidades-admin';
 
 /** `SolicitudRestauranteDTO`: a restaurant sign-up waiting for review. */

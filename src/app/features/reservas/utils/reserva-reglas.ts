@@ -1,11 +1,11 @@
 import { required, schema, validate } from '@angular/forms/signals';
-import { EspacioPublico } from '../../../core/catalog/espacios';
+import { EspacioPublico } from '../../../restaurantes/models/espacios';
 import {
   diaDeFecha,
   FranjaHoraria,
   franjasDelDia,
   textoFranjas,
-} from '../../../core/catalog/horarios';
+} from '../../../restaurantes/utils/horarios';
 
 /** Fields the client chooses when creating or modifying a reservation. */
 export interface ReservaFormModel {

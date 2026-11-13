@@ -24,7 +24,7 @@ export const APP_ROUTES: Routes = [
     path: 'restaurantes',
     title: 'Restaurantes | Foodies',
     loadComponent: () =>
-      import('./pages/restaurante/restaurante-list/restaurante-list').then(
+      import('./restaurantes/pages/restaurante-list/restaurante-list').then(
         (module) => module.RestauranteList,
       ),
   },
@@ -32,7 +32,7 @@ export const APP_ROUTES: Routes = [
     path: 'restaurantes/:restauranteId',
     title: 'Restaurante | Foodies',
     loadComponent: () =>
-      import('./pages/restaurante/restaurante-detail/restaurante-detail').then(
+      import('./restaurantes/pages/restaurante-detail/restaurante-detail').then(
         (module) => module.RestauranteDetail,
       ),
   },

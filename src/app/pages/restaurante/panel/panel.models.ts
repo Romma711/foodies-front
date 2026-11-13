@@ -1,5 +1,5 @@
 import { EspecialidadDeComida } from '../../../core/auth/auth.models';
-import { TipoEspacio } from '../../../core/catalog/espacios';
+import { TipoEspacio } from '../../../restaurantes/models/espacios';
 
 /** `CartaDTO` */
 export interface Carta {

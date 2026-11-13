@@ -7,7 +7,7 @@ import {
   TIPO_ESPACIO_PLURAL,
   TIPOS_ESPACIO,
   TipoEspacio,
-} from '../../../../core/catalog/espacios';
+} from '../../../../restaurantes/models/espacios';
 import { mensajeDeNegocio, panelErrorMessage } from '../panel-errors';
 import { Espacio, MAX_NOMBRE_ESPACIO } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';

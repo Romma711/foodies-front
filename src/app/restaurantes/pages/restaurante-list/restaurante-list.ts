@@ -11,9 +11,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MapaRestaurantes } from '../../../features/mapa/components/mapa-restaurantes/mapa-restaurantes';
 import { ESPECIALIDADES, EspecialidadDeComida } from '../../../core/auth/auth.models';
-import { coincideNombre } from '../../../core/catalog/busqueda';
-import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
-import { RestauranteService } from '../services/restaurante.service';
+import { coincideNombre } from '../../utils/busqueda';
+import { ESPECIALIDAD_LABELS } from '../../models/especialidades';
+import { RestauranteService } from '../../services/restaurante.service';
 
 function esEspecialidad(value: string | null | undefined): value is EspecialidadDeComida {
   return (ESPECIALIDADES as readonly string[]).includes(value ?? '');

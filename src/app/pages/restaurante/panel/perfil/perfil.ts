@@ -3,7 +3,7 @@ import { form, FormField, hidden, max, min, required, submit } from '@angular/fo
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { EspecialidadDeComida, ESPECIALIDADES } from '../../../../core/auth/auth.models';
-import { ESPECIALIDAD_LABELS } from '../../../../core/catalog/especialidades';
+import { ESPECIALIDAD_LABELS } from '../../../../restaurantes/models/especialidades';
 import { panelErrorMessage } from '../panel-errors';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 

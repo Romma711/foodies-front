@@ -3,8 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { ESPECIALIDADES } from '../../../core/auth/auth.models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
-import { RestauranteService } from '../../../pages/restaurante/services/restaurante.service';
+import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
+import { RestauranteService } from '../../../restaurantes/services/restaurante.service';
 
 /** Cuántos restaurantes se destacan en el home; el resto está en `/restaurantes`. */
 const DESTACADOS = 3;

@@ -7,7 +7,7 @@ import {
   Foto,
   MAX_FOTOS,
   MIN_FOTOS,
-} from '../../../../core/catalog/fotos';
+} from '../../../../restaurantes/utils/fotos';
 import { mensajeDeNegocio, panelErrorMessage } from '../panel-errors';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { FranjaHoraria } from '../../../core/catalog/horarios';
+import { FranjaHoraria } from '../../../restaurantes/utils/horarios';
 
 /** Horario de atención público de un restaurante. Sin franjas = sin restricción de horario. */
 @Service()

@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin } from 'rxjs';
-import { ESPECIALIDAD_LABELS } from '../../../../core/catalog/especialidades';
+import { ESPECIALIDAD_LABELS } from '../../../../restaurantes/models/especialidades';
 import { panelErrorMessage, toIsoDate } from '../panel-errors';
 import { MiRestaurante, ReservaPanel } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';

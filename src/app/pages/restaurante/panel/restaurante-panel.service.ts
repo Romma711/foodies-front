@@ -3,8 +3,8 @@ import { inject, Service, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
-import { Foto } from '../../../core/catalog/fotos';
-import { FranjaHoraria } from '../../../core/catalog/horarios';
+import { Foto } from '../../../restaurantes/utils/fotos';
+import { FranjaHoraria } from '../../../restaurantes/utils/horarios';
 import {
   Carta,
   CupoEspecial,

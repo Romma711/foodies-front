@@ -4,7 +4,7 @@ import {
   errorDeFotosRegistro,
   MAX_FOTOS,
   MIN_FOTOS,
-} from '../../../core/catalog/fotos';
+} from '../../../restaurantes/utils/fotos';
 
 /** Elección de las fotos del registro: entre 3 y 5, y cuál de ellas es la portada. */
 @Component({

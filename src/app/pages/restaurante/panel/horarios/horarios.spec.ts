@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FranjaHoraria } from '../../../../core/catalog/horarios';
+import { FranjaHoraria } from '../../../../restaurantes/utils/horarios';
 import { violacionesAxe } from '../../../../shared/testing/axe';
 import { providePanelTesting, settle } from '../panel.testing';
 import { HorariosPanel } from './horarios';

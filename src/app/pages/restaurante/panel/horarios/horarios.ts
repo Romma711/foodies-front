@@ -6,7 +6,7 @@ import {
   DiaSemana,
   FranjaHoraria,
   MAX_FRANJAS_POR_DIA,
-} from '../../../../core/catalog/horarios';
+} from '../../../../restaurantes/utils/horarios';
 import { mensajeDeNegocio, panelErrorMessage } from '../panel-errors';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 

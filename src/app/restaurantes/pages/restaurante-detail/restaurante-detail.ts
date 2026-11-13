@@ -14,7 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
-import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
+import { ESPECIALIDAD_LABELS } from '../../models/especialidades';
 import { ReservaForm } from '../../../features/reservas/components/reserva-form/reserva-form';
 import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
 import { ReservaDetailDTO } from '../../../features/reservas/models';
@@ -22,8 +22,8 @@ import {
   formatearFechaReserva,
   formatearHora,
 } from '../../../features/reservas/utils/reserva-formato';
-import { CartaPublicaDTO, FotoPublicaDTO } from '../models/restaurante.models';
-import { RestauranteService } from '../services/restaurante.service';
+import { CartaPublicaDTO, FotoPublicaDTO } from '../../models/restaurante.models';
+import { RestauranteService } from '../../services/restaurante.service';
 import { HorariosService } from '../../../features/reservas/services/horarios.service';
 import {
   DIA_SEMANA_LABELS,
@@ -31,7 +31,7 @@ import {
   FranjaHoraria,
   franjasDelDia,
   textoFranjas,
-} from '../../../core/catalog/horarios';
+} from '../../utils/horarios';
 
 @Component({
   imports: [ReservaForm, RestauranteResenas, RouterLink],

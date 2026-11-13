@@ -14,7 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { especialidadLabel } from '../../../../core/catalog/especialidades';
+import { especialidadLabel } from '../../../../restaurantes/models/especialidades';
 import { SolicitudRestaurante } from '../../models/solicitud-restaurante';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
 
