@@ -1,5 +1,5 @@
 import { divIcon, DivIcon } from 'leaflet';
-import { EspecialidadDeComida } from '../../../core/auth/auth.models';
+import { EspecialidadDeComida } from '../../core/auth/auth.models';
 
 /**
  * Line icon per specialty (24x24 paths, Lucide style: stroke only, no fill), so pins and popups

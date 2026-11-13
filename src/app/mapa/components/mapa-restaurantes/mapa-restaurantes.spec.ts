@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { Observable, of, Subject, throwError } from 'rxjs';
-import { RestauranteListDTO } from '../../../../restaurantes/models/restaurante.models';
+import { RestauranteListDTO } from '../../../restaurantes/models/restaurante.models';
 import { Calificacion, CalificacionService } from '../../services/calificacion.service';
 import { CENTRO_MAR_DEL_PLATA, MapaRestaurantes } from './mapa-restaurantes';
 

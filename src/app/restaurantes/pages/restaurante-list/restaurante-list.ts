@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MapaRestaurantes } from '../../../features/mapa/components/mapa-restaurantes/mapa-restaurantes';
+import { MapaRestaurantes } from '../../../mapa/components/mapa-restaurantes/mapa-restaurantes';
 import { ESPECIALIDADES, EspecialidadDeComida } from '../../../core/auth/auth.models';
 import { coincideNombre } from '../../utils/busqueda';
 import { ESPECIALIDAD_LABELS } from '../../models/especialidades';

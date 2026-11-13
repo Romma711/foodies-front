@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { map, Observable, shareReplay } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { ResenaListDTO } from '../../../resenas/models';
+import { environment } from '../../../environments/environment';
+import { ResenaListDTO } from '../../resenas/models';
 
 export interface Calificacion {
   /** Average rating rounded to one decimal; 0 when there are no reviews. */

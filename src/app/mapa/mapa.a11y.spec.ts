@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { violacionesAxe } from '../../shared/testing/axe';
+import { violacionesAxe } from '../shared/testing/axe';
 import { MapaRestaurantes } from './components/mapa-restaurantes/mapa-restaurantes';
 import { CalificacionService } from './services/calificacion.service';
 

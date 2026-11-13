@@ -18,7 +18,7 @@ import {
   tileLayer,
 } from 'leaflet';
 import { Subscription } from 'rxjs';
-import { RestauranteListDTO } from '../../../../restaurantes/models/restaurante.models';
+import { RestauranteListDTO } from '../../../restaurantes/models/restaurante.models';
 import { CalificacionService } from '../../services/calificacion.service';
 import { iconoEspecialidad } from '../../utils/marcador-especialidad';
 import { crearPopupRestaurante } from '../../utils/popup-restaurante';

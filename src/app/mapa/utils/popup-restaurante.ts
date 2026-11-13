@@ -1,5 +1,5 @@
-import { especialidadLabel } from '../../../restaurantes/models/especialidades';
-import { RestauranteListDTO } from '../../../restaurantes/models/restaurante.models';
+import { especialidadLabel } from '../../restaurantes/models/especialidades';
+import { RestauranteListDTO } from '../../restaurantes/models/restaurante.models';
 import { Calificacion } from '../services/calificacion.service';
 import { elementoIconoEspecialidad } from './marcador-especialidad';
 
