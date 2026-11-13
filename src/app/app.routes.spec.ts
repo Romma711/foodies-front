@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { Home } from './pages/home/home';
+import { Home } from './home/pages/home/home';
 import { BROWSER_LOCATION, HOSTNAME } from './core/config/host.config';
 import { APP_ROUTES, DASHBOARD_ROUTES, rutasParaHostname } from './app.routes';
 

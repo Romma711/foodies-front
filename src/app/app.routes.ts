@@ -18,7 +18,7 @@ export const APP_ROUTES: Routes = [
     path: '',
     pathMatch: 'full',
     title: 'Foodies',
-    loadComponent: () => import('./pages/home/home').then((module) => module.Home),
+    loadComponent: () => import('./home/pages/home/home').then((module) => module.Home),
   },
   {
     path: 'restaurantes',
