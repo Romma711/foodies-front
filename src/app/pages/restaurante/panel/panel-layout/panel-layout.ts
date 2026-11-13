@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { PORTALS } from '../../../../core/auth/portals';
-import { CuentaMenu } from '../../../../shared/cuenta-menu/cuenta-menu';
+import { CuentaMenu } from '../../../../shared/ui/cuenta-menu/cuenta-menu';
 import { RestaurantePanelService } from '../restaurante-panel.service';
 
 /** Estructura del panel del restaurante: barra lateral con las secciones + la sección activa. */

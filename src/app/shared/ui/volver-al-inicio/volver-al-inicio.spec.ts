@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { HOSTNAME } from '../../core/config/host.config';
+import { HOSTNAME } from '../../../core/config/host.config';
 import { VolverAlInicio } from './volver-al-inicio';
 
 describe('VolverAlInicio', () => {

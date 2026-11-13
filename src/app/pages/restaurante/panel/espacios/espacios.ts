@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength, min, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import {
   TIPO_ESPACIO_LABELS,
   TIPO_ESPACIO_PLURAL,

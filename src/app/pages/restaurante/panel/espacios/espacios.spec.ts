@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import { violacionesAxe } from '../../../../shared/testing/axe';
 import { Espacio } from '../panel.models';
 import { espacio, providePanelTesting, settle } from '../panel.testing';

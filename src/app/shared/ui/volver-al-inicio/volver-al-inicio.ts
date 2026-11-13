@@ -1,8 +1,8 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PortalNavigation } from '../../core/auth/portal-navigation';
-import { PORTALS } from '../../core/auth/portals';
+import { PortalNavigation } from '../../../core/auth/portal-navigation';
+import { PORTALS } from '../../../core/auth/portals';
 
 /**
  * "Volver al inicio" de las pantallas de login y registro. El inicio es el home de la app pública:

@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength, required, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom, forkJoin } from 'rxjs';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import {
   formatearDia,
   mensajeDeNegocio,

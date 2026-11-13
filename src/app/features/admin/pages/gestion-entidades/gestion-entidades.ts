@@ -13,8 +13,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { EspecialidadDeComida, ESPECIALIDADES } from '../../../../core/auth/auth.models';
 import { ESPECIALIDAD_LABELS, especialidadLabel } from '../../../../core/catalog/especialidades';
-import { ToastService } from '../../../../shared/toast/toast.service';
-import { ToastOutlet } from '../../../../shared/toast/toast-outlet';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ToastOutlet } from '../../../../shared/ui/toast/toast-outlet';
 import {
   EntidadCliente,
   EntidadRestaurante,

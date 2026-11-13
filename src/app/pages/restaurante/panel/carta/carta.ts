@@ -2,7 +2,7 @@ import { HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import { formatearFechaHora, panelErrorMessage } from '../panel-errors';
 import { Carta as CartaModel, MAX_CARTA_BYTES } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';

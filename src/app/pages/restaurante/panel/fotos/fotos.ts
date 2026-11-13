@@ -1,6 +1,6 @@
 import { Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import {
   ACCEPT_IMAGEN,
   errorDeImagen,

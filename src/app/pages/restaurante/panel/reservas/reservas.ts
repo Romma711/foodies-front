@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmDialog } from '../../../../components/confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 import { formatearDia, panelErrorMessage, parseLocalDate, toIsoDate } from '../panel-errors';
 import { EstadoReserva, ReservaPanel } from '../panel.models';
 import { RestaurantePanelService } from '../restaurante-panel.service';
