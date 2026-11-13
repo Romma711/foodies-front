@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ESPECIALIDADES } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { ESPECIALIDAD_LABELS } from '../../core/catalog/especialidades';
@@ -17,6 +17,7 @@ const DESTACADOS = 3;
 export class Home {
   private readonly auth = inject(AuthService);
   private readonly restauranteService = inject(RestauranteService);
+  private readonly router = inject(Router);
 
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   /** Each chip opens the catalog already filtered by its specialty. */
@@ -52,6 +53,13 @@ export class Home {
       .listar()
       .pipe(takeUntilDestroyed(inject(DestroyRef)))
       .subscribe({ error: () => undefined });
+  }
+
+  /** Opens the catalog already filtered by name; an empty search shows every restaurant. */
+  protected buscar(event: Event, texto: string): void {
+    event.preventDefault();
+    const q = texto.trim();
+    void this.router.navigate(['/restaurantes'], { queryParams: q ? { q } : {} });
   }
 
   protected inicial(nombre: string): string {

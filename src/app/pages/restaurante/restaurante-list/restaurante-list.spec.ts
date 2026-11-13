@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { violacionesAxe } from '../../../shared/testing/axe';
 import { MapaRestaurantes } from '../../../features/mapa/components/mapa-restaurantes/mapa-restaurantes';
 import { CalificacionService } from '../../../features/mapa/services/calificacion.service';
 import { RestauranteListDTO } from '../models/restaurante.models';
@@ -213,5 +214,100 @@ describe('RestauranteList', () => {
     expect(
       (mapa.componentInstance as MapaRestaurantes).restaurantes().map((r) => r.nombre),
     ).toEqual(['La Trattoria']);
+  });
+
+  function escribir(fixture: ReturnType<typeof crearComponente>, texto: string): void {
+    const campo = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      '#buscar-restaurante',
+    )!;
+    campo.value = texto;
+    campo.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  }
+
+  it('busca por nombre sin importar mayúsculas ni tildes y lo guarda en la URL', () => {
+    restaurantes.set([
+      ...restaurantesMock,
+      { ...restaurantesMock[1], id: 7, nombre: 'Café Martínez' },
+    ]);
+    const fixture = crearComponente();
+    const host = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    escribir(fixture, 'cafe MARTINEZ');
+
+    expect(nombres(host)).toEqual(['Café Martínez']);
+    expect(host.querySelector('#resultados-busqueda')?.textContent).toContain(
+      '1 restaurante encontrado',
+    );
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { q: 'cafe MARTINEZ' }, replaceUrl: true }),
+    );
+
+    escribir(fixture, '  ');
+    expect(nombres(host)).toHaveLength(3);
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { q: null } }),
+    );
+  });
+
+  it('aplica la búsqueda que llega por la URL y la combina con la especialidad', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('q', 'tratt');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector<HTMLInputElement>('#buscar-restaurante')?.value).toBe('tratt');
+    expect(nombres(host)).toEqual(['La Trattoria']);
+
+    botonFiltro(host, 'Asiática').click();
+    fixture.detectChanges();
+    expect(
+      host.querySelector('[data-testid="sin-resultados"]')?.textContent?.replace(/\s+/g, ' '),
+    ).toContain('No encontramos restaurantes que coincidan con “tratt” en Asiática');
+  });
+
+  it('"Ver todos" borra la búsqueda y la especialidad', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('q', 'no existe');
+    fixture.componentRef.setInput('especialidad', 'PASTAS');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    host.querySelector<HTMLButtonElement>('[data-testid="sin-resultados"] button')!.click();
+    fixture.detectChanges();
+
+    expect(nombres(host)).toEqual(['Ochiwan', 'La Trattoria']);
+    expect(host.querySelector<HTMLInputElement>('#buscar-restaurante')?.value).toBe('');
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { especialidad: null, q: null } }),
+    );
+  });
+
+  it('el mapa recibe solo los restaurantes que coinciden con la búsqueda', () => {
+    const fixture = TestBed.createComponent(RestauranteList);
+    fixture.componentRef.setInput('q', 'ochi');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-testid="vista-mapa"]')!.click();
+    fixture.detectChanges();
+
+    const mapa = fixture.debugElement.query(By.css('app-mapa-restaurantes'));
+    expect(
+      (mapa.componentInstance as MapaRestaurantes).restaurantes().map((r) => r.nombre),
+    ).toEqual(['Ochiwan']);
+  });
+
+  it('el buscador pasa axe con resultados y sin resultados', async () => {
+    const fixture = crearComponente();
+    expect(await violacionesAxe(fixture.nativeElement)).toEqual([]);
+
+    escribir(fixture, 'zzz');
+    expect(await violacionesAxe(fixture.nativeElement)).toEqual([]);
   });
 });
