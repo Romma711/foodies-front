@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false",
-    "format:check": "prettier --check src/app/resenas src/app/features/admin src/app/mapa src/app/shared src/environments"
+    "format:check": "prettier --check src/app/resenas src/app/admin src/app/mapa src/app/shared src/environments"
   },
   "private": true,
   "packageManager": "npm@11.20.0",

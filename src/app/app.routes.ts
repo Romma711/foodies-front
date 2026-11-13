@@ -4,7 +4,7 @@ import { guestGuard } from './core/auth/guest.guard';
 import { irAlDashboardGuard } from './core/auth/ir-al-dashboard.guard';
 import { roleGuard } from './core/auth/role.guard';
 import { esDashboardHost } from './core/config/host.config';
-import { adminGuard } from './features/admin/guards/admin.guard';
+import { adminGuard } from './admin/guards/admin.guard';
 
 const loadLogin = () => import('./auth/pages/login/login').then((m) => m.Login);
 const loadRegister = () => import('./auth/pages/register/register').then((m) => m.Register);
@@ -131,7 +131,7 @@ export const DASHBOARD_ROUTES: Routes = [
   {
     // The admin routes match every `/admin/...` URL, so the login goes first.
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     canMatch: [adminGuard],
   },
   { path: '**', redirectTo: '' },
