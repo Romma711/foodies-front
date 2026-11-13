@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Footer } from './components/footer/footer';
-import { Header } from './components/header/header';
+import { Footer } from './core/layout/footer/footer';
+import { Header } from './core/layout/header/header';
 import { PortalNavigation } from './core/auth/portal-navigation';
 
 @Component({

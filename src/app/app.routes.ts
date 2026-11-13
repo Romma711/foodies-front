@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { Role } from './core/auth/auth.models';
-import { guestGuard } from './core/auth/guest.guard';
-import { irAlDashboardGuard } from './core/auth/ir-al-dashboard.guard';
-import { roleGuard } from './core/auth/role.guard';
-import { esDashboardHost } from './core/config/host.config';
-import { adminGuard } from './features/admin/guards/admin.guard';
+import { Role } from '@core/auth/auth.models';
+import { guestGuard } from '@core/auth/guest.guard';
+import { irAlDashboardGuard } from '@core/auth/ir-al-dashboard.guard';
+import { roleGuard } from '@core/auth/role.guard';
+import { esDashboardHost } from '@core/config/host.config';
+import { adminGuard } from '@admin/guards/admin.guard';
 
-const loadLogin = () => import('./pages/login/login').then((m) => m.Login);
-const loadRegister = () => import('./pages/register/register').then((m) => m.Register);
+const loadLogin = () => import('@auth/pages/login/login').then((m) => m.Login);
+const loadRegister = () => import('@auth/pages/register/register').then((m) => m.Register);
 
 /**
  * Rutas de la app pública, servida en el host principal (`localhost:4200` en desarrollo):
@@ -18,13 +18,13 @@ export const APP_ROUTES: Routes = [
     path: '',
     pathMatch: 'full',
     title: 'Foodies',
-    loadComponent: () => import('./pages/home/home').then((module) => module.Home),
+    loadComponent: () => import('@home/pages/home/home').then((module) => module.Home),
   },
   {
     path: 'restaurantes',
     title: 'Restaurantes | Foodies',
     loadComponent: () =>
-      import('./pages/restaurante/restaurante-list/restaurante-list').then(
+      import('@restaurantes/pages/restaurante-list/restaurante-list').then(
         (module) => module.RestauranteList,
       ),
   },
@@ -32,7 +32,7 @@ export const APP_ROUTES: Routes = [
     path: 'restaurantes/:restauranteId',
     title: 'Restaurante | Foodies',
     loadComponent: () =>
-      import('./pages/restaurante/restaurante-detail/restaurante-detail').then(
+      import('@restaurantes/pages/restaurante-detail/restaurante-detail').then(
         (module) => module.RestauranteDetail,
       ),
   },
@@ -40,25 +40,21 @@ export const APP_ROUTES: Routes = [
     path: 'mis-reservas',
     title: 'Mis reservas | Foodies',
     loadComponent: () =>
-      import('./features/reservas/pages/mis-reservas/mis-reservas').then(
-        (module) => module.MisReservas,
-      ),
+      import('@reservas/pages/mis-reservas/mis-reservas').then((module) => module.MisReservas),
     canMatch: [roleGuard('CLIENTE')],
   },
   {
     path: 'perfil',
     title: 'Mi perfil | Foodies',
     loadComponent: () =>
-      import('./features/perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
+      import('@perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
     canMatch: [roleGuard('CLIENTE')],
   },
   {
     path: 'mis-resenas',
     title: 'Mis reseñas | Foodies',
     loadComponent: () =>
-      import('./features/resenas/pages/mis-resenas/mis-resenas').then(
-        (module) => module.MisResenas,
-      ),
+      import('@resenas/pages/mis-resenas/mis-resenas').then((module) => module.MisResenas),
     canMatch: [roleGuard('CLIENTE')],
   },
   {
@@ -120,7 +116,8 @@ export const DASHBOARD_ROUTES: Routes = [
   {
     path: 'restaurante',
     canMatch: [roleGuard('RESTAURANTE')],
-    loadChildren: () => import('./pages/restaurante/panel/panel.routes').then((m) => m.panelRoutes),
+    loadChildren: () =>
+      import('@panel-restaurante/panel-restaurante.routes').then((m) => m.panelRoutes),
   },
   {
     path: 'admin/login',
@@ -131,7 +128,7 @@ export const DASHBOARD_ROUTES: Routes = [
   {
     // The admin routes match every `/admin/...` URL, so the login goes first.
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    loadChildren: () => import('@admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     canMatch: [adminGuard],
   },
   { path: '**', redirectTo: '' },
