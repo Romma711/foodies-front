@@ -12,7 +12,20 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "paths": {
+      "@core/*": ["./src/app/core/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@auth/*": ["./src/app/auth/*"],
+      "@home/*": ["./src/app/home/*"],
+      "@restaurantes/*": ["./src/app/restaurantes/*"],
+      "@panel-restaurante/*": ["./src/app/panel-restaurante/*"],
+      "@reservas/*": ["./src/app/reservas/*"],
+      "@resenas/*": ["./src/app/resenas/*"],
+      "@mapa/*": ["./src/app/mapa/*"],
+      "@perfil/*": ["./src/app/perfil/*"],
+      "@admin/*": ["./src/app/admin/*"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
