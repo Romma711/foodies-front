@@ -1,9 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, of, tap, throwError } from 'rxjs';
-import { withRole } from '../../../core/auth/auth-context';
-import { AuthService } from '../../../core/auth/auth.service';
-import { environment } from '../../../../environments/environment';
+import { withRole } from '../../core/auth/auth-context';
+import { AuthService } from '../../core/auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 /** `UsuarioDetailDTO` del cliente que inició sesión. */
 export interface ClientePerfil {

@@ -3,7 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Role, ROLES } from '../../auth/auth.models';
 import { AuthService } from '../../auth/auth.service';
 import { PORTALS } from '../../auth/portals';
-import { ClientePerfilService } from '../../../features/perfil/services/cliente-perfil.service';
+import { ClientePerfilService } from '../../../perfil/services/cliente-perfil.service';
 import { ClienteMenu } from './cliente-menu/cliente-menu';
 
 @Component({

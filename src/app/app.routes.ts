@@ -49,7 +49,7 @@ export const APP_ROUTES: Routes = [
     path: 'perfil',
     title: 'Mi perfil | Foodies',
     loadComponent: () =>
-      import('./features/perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
+      import('./perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
     canMatch: [roleGuard('CLIENTE')],
   },
   {

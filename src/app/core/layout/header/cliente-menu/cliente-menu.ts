@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
-import { ClientePerfilService } from '../../../../features/perfil/services/cliente-perfil.service';
+import { ClientePerfilService } from '../../../../perfil/services/cliente-perfil.service';
 
 /**
  * Cuenta del cliente en el header: su nombre y, al tocarlo, un popup con su perfil, sus reseñas,
