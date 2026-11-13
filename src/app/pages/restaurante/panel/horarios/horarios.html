@@ -1,0 +1,107 @@
+<header class="page-header">
+  <h1>Horarios</h1>
+  <p class="subtitle">
+    Elegí qué días abrís y en qué franjas recibís reservas, por ejemplo almuerzo y cena. Los
+    clientes solo pueden elegir horarios de llegada dentro de esas franjas.
+  </p>
+</header>
+
+@if (loading()) {
+  <p role="status">Cargando tu horario…</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message }}</p>
+    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+  </div>
+} @else {
+  <form class="stack" novalidate (submit)="onSubmit($event)">
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message }}</p>
+    }
+    <p class="visually-hidden" role="status">{{ status() }}</p>
+    @if (status(); as message) {
+      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+    }
+    @if (sinHorario()) {
+      <p class="card aviso">
+        Todavía no cargaste tu horario: se aceptan reservas a cualquier hora, todos los días.
+      </p>
+    }
+
+    @for (d of dias(); track d.dia) {
+      <fieldset class="card dia">
+        <legend>{{ labels[d.dia] }}</legend>
+        <label class="abierto" [for]="'abierto-' + d.dia">
+          <input
+            type="checkbox"
+            [id]="'abierto-' + d.dia"
+            [checked]="d.abierto"
+            (change)="cambiarAbierto(d.dia, $event)"
+          />
+          Abierto
+        </label>
+
+        @if (d.abierto) {
+          <ul class="franjas">
+            @for (franja of d.franjas; track $index; let i = $index) {
+              <li class="franja">
+                <div class="field">
+                  <label [for]="'apertura-' + d.dia + '-' + i">Desde</label>
+                  <input
+                    type="time"
+                    step="1800"
+                    [id]="'apertura-' + d.dia + '-' + i"
+                    [value]="franja.apertura"
+                    (input)="cambiarHora(d.dia, i, 'apertura', $event)"
+                  />
+                </div>
+                <div class="field">
+                  <label [for]="'cierre-' + d.dia + '-' + i">Hasta</label>
+                  <input
+                    type="time"
+                    step="1800"
+                    [id]="'cierre-' + d.dia + '-' + i"
+                    [value]="franja.cierre"
+                    (input)="cambiarHora(d.dia, i, 'cierre', $event)"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [attr.aria-label]="'Quitar la franja ' + (i + 1) + ' del ' + labels[d.dia]"
+                  (click)="quitarFranja(d.dia, i)"
+                >
+                  Quitar
+                </button>
+              </li>
+            }
+          </ul>
+          @if (d.franjas.length < maxFranjas) {
+            <div>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                [attr.aria-label]="'Agregar franja al ' + labels[d.dia]"
+                (click)="agregarFranja(d.dia)"
+              >
+                Agregar franja
+              </button>
+            </div>
+          }
+        } @else {
+          <p class="muted">Cerrado</p>
+        }
+      </fieldset>
+    }
+
+    <p class="muted">
+      "Hasta 00:00" significa hasta la medianoche. Si dejás todos los días cerrados, se quita el
+      horario y vuelven a aceptarse reservas a cualquier hora.
+    </p>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : 'Guardar horario' }}
+      </button>
+    </div>
+  </form>
+}

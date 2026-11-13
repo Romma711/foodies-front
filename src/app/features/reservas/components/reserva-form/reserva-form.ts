@@ -15,14 +15,20 @@ import { apply, form, FormField, submit, validate } from '@angular/forms/signals
 import { firstValueFrom } from 'rxjs';
 import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
 import { ReservaDetailDTO } from '../../models';
+import { horariosDelDia } from '../../../../core/catalog/horarios';
 import { EspaciosService } from '../../services/espacios.service';
+import { HorariosService } from '../../services/horarios.service';
 import { ReservaService } from '../../services/reserva.service';
 import {
+  diaCerrado,
   espacioSinLugar,
   espacioSugerido,
   fechaLocal,
   HORARIOS,
+  MENSAJE_CERRADO,
+  MENSAJE_FUERA_DE_HORARIO,
   MENSAJE_SIN_LUGAR,
+  textoHorarioDelDia,
   ReservaFormModel,
   reglasReserva,
 } from '../../utils/reserva-reglas';
@@ -36,6 +42,7 @@ import { EspacioSelector } from '../espacio-selector/espacio-selector';
 export class ReservaForm {
   private readonly reservaService = inject(ReservaService);
   private readonly espaciosService = inject(EspaciosService);
+  private readonly horariosService = inject(HorariosService);
 
   constructor() {
     // The form replaces the button that opened it, so focus moves to its first field.
@@ -48,6 +55,14 @@ export class ReservaForm {
         this.model.update((model) => ({ ...model, idEspacio: espacioSugerido(espacios) }));
       }
     });
+    // Keeps the arrival time inside the opening hours when the date changes.
+    effect(() => {
+      const disponibles = this.horarios();
+      const actual = untracked(() => this.model().horarioLlegada);
+      if (disponibles.length && !disponibles.includes(actual)) {
+        this.model.update((model) => ({ ...model, horarioLlegada: disponibles[0] }));
+      }
+    });
   }
 
   readonly restauranteId = input.required<number>();
@@ -58,7 +73,6 @@ export class ReservaForm {
 
   protected readonly saving = this.reservaService.saving;
   protected readonly mutationError = this.reservaService.mutationError;
-  protected readonly horarios = HORARIOS;
 
   private readonly model = signal<ReservaFormModel>({
     idEspacio: '',
@@ -66,6 +80,25 @@ export class ReservaForm {
     horarioLlegada: '20:00',
     cantidad: 2,
   });
+
+  /** Horario de atención del restaurante; sin franjas no hay restricción. */
+  protected readonly horariosResource = rxResource({
+    params: () => this.restauranteId(),
+    stream: ({ params }) => this.horariosService.listar(params),
+  });
+
+  private readonly franjas = computed(() =>
+    this.horariosResource.hasValue() ? this.horariosResource.value() : [],
+  );
+
+  /** Horarios de llegada que se ofrecen para la fecha elegida. */
+  protected readonly horarios = computed(() =>
+    horariosDelDia(HORARIOS, this.franjas(), this.model().fechaReserva),
+  );
+
+  protected readonly horarioDelDia = computed(() =>
+    textoHorarioDelDia(this.franjas(), this.model().fechaReserva),
+  );
 
   /** Espacios del restaurante y si hay lugar en cada uno para la fecha y cantidad elegidas. */
   protected readonly espaciosResource = rxResource({
@@ -84,6 +117,14 @@ export class ReservaForm {
 
   protected readonly reservaForm = form(this.model, (path) => {
     apply(path, reglasReserva);
+    validate(path.fechaReserva, ({ value }) =>
+      diaCerrado(this.franjas(), value()) ? { kind: 'cerrado', message: MENSAJE_CERRADO } : null,
+    );
+    validate(path.horarioLlegada, ({ value }) =>
+      this.horarios().length && !this.horarios().includes(value())
+        ? { kind: 'fueraDeHorario', message: MENSAJE_FUERA_DE_HORARIO }
+        : null,
+    );
     validate(path.idEspacio, ({ value }) =>
       espacioSinLugar(this.espacios(), value())
         ? { kind: 'sinLugar', message: MENSAJE_SIN_LUGAR }

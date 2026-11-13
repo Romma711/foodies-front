@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { withRole } from '../../../core/auth/auth-context';
 import { API_URL } from '../../../core/config/api.config';
 import { Foto } from '../../../core/catalog/fotos';
+import { FranjaHoraria } from '../../../core/catalog/horarios';
 import {
   Carta,
   CupoEspecial,
@@ -82,6 +83,19 @@ export class RestaurantePanelService {
       { activo },
       { context: withRole('RESTAURANTE') },
     );
+  }
+
+  getHorarios(): Observable<FranjaHoraria[]> {
+    return this.http.get<FranjaHoraria[]>(`${this.meUrl}/horarios`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** Reemplaza la semana completa; una lista vacía quita el horario. */
+  guardarHorarios(franjas: FranjaHoraria[]): Observable<FranjaHoraria[]> {
+    return this.http.put<FranjaHoraria[]>(`${this.meUrl}/horarios`, franjas, {
+      context: withRole('RESTAURANTE'),
+    });
   }
 
   getCuposEspeciales(): Observable<CupoEspecial[]> {

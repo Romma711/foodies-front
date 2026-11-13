@@ -28,6 +28,11 @@ export const panelRoutes: Routes = [
         loadComponent: () => import('./espacios/espacios').then((m) => m.EspaciosPanel),
       },
       {
+        path: 'horarios',
+        title: 'Horarios · Foodies',
+        loadComponent: () => import('./horarios/horarios').then((m) => m.HorariosPanel),
+      },
+      {
         path: 'capacidad',
         title: 'Capacidad · Foodies',
         loadComponent: () =>

@@ -15,14 +15,20 @@ import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar
 import { apply, form, FormField, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { ReservaDetailDTO, ReservaListDTO } from '../../models';
+import { horariosDelDia } from '../../../../core/catalog/horarios';
 import { EspaciosService } from '../../services/espacios.service';
+import { HorariosService } from '../../services/horarios.service';
 import { ReservaService } from '../../services/reserva.service';
 import { formatearHora } from '../../utils/reserva-formato';
 import {
+  diaCerrado,
   espacioSinLugar,
   espacioSugerido,
   HORARIOS,
+  MENSAJE_CERRADO,
+  MENSAJE_FUERA_DE_HORARIO,
   MENSAJE_SIN_LUGAR,
+  textoHorarioDelDia,
   ReservaFormModel,
   reglasReserva,
 } from '../../utils/reserva-reglas';
@@ -42,6 +48,7 @@ function soloFecha(value: string): string {
 export class ReservaEditForm {
   private readonly reservaService = inject(ReservaService);
   private readonly espaciosService = inject(EspaciosService);
+  private readonly horariosService = inject(HorariosService);
 
   constructor() {
     // The form replaces the button that opened it, so focus moves to its first field.
@@ -52,6 +59,14 @@ export class ReservaEditForm {
       const actual = untracked(() => this.model().idEspacio);
       if (espacios.length && !espacios.some((e) => String(e.id) === actual)) {
         this.model.update((model) => ({ ...model, idEspacio: espacioSugerido(espacios) }));
+      }
+    });
+    // Keeps the arrival time inside the opening hours when the date changes.
+    effect(() => {
+      const disponibles = this.horarios();
+      const actual = untracked(() => this.model().horarioLlegada);
+      if (disponibles.length && !disponibles.includes(actual)) {
+        this.model.update((model) => ({ ...model, horarioLlegada: disponibles[0] }));
       }
     });
   }
@@ -65,10 +80,20 @@ export class ReservaEditForm {
   protected readonly mutationError = this.reservaService.mutationError;
 
   /** The offered times, plus the current one when it is outside the usual grid. */
-  protected readonly horarios = computed(() => {
+  private readonly grilla = computed(() => {
     const actual = formatearHora(this.reserva().horariollegada);
     return actual && !HORARIOS.includes(actual) ? [...HORARIOS, actual].sort() : HORARIOS;
   });
+
+  /** Horario de atención del restaurante; sin franjas no hay restricción. */
+  protected readonly horariosResource = rxResource({
+    params: () => this.reserva().idRestaurant,
+    stream: ({ params }) => this.horariosService.listar(params),
+  });
+
+  private readonly franjas = computed(() =>
+    this.horariosResource.hasValue() ? this.horariosResource.value() : [],
+  );
 
   private readonly model = linkedSignal<ReservaFormModel>(() => ({
     idEspacio: this.reserva().idEspacio === null ? '' : String(this.reserva().idEspacio),
@@ -76,6 +101,15 @@ export class ReservaEditForm {
     horarioLlegada: formatearHora(this.reserva().horariollegada),
     cantidad: this.reserva().cantidad,
   }));
+
+  /** Horarios de llegada que se ofrecen para la fecha elegida. */
+  protected readonly horarios = computed(() =>
+    horariosDelDia(this.grilla(), this.franjas(), this.model().fechaReserva),
+  );
+
+  protected readonly horarioDelDia = computed(() =>
+    textoHorarioDelDia(this.franjas(), this.model().fechaReserva),
+  );
 
   /** Espacios del restaurante y si hay lugar en cada uno para la fecha y cantidad elegidas. */
   protected readonly espaciosResource = rxResource({
@@ -94,6 +128,14 @@ export class ReservaEditForm {
 
   protected readonly editForm = form(this.model, (path) => {
     apply(path, reglasReserva);
+    validate(path.fechaReserva, ({ value }) =>
+      diaCerrado(this.franjas(), value()) ? { kind: 'cerrado', message: MENSAJE_CERRADO } : null,
+    );
+    validate(path.horarioLlegada, ({ value }) =>
+      this.horarios().length && !this.horarios().includes(value())
+        ? { kind: 'fueraDeHorario', message: MENSAJE_FUERA_DE_HORARIO }
+        : null,
+    );
     // The reservation itself takes room in its current espacio, so only other espacios can be "full".
     validate(path.idEspacio, ({ value }) =>
       value() !== String(this.reserva().idEspacio) && espacioSinLugar(this.espacios(), value())
