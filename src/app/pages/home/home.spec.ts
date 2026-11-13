@@ -1,6 +1,6 @@
 import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { RestauranteListDTO } from '../restaurante/models/restaurante.models';
@@ -99,5 +99,20 @@ describe('Home', () => {
 
     expect(chips.length).toBe(6);
     expect(pastas?.getAttribute('href')).toBe('/restaurantes?especialidad=PASTAS');
+  });
+
+  it('el buscador lleva al catálogo filtrado por nombre', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const element = render();
+    const campo = element.querySelector<HTMLInputElement>('#home-buscar')!;
+    const form = element.querySelector<HTMLFormElement>('form[role="search"]')!;
+
+    campo.value = '  Ochiwan ';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(navigate).toHaveBeenLastCalledWith(['/restaurantes'], { queryParams: { q: 'Ochiwan' } });
+
+    campo.value = '';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(navigate).toHaveBeenLastCalledWith(['/restaurantes'], { queryParams: {} });
   });
 });

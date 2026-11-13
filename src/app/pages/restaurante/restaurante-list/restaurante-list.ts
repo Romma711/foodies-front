@@ -1,8 +1,17 @@
-import { Component, computed, DestroyRef, inject, input, linkedSignal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MapaRestaurantes } from '../../../features/mapa/components/mapa-restaurantes/mapa-restaurantes';
 import { ESPECIALIDADES, EspecialidadDeComida } from '../../../core/auth/auth.models';
+import { coincideNombre } from '../../../core/catalog/busqueda';
 import { ESPECIALIDAD_LABELS } from '../../../core/catalog/especialidades';
 import { RestauranteService } from '../services/restaurante.service';
 
@@ -23,6 +32,8 @@ export class RestauranteList {
 
   /** `?especialidad=PASTAS` query param (bound by the router); unknown values mean "Todas". */
   readonly especialidad = input<string | null | undefined>();
+  /** `?q=` query param: text searched in the restaurant names. */
+  readonly q = input<string | null | undefined>();
 
   protected readonly restaurantes = this.restauranteService.restaurantes;
   protected readonly cargando = this.restauranteService.loading;
@@ -41,13 +52,22 @@ export class RestauranteList {
     return esEspecialidad(valor) ? valor : null;
   });
 
-  /** Filters the already-loaded catalog: every restaurant there carries its specialty. */
+  /** Text typed in the search box; follows the `?q=` query param. */
+  protected readonly busqueda = linkedSignal(() => this.q() ?? '');
+  protected readonly buscando = computed(() => this.busqueda().trim() !== '');
+
+  /**
+   * Filters the already-loaded catalog by specialty and name: `/api/restaurantes` returns every
+   * approved restaurant, so there is no need to ask the backend again on each keystroke.
+   */
   protected readonly filtrados = computed(() => {
     const filtro = this.filtro();
-    const restaurantes = this.restaurantes();
-    return filtro === null
-      ? restaurantes
-      : restaurantes.filter((restaurante) => restaurante.especialidad === filtro);
+    const busqueda = this.busqueda();
+    return this.restaurantes().filter(
+      (restaurante) =>
+        (filtro === null || restaurante.especialidad === filtro) &&
+        coincideNombre(restaurante.nombre, busqueda),
+    );
   });
 
   constructor() {
@@ -56,10 +76,26 @@ export class RestauranteList {
 
   protected filtrar(especialidad: EspecialidadDeComida | null): void {
     this.filtro.set(especialidad);
-    // Keep the URL shareable and in sync, without piling up history entries.
+    this.actualizarUrl({ especialidad });
+  }
+
+  protected buscar(texto: string): void {
+    this.busqueda.set(texto);
+    this.actualizarUrl({ q: texto.trim() || null });
+  }
+
+  /** "Ver todos" from the empty state: drops both the search and the specialty. */
+  protected limpiarFiltros(): void {
+    this.filtro.set(null);
+    this.busqueda.set('');
+    this.actualizarUrl({ especialidad: null, q: null });
+  }
+
+  /** Keeps the URL shareable and in sync, without piling up history entries. */
+  private actualizarUrl(queryParams: Record<string, string | null>): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { especialidad },
+      queryParams,
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
