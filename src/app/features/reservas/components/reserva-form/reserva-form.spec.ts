@@ -3,7 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ReservaDetailDTO } from '../../models';
 import { EspacioPublico } from '../../../../core/catalog/espacios';
+import { diaDeFecha, DIAS_SEMANA, FranjaHoraria } from '../../../../core/catalog/horarios';
 import { EspaciosService } from '../../services/espacios.service';
+import { HorariosService } from '../../services/horarios.service';
+import { fechaLocal } from '../../utils/reserva-reglas';
 import { ReservaService } from '../../services/reserva.service';
 import { ReservaForm } from './reserva-form';
 
@@ -25,6 +28,7 @@ describe('ReservaForm', () => {
   let crear: ReturnType<typeof vi.fn>;
   let espacios: EspacioPublico[];
   let listarEspacios: ReturnType<typeof vi.fn>;
+  let franjas: FranjaHoraria[];
 
   beforeEach(async () => {
     saving = signal(false);
@@ -35,11 +39,13 @@ describe('ReservaForm', () => {
       { id: 4, tipo: 'PATIO', nombre: 'Patio', hayLugar: true },
     ];
     listarEspacios = vi.fn(() => of(espacios));
+    franjas = [];
 
     await TestBed.configureTestingModule({
       imports: [ReservaForm],
       providers: [
         { provide: EspaciosService, useValue: { listar: listarEspacios } },
+        { provide: HorariosService, useValue: { listar: vi.fn(() => of(franjas)) } },
         {
           provide: ReservaService,
           useValue: {
@@ -109,7 +115,9 @@ describe('ReservaForm', () => {
     fixture.detectChanges();
 
     expect(listarEspacios).toHaveBeenCalledWith(5, expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), 2);
-    const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+    const radios = fixture.nativeElement.querySelectorAll(
+      'input[type="radio"]',
+    ) as NodeListOf<HTMLInputElement>;
     expect([...radios].map((r) => r.value)).toEqual(['3', '4']);
     expect(radios[0].checked).toBe(true);
 
@@ -128,7 +136,9 @@ describe('ReservaForm', () => {
     const fixture = crearComponente();
     await fixture.whenStable();
     fixture.detectChanges();
-    const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+    const radios = fixture.nativeElement.querySelectorAll(
+      'input[type="radio"]',
+    ) as NodeListOf<HTMLInputElement>;
     expect(radios[1].checked).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('Sin lugar para esa fecha y cantidad');
 
@@ -141,6 +151,39 @@ describe('ReservaForm', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'No hay lugar en ese espacio para esa fecha y cantidad.',
     );
+  });
+
+  it('ofrece solo los horarios de atención de ese día y ajusta la hora elegida', async () => {
+    const manana = diaDeFecha(fechaLocal(1));
+    franjas = [{ dia: manana, apertura: '21:00', cierre: '23:00' }];
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    const opciones = Array.from(host.querySelectorAll('#reserva-horario option')).map((o) =>
+      o.textContent?.trim(),
+    );
+    expect(opciones).toEqual(['21:00 hs', '21:30 hs', '22:00 hs', '22:30 hs']);
+    expect(host.querySelector('[data-testid="horario-del-dia"]')?.textContent).toContain(
+      '21:00 a 23:00',
+    );
+
+    await enviar(fixture);
+    expect(crear).toHaveBeenCalledWith(expect.objectContaining({ horarioLlegada: '21:00' }));
+  });
+
+  it('avisa que el restaurante está cerrado ese día y no deja reservar', async () => {
+    const manana = diaDeFecha(fechaLocal(1));
+    const otroDia = DIAS_SEMANA.find((dia) => dia !== manana)!;
+    franjas = [{ dia: otroDia, apertura: '20:00', cierre: '00:00' }];
+    const fixture = crearComponente();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Ese día el restaurante está cerrado');
+    await enviar(fixture);
+    expect(crear).not.toHaveBeenCalled();
   });
 
   it('debería mostrar el error de escritura del servicio', () => {

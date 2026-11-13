@@ -15,6 +15,7 @@ import {
   RestauranteDetailDTO,
 } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
+import { HorariosService } from '../../../features/reservas/services/horarios.service';
 import { RestauranteDetail } from './restaurante-detail';
 
 @Component({ selector: 'app-restaurante-resenas', template: '' })
@@ -98,6 +99,17 @@ describe('RestauranteDetail', () => {
           },
         },
         {
+          provide: HorariosService,
+          useValue: {
+            listar: vi.fn(() =>
+              of([
+                { dia: 'SATURDAY', apertura: '20:00', cierre: '00:00' },
+                { dia: 'SATURDAY', apertura: '12:00', cierre: '16:00' },
+              ]),
+            ),
+          },
+        },
+        {
           provide: ReservaService,
           useValue: {
             saving: signal(false).asReadonly(),
@@ -124,6 +136,22 @@ describe('RestauranteDetail', () => {
     expect(texto).toContain('Ochiwan');
     expect(texto).toContain('San juan 229');
     expect(texto).toContain('Asiática');
+  });
+
+  it('debería mostrar el horario de atención de la semana', () => {
+    const fixture = crearComponente();
+    const filas = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '[data-testid="horarios"] dl > div',
+      ) as NodeListOf<HTMLElement>,
+    ).map(
+      (fila) =>
+        `${fila.querySelector('dt')?.textContent?.trim()}: ${fila.querySelector('dd')?.textContent?.trim()}`,
+    );
+
+    expect(filas).toHaveLength(7);
+    expect(filas[0]).toBe('Lunes: Cerrado');
+    expect(filas[5]).toBe('Sábado: 12:00 a 16:00 y 20:00 a 00:00');
   });
 
   it('no debería mostrar la capacidad del restaurante', () => {

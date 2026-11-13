@@ -1,5 +1,11 @@
 import { required, schema, validate } from '@angular/forms/signals';
 import { EspacioPublico } from '../../../core/catalog/espacios';
+import {
+  diaDeFecha,
+  FranjaHoraria,
+  franjasDelDia,
+  textoFranjas,
+} from '../../../core/catalog/horarios';
 
 /** Fields the client chooses when creating or modifying a reservation. */
 export interface ReservaFormModel {
@@ -10,7 +16,32 @@ export interface ReservaFormModel {
   cantidad: number;
 }
 
-export const MENSAJE_SIN_LUGAR = 'No hay lugar en ese espacio para esa fecha y cantidad. Elegí otro.';
+export const MENSAJE_CERRADO = 'Ese día el restaurante está cerrado. Elegí otra fecha.';
+export const MENSAJE_FUERA_DE_HORARIO = 'Elegí un horario dentro del horario de atención.';
+
+/** True cuando el restaurante cargó horario y ese día no atiende. */
+export function diaCerrado(franjas: readonly FranjaHoraria[], fecha: string): boolean {
+  return (
+    franjas.length > 0 &&
+    /^\d{4}-\d{2}-\d{2}$/.test(fecha) &&
+    franjasDelDia(franjas, diaDeFecha(fecha)).length === 0
+  );
+}
+
+/** "Ese día atiende de 12:00 a 16:00 y 20:00 a 00:00.", o null si no hay horario cargado. */
+export function textoHorarioDelDia(
+  franjas: readonly FranjaHoraria[],
+  fecha: string,
+): string | null {
+  if (franjas.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    return null;
+  }
+  const delDia = franjasDelDia(franjas, diaDeFecha(fecha));
+  return delDia.length ? `Ese día atiende de ${textoFranjas(delDia)}.` : null;
+}
+
+export const MENSAJE_SIN_LUGAR =
+  'No hay lugar en ese espacio para esa fecha y cantidad. Elegí otro.';
 
 /** True cuando el espacio elegido ya informó que no hay lugar para la fecha y cantidad pedidas. */
 export function espacioSinLugar(espacios: readonly EspacioPublico[], idEspacio: string): boolean {

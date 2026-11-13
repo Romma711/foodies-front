@@ -24,6 +24,14 @@ import {
 } from '../../../features/reservas/utils/reserva-formato';
 import { CartaPublicaDTO, FotoPublicaDTO } from '../models/restaurante.models';
 import { RestauranteService } from '../services/restaurante.service';
+import { HorariosService } from '../../../features/reservas/services/horarios.service';
+import {
+  DIA_SEMANA_LABELS,
+  DIAS_SEMANA,
+  FranjaHoraria,
+  franjasDelDia,
+  textoFranjas,
+} from '../../../core/catalog/horarios';
 
 @Component({
   imports: [ReservaForm, RestauranteResenas, RouterLink],
@@ -32,6 +40,7 @@ import { RestauranteService } from '../services/restaurante.service';
 })
 export class RestauranteDetail {
   private readonly restauranteService = inject(RestauranteService);
+  private readonly horariosService = inject(HorariosService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
@@ -51,6 +60,16 @@ export class RestauranteDetail {
   protected readonly mostrarFormulario = signal(false);
   protected readonly reservaCreada = signal<ReservaDetailDTO | null>(null);
   protected readonly carta = signal<CartaPublicaDTO | null>(null);
+  private readonly franjas = signal<FranjaHoraria[]>([]);
+  /** Horario de atención por día, de lunes a domingo; vacío si el restaurante no lo cargó. */
+  protected readonly horarioSemanal = computed(() =>
+    this.franjas().length === 0
+      ? []
+      : DIAS_SEMANA.map((dia) => ({
+          dia: DIA_SEMANA_LABELS[dia],
+          texto: textoFranjas(franjasDelDia(this.franjas(), dia)),
+        })),
+  );
   protected readonly fotos = signal<FotoPublicaDTO[]>([]);
   protected readonly portada = computed(() => this.fotos().find((f) => f.portada) ?? null);
   protected readonly galeria = computed(() => this.fotos().filter((f) => !f.portada));
@@ -111,6 +130,12 @@ export class RestauranteDetail {
       .obtenerCarta(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((carta) => this.carta.set(carta));
+
+    this.franjas.set([]);
+    this.horariosService
+      .listar(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (franjas) => this.franjas.set(franjas), error: () => undefined });
 
     this.fotos.set([]);
     this.restauranteService

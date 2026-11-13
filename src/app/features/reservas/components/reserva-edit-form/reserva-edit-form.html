@@ -54,6 +54,13 @@
           <option [value]="horario">{{ horario }} hs</option>
         }
       </select>
+      @if (horarios().length === 0) {
+        <p class="mt-1.5 text-xs font-medium text-red-700" role="status">
+          Ese día el restaurante está cerrado. Elegí otra fecha.
+        </p>
+      } @else if (horarioDelDia(); as texto) {
+        <p class="mt-1.5 text-xs text-ink-500">{{ texto }}</p>
+      }
     </div>
 
     <div>

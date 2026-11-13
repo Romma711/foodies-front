@@ -55,6 +55,12 @@ export class PanelLayout {
       icono: 'M3 21V9l9-6 9 6v12M3 21h18M9 21v-5h6v5M7 12h2m6 0h2',
     },
     {
+      path: 'horarios',
+      label: 'Horarios',
+      exact: false,
+      icono: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v4l3 2',
+    },
+    {
       path: 'capacidad',
       label: 'Capacidad',
       exact: false,
