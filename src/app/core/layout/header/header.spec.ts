@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { fakeJwt, futureExp } from '../../core/auth/testing';
-import { violacionesAxe } from '../../shared/testing/axe';
+import { fakeJwt, futureExp } from '../../auth/testing';
+import { violacionesAxe } from '../../../shared/testing/axe';
 import { Header } from './header';
 
 describe('Header', () => {

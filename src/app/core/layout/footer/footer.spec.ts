@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { fakeJwt, futureExp } from '../../core/auth/testing';
+import { fakeJwt, futureExp } from '../../auth/testing';
 import { Footer } from './footer';
 
 describe('Footer', () => {

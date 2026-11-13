@@ -1,9 +1,9 @@
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { Role, ROLES } from '../../core/auth/auth.models';
-import { AuthService } from '../../core/auth/auth.service';
-import { PORTALS } from '../../core/auth/portals';
-import { ClientePerfilService } from '../../features/perfil/services/cliente-perfil.service';
+import { Role, ROLES } from '../../auth/auth.models';
+import { AuthService } from '../../auth/auth.service';
+import { PORTALS } from '../../auth/portals';
+import { ClientePerfilService } from '../../../features/perfil/services/cliente-perfil.service';
 import { ClienteMenu } from './cliente-menu/cliente-menu';
 
 @Component({
