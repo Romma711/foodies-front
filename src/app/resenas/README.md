@@ -20,7 +20,7 @@ Sprints 1 a 5, qué decisiones se tomaron y qué queda abierto para planificar l
 | 5      | Integración en la página del restaurante, skeletons y toasts | ✅     | `602a6fd`, `609c4b7`            |
 | 10     | Ordenar y filtrar reseñas por calificación                   | ✅     | `ebc62b7`                       |
 
-Los Sprints 6 a 9 (panel de administración) están documentados en `features/admin/README.md`.
+Los Sprints 6 a 9 (panel de administración) están documentados en `admin/README.md`.
 
 Estado de calidad al cierre del Sprint 5: **132 tests en verde** (Vitest) y build de producción sin
 errores ni warnings.
@@ -46,7 +46,7 @@ errores ni warnings.
 ## 3. Arquitectura del módulo
 
 ```
-features/resenas/
+resenas/
 ├── models/                      # DTOs espejo del backend + DistribucionCalificacion
 ├── services/
 │   └── resena.service.ts        # HTTP + estado global de reseñas (signals)
@@ -195,7 +195,7 @@ npx ng test --watch=false
 La integración con la página del restaurante está aplicada pero **sin commitear**, porque esos
 archivos compartidos tienen trabajo de reservas de otros integrantes también sin commitear:
 
-- `pages/restaurante/restaurante-detail/*`: `<app-restaurante-resenas>`, botón "Ver reseñas" y
+- `restaurantes/pages/restaurante-detail/*`: `<app-restaurante-resenas>`, botón "Ver reseñas" y
   stub del bloque en el spec.
 - `app.routes.ts`: redirect de `resenas/:restauranteId` a `restaurantes/:restauranteId`.
 - `components/header/header.html` y `components/footer/footer.html`: se quitó el link fijo a

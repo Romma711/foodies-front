@@ -46,10 +46,10 @@ No se modificó ningún controlador existente. Todo es nuevo salvo un campo en `
 
 ---
 
-## 3. Frontend (`features/admin`)
+## 3. Frontend (`admin`)
 
 ```
-features/admin/
+admin/
 ├── admin.routes.ts              # Hijas lazy de /admin (dashboard y moderación)
 ├── guards/admin.guard.ts        # Token vigente + claim de rol ADMIN; si no, limpia y va al login con returnUrl
 ├── layout/admin-layout.ts       # Sidebar WOKI, menú mobile, cerrar sesión
