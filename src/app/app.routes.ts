@@ -40,7 +40,7 @@ export const APP_ROUTES: Routes = [
     path: 'mis-reservas',
     title: 'Mis reservas | Foodies',
     loadComponent: () =>
-      import('./features/reservas/pages/mis-reservas/mis-reservas').then(
+      import('./reservas/pages/mis-reservas/mis-reservas').then(
         (module) => module.MisReservas,
       ),
     canMatch: [roleGuard('CLIENTE')],

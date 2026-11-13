@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { enfocarTrasRender } from '../../../../shared/a11y/enfocar';
+import { AuthService } from '../../../core/auth/auth.service';
+import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit-form';
 import { EstadoReserva } from '../../models';
 import { ReservaService } from '../../services/reserva.service';

@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { EspacioPublico } from '../../../restaurantes/models/espacios';
+import { environment } from '../../../environments/environment';
+import { EspacioPublico } from '../../restaurantes/models/espacios';
 
 /** Espacios (salones, patios, barras) donde el cliente puede reservar. Endpoint público. */
 @Service()

@@ -13,9 +13,9 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { apply, form, FormField, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { enfocarTrasRender, PRIMER_CAMPO } from '../../../../shared/a11y/enfocar';
+import { enfocarTrasRender, PRIMER_CAMPO } from '../../../shared/a11y/enfocar';
 import { ReservaDetailDTO } from '../../models';
-import { horariosDelDia } from '../../../../restaurantes/utils/horarios';
+import { horariosDelDia } from '../../../restaurantes/utils/horarios';
 import { EspaciosService } from '../../services/espacios.service';
 import { HorariosService } from '../../services/horarios.service';
 import { ReservaService } from '../../services/reserva.service';

@@ -1,6 +1,6 @@
 import { Component, input, model } from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
-import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../../restaurantes/models/espacios';
+import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../restaurantes/models/espacios';
 
 /**
  * Elección del espacio (salón, patio, barra) de una reserva. Se usa con `[formField]`: el valor es

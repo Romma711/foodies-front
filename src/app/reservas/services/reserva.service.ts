@@ -1,8 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
-import { withRole } from '../../../core/auth/auth-context';
-import { environment } from '../../../../environments/environment';
+import { withRole } from '../../core/auth/auth-context';
+import { environment } from '../../../environments/environment';
 import { ReservaDetailDTO, ReservaListDTO, ReservaPatchDTO, ReservaRequestDTO } from '../models';
 
 interface ApiError {

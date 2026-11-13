@@ -1,21 +1,21 @@
 import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { ReservaForm } from '../../../features/reservas/components/reserva-form/reserva-form';
-import { ReservaDetailDTO } from '../../../features/reservas/models';
+import { ReservaForm } from '../../../reservas/components/reserva-form/reserva-form';
+import { ReservaDetailDTO } from '../../../reservas/models';
 import { RestauranteResenas } from '../../../features/resenas/components/restaurante-resenas/restaurante-resenas';
 import { WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ReservaService } from '../../../features/reservas/services/reserva.service';
+import { ReservaService } from '../../../reservas/services/reserva.service';
 import {
   CartaPublicaDTO,
   FotoPublicaDTO,
   RestauranteDetailDTO,
 } from '../../models/restaurante.models';
 import { RestauranteService } from '../../services/restaurante.service';
-import { HorariosService } from '../../../features/reservas/services/horarios.service';
+import { HorariosService } from '../../../reservas/services/horarios.service';
 import { RestauranteDetail } from './restaurante-detail';
 
 @Component({ selector: 'app-restaurante-resenas', template: '' })
