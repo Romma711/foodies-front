@@ -48,7 +48,7 @@ body {
 }
 
 /*
- * Restaurant panel tokens (pages/restaurante/panel, confirm-dialog, admin-home).
+ * Restaurant panel tokens (pages/restaurante/panel, confirm-dialog).
  * Kept under their own names so they never override the Tailwind @theme tokens above.
  * Contrast checked for WCAG AA: text on --color-bg/--color-surface >= 4.5:1, input borders >= 3:1.
  */
