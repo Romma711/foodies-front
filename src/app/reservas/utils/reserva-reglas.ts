@@ -1,4 +1,5 @@
 import { required, schema, validate } from '@angular/forms/signals';
+import { clave, Traductor, traductorEspanol } from '../../core/i18n/traducir';
 import { EspacioPublico } from '../../restaurantes/models/espacios';
 import {
   diaDeFecha,
@@ -16,8 +17,9 @@ export interface ReservaFormModel {
   cantidad: number;
 }
 
-export const MENSAJE_CERRADO = 'Ese día el restaurante está cerrado. Elegí otra fecha.';
-export const MENSAJE_FUERA_DE_HORARIO = 'Elegí un horario dentro del horario de atención.';
+/** Translation keys of the schedule and capacity rules (validator messages). */
+export const MENSAJE_CERRADO = clave('reserva.regla.cerrado');
+export const MENSAJE_FUERA_DE_HORARIO = clave('reserva.regla.fueraDeHorario');
 
 /** True cuando el restaurante cargó horario y ese día no atiende. */
 export function diaCerrado(franjas: readonly FranjaHoraria[], fecha: string): boolean {
@@ -32,16 +34,16 @@ export function diaCerrado(franjas: readonly FranjaHoraria[], fecha: string): bo
 export function textoHorarioDelDia(
   franjas: readonly FranjaHoraria[],
   fecha: string,
+  t: Traductor = traductorEspanol,
 ): string | null {
   if (franjas.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
     return null;
   }
   const delDia = franjasDelDia(franjas, diaDeFecha(fecha));
-  return delDia.length ? `Ese día atiende de ${textoFranjas(delDia)}.` : null;
+  return delDia.length ? t('reserva.regla.atiende', { franjas: textoFranjas(delDia, t) }) : null;
 }
 
-export const MENSAJE_SIN_LUGAR =
-  'No hay lugar en ese espacio para esa fecha y cantidad. Elegí otro.';
+export const MENSAJE_SIN_LUGAR = clave('reserva.regla.sinLugar');
 
 /** True cuando el espacio elegido ya informó que no hay lugar para la fecha y cantidad pedidas. */
 export function espacioSinLugar(espacios: readonly EspacioPublico[], idEspacio: string): boolean {
@@ -74,8 +76,8 @@ export function fechaLocal(diasDesdeHoy: number): string {
 
 /** Validation shared by the create and modify forms; the server checks capacity. */
 export const reglasReserva = schema<ReservaFormModel>((path) => {
-  required(path.idEspacio, { message: 'Elegí un espacio.' });
-  required(path.fechaReserva, { message: 'Elegí una fecha.' });
+  required(path.idEspacio, { message: clave('reserva.regla.espacio') });
+  required(path.fechaReserva, { message: clave('reserva.regla.fecha') });
   validate(path.fechaReserva, ({ value }) => {
     const fecha = value();
     if (!fecha) {
@@ -83,32 +85,32 @@ export const reglasReserva = schema<ReservaFormModel>((path) => {
     }
     const seleccionada = new Date(`${fecha}T00:00:00`);
     if (Number.isNaN(seleccionada.getTime())) {
-      return { kind: 'fechaInvalida', message: 'Elegí una fecha válida.' };
+      return { kind: 'fechaInvalida', message: clave('reserva.regla.fechaInvalida') };
     }
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     if (seleccionada < hoy) {
-      return { kind: 'fechaPasada', message: 'La fecha no puede ser anterior a hoy.' };
+      return { kind: 'fechaPasada', message: clave('reserva.regla.fechaPasada') };
     }
     const limite = new Date(hoy);
     limite.setMonth(limite.getMonth() + 3);
     if (seleccionada > limite) {
       return {
         kind: 'fechaLimite',
-        message: 'Solo podés reservar hasta 3 meses adelante.',
+        message: clave('reserva.regla.fechaLimite'),
       };
     }
     return null;
   });
-  required(path.horarioLlegada, { message: 'Elegí un horario.' });
-  required(path.cantidad, { message: 'Indicá cuántas personas.' });
+  required(path.horarioLlegada, { message: clave('reserva.regla.horario') });
+  required(path.cantidad, { message: clave('reserva.regla.cantidad') });
   validate(path.cantidad, ({ value }) => {
     const cantidad = value();
     if (cantidad === null || cantidad === undefined) {
       return null;
     }
     if (cantidad < 1) {
-      return { kind: 'min', message: 'Reservá al menos para 1 persona.' };
+      return { kind: 'min', message: clave('reserva.regla.cantidadMinima') };
     }
     return null;
   });

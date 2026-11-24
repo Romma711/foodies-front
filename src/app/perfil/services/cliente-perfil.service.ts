@@ -4,6 +4,8 @@ import { Observable, catchError, finalize, of, tap, throwError } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
 import { AuthService } from '../../core/auth/auth.service';
 import { environment } from '../../../environments/environment';
+import { I18n } from '@core/i18n/i18n.service';
+import { Clave, Mensaje } from '@core/i18n/traducir';
 
 /** `UsuarioDetailDTO` del cliente que inició sesión. */
 export interface ClientePerfil {
@@ -20,11 +22,12 @@ export interface ClientePerfil {
 export class ClientePerfilService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly i18n = inject(I18n);
   private readonly apiUrl = `${environment.apiUrl}/clientes`;
 
   private readonly _perfil = signal<ClientePerfil | null>(null);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   readonly perfil = this._perfil.asReadonly();
   readonly cargando = this._cargando.asReadonly();
@@ -32,7 +35,10 @@ export class ClientePerfilService {
 
   /** El nombre de pila si lo cargó; si no, el email de la sesión. */
   readonly nombreVisible = computed(
-    () => this._perfil()?.nombre?.trim() || this.auth.subject('CLIENTE') || 'Mi cuenta',
+    () =>
+      this._perfil()?.nombre?.trim() ||
+      this.auth.subject('CLIENTE') ||
+      this.i18n.t('perfil.miCuenta'),
   );
 
   readonly nombreCompleto = computed(() => {
@@ -71,13 +77,13 @@ export class ClientePerfilService {
     this._error.set(null);
   }
 
-  private mensajeError(error: unknown): string {
+  private mensajeError(error: unknown): Mensaje {
     const status = error instanceof HttpErrorResponse ? error.status : -1;
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      401: 'Tu sesión venció. Iniciá sesión nuevamente.',
-      404: 'No encontramos tu cuenta.',
+    const mensajes: Record<number, Clave> = {
+      0: 'comun.errorConexion',
+      401: 'perfil.error.sesion',
+      404: 'perfil.error.noEncontrada',
     };
-    return mensajes[status] ?? 'No pudimos cargar tu perfil.';
+    return { clave: mensajes[status] ?? 'perfil.error.cargar' };
   }
 }

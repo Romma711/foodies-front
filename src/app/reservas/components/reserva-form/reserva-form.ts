@@ -33,9 +33,12 @@ import {
   reglasReserva,
 } from '../../utils/reserva-reglas';
 import { EspacioSelector } from '../espacio-selector/espacio-selector';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { Traductor } from '@core/i18n/traducir';
 
 @Component({
-  imports: [EspacioSelector, FormField],
+  imports: [TClavePipe, TPipe, EspacioSelector, FormField],
   selector: 'app-reserva-form',
   templateUrl: './reserva-form.html',
 })
@@ -73,6 +76,8 @@ export class ReservaForm {
 
   protected readonly saving = this.reservaService.saving;
   protected readonly mutationError = this.reservaService.mutationError;
+  private readonly i18n = inject(I18n);
+  private readonly t: Traductor = (clave, parametros) => this.i18n.t(clave, parametros);
 
   private readonly model = signal<ReservaFormModel>({
     idEspacio: '',
@@ -97,7 +102,7 @@ export class ReservaForm {
   );
 
   protected readonly horarioDelDia = computed(() =>
-    textoHorarioDelDia(this.franjas(), this.model().fechaReserva),
+    textoHorarioDelDia(this.franjas(), this.model().fechaReserva, this.t),
   );
 
   /** Espacios del restaurante y si hay lugar en cada uno para la fecha y cantidad elegidas. */

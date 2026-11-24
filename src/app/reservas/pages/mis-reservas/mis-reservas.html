@@ -11,10 +11,10 @@
       <header class="max-w-xl">
         <p class="text-xs font-bold tracking-[0.22em] text-brand-700 uppercase">Foodies</p>
         <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
-          Mis reservas
+          {{ 'misReservas.titulo' | t }}
         </h1>
         <p class="mt-3 text-base leading-7 text-ink-500 sm:text-lg">
-          Seguí el estado de tus mesas y gestioná tus reservas en un solo lugar.
+          {{ 'misReservas.bajada' | t }}
         </p>
       </header>
 
@@ -22,7 +22,7 @@
         routerLink="/restaurantes"
         class="inline-flex shrink-0 items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
       >
-        Hacer otra reserva
+        {{ 'detalle.otraReserva' | t }}
       </a>
     </div>
 
@@ -32,19 +32,28 @@
           class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 font-semibold text-ink-700 ring-1 ring-line"
         >
           <span class="size-1.5 rounded-full bg-ink-400" aria-hidden="true"></span>
-          {{ reservas().length }} {{ reservas().length === 1 ? 'reserva' : 'reservas' }}
+          {{
+            (reservas().length === 1 ? 'misReservas.contadorUna' : 'misReservas.contadorVarias')
+              | t: { n: reservas().length }
+          }}
         </span>
         <span
           class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 font-semibold text-amber-800 ring-1 ring-amber-200"
         >
           <span class="size-1.5 rounded-full bg-amber-500" aria-hidden="true"></span>
-          {{ pendientes() }} {{ pendientes() === 1 ? 'pendiente' : 'pendientes' }}
+          {{
+            (pendientes() === 1 ? 'misReservas.pendienteUna' : 'misReservas.pendienteVarias')
+              | t: { n: pendientes() }
+          }}
         </span>
         <span
           class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-800 ring-1 ring-emerald-200"
         >
           <span class="size-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
-          {{ confirmadas() }} {{ confirmadas() === 1 ? 'confirmada' : 'confirmadas' }}
+          {{
+            (confirmadas() === 1 ? 'misReservas.confirmadaUna' : 'misReservas.confirmadaVarias')
+              | t: { n: confirmadas() }
+          }}
         </span>
       </div>
     }
@@ -55,7 +64,7 @@
           class="mt-6 rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900"
           data-testid="aviso-modificacion"
         >
-          {{ aviso }}
+          {{ aviso | t }}
         </p>
       }
     </div>
@@ -66,7 +75,7 @@
         role="alert"
         class="mt-6 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-800"
       >
-        {{ message }}
+        {{ message | t }}
       </div>
     }
 
@@ -80,21 +89,21 @@
           class="size-10 animate-spin rounded-full border-2 border-brand-100 border-t-brand-500"
           aria-hidden="true"
         ></span>
-        <p class="mt-4 text-sm font-medium text-ink-500">Cargando tus reservas…</p>
+        <p class="mt-4 text-sm font-medium text-ink-500">{{ 'misReservas.cargando' | t }}</p>
       </div>
     } @else if (error()) {
       <div
         class="mt-8 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
         role="alert"
       >
-        <h2 class="text-lg font-bold text-ink-900">No pudimos cargar tus reservas</h2>
-        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error() }}</p>
+        <h2 class="text-lg font-bold text-ink-900">{{ 'misReservas.errorTitulo' | t }}</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error()! | t }}</p>
         <button
           type="button"
           class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
           (click)="recargar()"
         >
-          Reintentar
+          {{ 'comun.reintentar' | t }}
         </button>
       </div>
     } @else if (reservas().length === 0) {
@@ -119,15 +128,15 @@
             <path d="m9 16 2 2 4-4" />
           </svg>
         </span>
-        <h2 class="mt-5 text-lg font-bold text-ink-900">Todavía no tenés reservas</h2>
+        <h2 class="mt-5 text-lg font-bold text-ink-900">{{ 'misReservas.vacioTitulo' | t }}</h2>
         <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-          Elegí un restaurante y reservá tu próxima mesa. Tus reservas van a aparecer acá.
+          {{ 'misReservas.vacioTexto' | t }}
         </p>
         <a
           routerLink="/restaurantes"
           class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
         >
-          Ver restaurantes
+          {{ 'detalle.verRestaurantes' | t }}
         </a>
       </div>
     } @else {
@@ -137,38 +146,46 @@
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">
-                  Reserva #{{ reserva.id }}
+                  {{ 'misReservas.numero' | t: { id: reserva.id } }}
                 </p>
                 <h2 class="mt-1 truncate text-lg font-extrabold tracking-tight text-ink-900">
                   {{ reserva.nombreResto }}
                 </h2>
               </div>
               <span [class]="estadoClases(reserva.estadoReserva)">
-                {{ estadoLabel(reserva.estadoReserva) }}
+                {{ estadoLabel(reserva.estadoReserva) | t }}
               </span>
             </div>
 
             <dl class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
-                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Fecha</dt>
+                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'reserva.fecha' | t }}
+                </dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">
                   {{ formatearFecha(reserva.fechaReserva) }}
                 </dd>
               </div>
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
-                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Hora</dt>
+                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'reserva.horario' | t }}
+                </dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">
-                  {{ formatearHora(reserva.horariollegada) }} hs
+                  {{ 'reserva.horaHs' | t: { hora: formatearHora(reserva.horariollegada) } }}
                 </dd>
               </div>
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
-                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Personas</dt>
+                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'reserva.personasEtiqueta' | t }}
+                </dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">{{ reserva.cantidad }}</dd>
               </div>
               <div class="rounded-xl bg-cream-50/80 p-3 ring-1 ring-line/50">
-                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">Espacio</dt>
+                <dt class="text-xs font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'reserva.espacio' | t }}
+                </dt>
                 <dd class="mt-1 text-sm font-semibold text-ink-900">
-                  {{ reserva.espacioNombre ?? 'Sin asignar' }}
+                  {{ reserva.espacioNombre ?? ('misReservas.sinAsignar' | t) }}
                 </dd>
               </div>
             </dl>
@@ -187,9 +204,11 @@
                       <div
                         class="flex flex-col gap-3 rounded-xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
                         role="group"
-                        aria-label="Confirmar cancelación de la reserva"
+                        [attr.aria-label]="'misReservas.confirmarCancelacion' | t"
                       >
-                        <p class="text-sm font-medium text-amber-900">¿Cancelar esta reserva?</p>
+                        <p class="text-sm font-medium text-amber-900">
+                          {{ 'misReservas.preguntaCancelar' | t }}
+                        </p>
                         <div class="flex flex-wrap gap-2">
                           <button
                             type="button"
@@ -197,7 +216,7 @@
                             class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
                             (click)="cerrarCancelacion()"
                           >
-                            No, mantenerla
+                            {{ 'misReservas.mantener' | t }}
                           </button>
                           <button
                             type="button"
@@ -211,30 +230,31 @@
                                 aria-hidden="true"
                               ></span>
                             }
-                            Sí, cancelar
+                            {{ 'misReservas.siCancelar' | t }}
                           </button>
                         </div>
                       </div>
                     } @else {
                       <div class="flex flex-wrap items-center justify-between gap-3">
                         <p class="text-sm leading-6 text-ink-500">
-                          Esperando la confirmación del restaurante.
+                          {{ 'misReservas.esperando' | t }}
                         </p>
                         <div class="flex flex-wrap gap-2">
                           <button
                             type="button"
                             class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                            [attr.aria-label]="'Modificar la reserva #' + reserva.id"
+                            [attr.aria-label]="'reserva.modificarN' | t: { id: reserva.id }"
+                            [attr.data-modificar]="reserva.id"
                             (click)="iniciarEdicion(reserva.id)"
                           >
-                            Modificar
+                            {{ 'misReservas.modificar' | t }}
                           </button>
                           <button
                             type="button"
                             class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
                             (click)="iniciarCancelacion(reserva.id)"
                           >
-                            Cancelar reserva
+                            {{ 'misReservas.cancelarReserva' | t }}
                           </button>
                         </div>
                       </div>
@@ -245,15 +265,16 @@
                       <p
                         class="rounded-xl bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900 ring-1 ring-emerald-100"
                       >
-                        El restaurante confirmó tu reserva. ¡Te esperamos!
+                        {{ 'misReservas.confirmo' | t }}
                       </p>
                       <button
                         type="button"
                         class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                        [attr.aria-label]="'Modificar la reserva #' + reserva.id"
+                        [attr.aria-label]="'reserva.modificarN' | t: { id: reserva.id }"
+                        [attr.data-modificar]="reserva.id"
                         (click)="iniciarEdicion(reserva.id)"
                       >
-                        Modificar
+                        {{ 'misReservas.modificar' | t }}
                       </button>
                     </div>
                   }
@@ -261,7 +282,7 @@
                     <p
                       class="rounded-xl bg-cream-100/80 px-4 py-3 text-sm font-medium text-ink-600 ring-1 ring-line/60"
                     >
-                      Esta reserva fue cancelada.
+                      {{ 'misReservas.cancelada' | t }}
                     </p>
                   }
                 }

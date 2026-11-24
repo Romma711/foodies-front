@@ -1,9 +1,10 @@
+import { Clave } from '../../core/i18n/traducir';
 import { EstadoReserva } from '../models';
 
-const ESTADO_LABELS: Record<EstadoReserva, string> = {
-  PENDIENTE: 'Pendiente',
-  ACEPTADA: 'Confirmada',
-  CANCELADA: 'Cancelada',
+const ESTADO_LABELS: Record<EstadoReserva, Clave> = {
+  PENDIENTE: 'reserva.estado.PENDIENTE',
+  ACEPTADA: 'reserva.estado.ACEPTADA',
+  CANCELADA: 'reserva.estado.CANCELADA',
 };
 
 export function formatearFechaReserva(value: string, locale = 'es-AR'): string {
@@ -24,6 +25,7 @@ export function formatearHora(value: string): string {
   return value.slice(0, 5);
 }
 
-export function estadoLabel(estado: EstadoReserva): string {
+/** Translation key of a reservation status. */
+export function estadoLabel(estado: EstadoReserva): Clave {
   return ESTADO_LABELS[estado];
 }

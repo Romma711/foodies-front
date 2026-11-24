@@ -1,23 +1,23 @@
 import { Component, input, model } from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../restaurantes/models/espacios';
-import { TPipe } from '@core/i18n/t.pipe';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
 
 /**
  * Elección del espacio (salón, patio, barra) de una reserva. Se usa con `[formField]`: el valor es
  * el id del espacio como texto. No muestra capacidades, solo si hay lugar para la fecha y cantidad.
  */
 @Component({
-  imports: [TPipe],
+  imports: [TClavePipe, TPipe],
   selector: 'app-espacio-selector',
   template: `
     <fieldset [attr.aria-describedby]="errors().length && touched() ? idBase() + '-error' : null">
-      <legend class="text-sm font-bold text-ink-900">Espacio</legend>
+      <legend class="text-sm font-bold text-ink-900">{{ 'reserva.espacio' | t }}</legend>
       @if (cargando()) {
-        <p class="mt-2 text-sm text-ink-500" role="status">Buscando espacios…</p>
+        <p class="mt-2 text-sm text-ink-500" role="status">{{ 'reserva.espacio.buscando' | t }}</p>
       } @else if (espacios().length === 0) {
         <p class="mt-2 text-sm text-ink-500">
-          Este restaurante todavía no tiene espacios para reservar.
+          {{ 'reserva.espacio.ninguno' | t }}
         </p>
       } @else {
         <div class="mt-2 grid gap-2 sm:grid-cols-2">
@@ -41,7 +41,7 @@ import { TPipe } from '@core/i18n/t.pipe';
                 <span class="text-xs text-ink-500">
                   {{ tipos[espacio.tipo] | t }}
                   @if (espacio.hayLugar === false) {
-                    · Sin lugar para esa fecha y cantidad
+                    {{ 'reserva.espacio.sinLugar' | t }}
                   }
                 </span>
               </span>
@@ -51,7 +51,7 @@ import { TPipe } from '@core/i18n/t.pipe';
       }
       @if (touched() && errors()[0]; as error) {
         <p [id]="idBase() + '-error'" class="mt-1.5 text-xs font-medium text-red-700">
-          {{ error.message }}
+          {{ error.message | tClave }}
         </p>
       }
     </fieldset>

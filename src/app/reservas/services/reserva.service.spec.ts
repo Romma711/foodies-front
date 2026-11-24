@@ -108,7 +108,7 @@ describe('ReservaService.modificar', () => {
       );
 
     await expect(resultado).rejects.toBeTruthy();
-    expect(service.mutationError()).toBe('No hay cupo disponible para esa fecha.');
+    expect(service.mutationError()).toEqual({ texto: 'No hay cupo disponible para esa fecha.' });
     expect(service.reservas()).toEqual([aceptada, otra]);
   });
 });

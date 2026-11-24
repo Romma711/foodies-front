@@ -33,6 +33,9 @@ import {
   reglasReserva,
 } from '../../utils/reserva-reglas';
 import { EspacioSelector } from '../espacio-selector/espacio-selector';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { Traductor } from '@core/i18n/traducir';
 
 /** `yyyy-MM-dd` part of the date the API returns (ISO date or date-time). */
 function soloFecha(value: string): string {
@@ -41,7 +44,7 @@ function soloFecha(value: string): string {
 
 /** Lets the owner change date, arrival time, party size and espacio of a PENDIENTE or ACEPTADA reservation. */
 @Component({
-  imports: [EspacioSelector, FormField],
+  imports: [TClavePipe, TPipe, EspacioSelector, FormField],
   selector: 'app-reserva-edit-form',
   templateUrl: './reserva-edit-form.html',
 })
@@ -78,6 +81,8 @@ export class ReservaEditForm {
 
   protected readonly saving = this.reservaService.saving;
   protected readonly mutationError = this.reservaService.mutationError;
+  private readonly i18n = inject(I18n);
+  private readonly t: Traductor = (clave, parametros) => this.i18n.t(clave, parametros);
 
   /** The offered times, plus the current one when it is outside the usual grid. */
   private readonly grilla = computed(() => {
@@ -108,7 +113,7 @@ export class ReservaEditForm {
   );
 
   protected readonly horarioDelDia = computed(() =>
-    textoHorarioDelDia(this.franjas(), this.model().fechaReserva),
+    textoHorarioDelDia(this.franjas(), this.model().fechaReserva, this.t),
   );
 
   /** Espacios del restaurante y si hay lugar en cada uno para la fecha y cantidad elegidas. */

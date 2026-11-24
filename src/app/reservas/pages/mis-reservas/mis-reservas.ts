@@ -9,20 +9,24 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { Mensaje } from '@core/i18n/traducir';
 import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit-form';
 import { EstadoReserva } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
 import { estadoLabel, formatearFechaReserva, formatearHora } from '../../utils/reserva-formato';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 @Component({
-  imports: [RouterLink, ReservaEditForm],
+  imports: [TPipe, RouterLink, ReservaEditForm],
   selector: 'app-mis-reservas',
   templateUrl: './mis-reservas.html',
 })
 export class MisReservas {
   private readonly auth = inject(AuthService);
+  private readonly i18n = inject(I18n);
   private readonly reservaService = inject(ReservaService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
@@ -37,7 +41,7 @@ export class MisReservas {
   /** Reservation whose edit form is open; only one at a time. */
   protected readonly editandoId = signal<number | null>(null);
   /** Confirmation announced after a reservation change is saved. */
-  protected readonly avisoModificacion = signal<string | null>(null);
+  protected readonly avisoModificacion = signal<Mensaje | null>(null);
 
   protected readonly pendientes = computed(
     () => this.reservas().filter((reserva) => reserva.estadoReserva === 'PENDIENTE').length,
@@ -47,7 +51,9 @@ export class MisReservas {
   );
 
   protected readonly estadoLabel = estadoLabel;
-  protected readonly formatearFecha = formatearFechaReserva;
+  protected formatearFecha(valor: string): string {
+    return formatearFechaReserva(valor, this.i18n.locale());
+  }
   protected readonly formatearHora = formatearHora;
 
   constructor() {
@@ -85,13 +91,13 @@ export class MisReservas {
     const id = this.editandoId();
     this.cerrarEdicion();
     if (id !== null) {
-      this.avisoModificacion.set(`Guardamos los cambios de la reserva #${id}.`);
+      this.avisoModificacion.set({ clave: 'misReservas.guardamos', parametros: { id } });
     }
   }
 
   /** The edit form disappears on close, so focus returns to the button that opened it. */
   private enfocarModificar(id: number): void {
-    enfocarTrasRender(this.host, `button[aria-label="Modificar la reserva #${id}"]`, this.injector);
+    enfocarTrasRender(this.host, `button[data-modificar="${id}"]`, this.injector);
   }
 
   protected cerrarCancelacion(): void {
