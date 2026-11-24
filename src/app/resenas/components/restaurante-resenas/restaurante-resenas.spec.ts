@@ -9,6 +9,8 @@ import { BAR_CHART_FACTORY } from '../../../shared/charts/bar-chart-factory';
 import { ResenaForm } from '../resena-form/resena-form';
 import { ResenaDetailDTO, ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
+import { ReservaService } from '../../../reservas/services/reserva.service';
+import { ReservaListDTO } from '../../../reservas/models';
 import { RestauranteResenas } from './restaurante-resenas';
 
 describe('RestauranteResenas', () => {
@@ -47,6 +49,20 @@ describe('RestauranteResenas', () => {
   let crear: ReturnType<typeof vi.fn>;
   let misResenaIds: WritableSignal<ReadonlySet<number>>;
   let cargarMisResenas: ReturnType<typeof vi.fn>;
+  let reservasCliente: WritableSignal<ReservaListDTO[]>;
+  let listarReservas: ReturnType<typeof vi.fn>;
+  const asistida: ReservaListDTO = {
+    id: 40,
+    cantidad: 2,
+    fechaReserva: '2026-11-20',
+    horariollegada: '21:00:00',
+    estadoReserva: 'ASISTIO',
+    nombreResto: 'Ochiwan',
+    idRestaurant: 5,
+    idEspacio: 3,
+    espacioNombre: 'Salón',
+    idTurno: null,
+  };
 
   beforeEach(async () => {
     resenas = signal(mock);
@@ -61,6 +77,8 @@ describe('RestauranteResenas', () => {
     crear = vi.fn(() => of(detalle));
     misResenaIds = signal<ReadonlySet<number>>(new Set());
     cargarMisResenas = vi.fn(() => of(new Set<number>()));
+    reservasCliente = signal<ReservaListDTO[]>([asistida]);
+    listarReservas = vi.fn(() => of(reservasCliente()));
 
     await TestBed.configureTestingModule({
       imports: [RestauranteResenas],
@@ -98,6 +116,14 @@ describe('RestauranteResenas', () => {
             misResenaIds: misResenaIds.asReadonly(),
             cargarMisResenas,
             eliminar,
+          },
+        },
+        {
+          provide: ReservaService,
+          useValue: {
+            reservas: reservasCliente.asReadonly(),
+            loading: signal(false),
+            listarPorUsuario: listarReservas,
           },
         },
         {
@@ -204,6 +230,38 @@ describe('RestauranteResenas', () => {
 
     expect(texto).toContain('Iniciá sesión como cliente');
     expect(fixture.nativeElement.querySelector('app-resena-form')).toBeNull();
+  });
+
+  describe('reseña verificada (regla D12)', () => {
+    it('carga las reservas del cliente para saber si asistió', () => {
+      autenticado.set(true);
+      crearComponente('5');
+
+      expect(listarReservas).toHaveBeenCalledWith(3);
+    });
+
+    it('sin una reserva con asistencia en ese restaurante explica por qué no puede reseñar', () => {
+      autenticado.set(true);
+      reservasCliente.set([
+        { ...asistida, estadoReserva: 'ACEPTADA' },
+        { ...asistida, id: 41, idRestaurant: 9 },
+      ]);
+      const fixture = crearComponente('5');
+      const host = fixture.nativeElement as HTMLElement;
+
+      expect(host.querySelector('[data-testid="resena-sin-asistencia"]')?.textContent).toContain(
+        'el restaurante marque que asististe',
+      );
+      expect(host.textContent).not.toContain('Escribir reseña');
+    });
+
+    it('con una reserva marcada como asistida ofrece escribir la reseña', () => {
+      autenticado.set(true);
+      const host = crearComponente('5').nativeElement as HTMLElement;
+
+      expect(host.querySelector('[data-testid="resena-sin-asistencia"]')).toBeNull();
+      expect(host.textContent).toContain('Escribir reseña');
+    });
   });
 
   it('debería permitir abrir el formulario a un cliente autenticado', () => {

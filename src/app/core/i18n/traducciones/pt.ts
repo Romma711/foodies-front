@@ -363,6 +363,17 @@ export const PT: Traducciones = {
   'perfil.resenasTexto': 'O que você achou dos restaurantes que visitou.',
   'perfil.reservasTexto': 'O status das suas mesas reservadas.',
   'perfil.cargando': 'Carregando seu perfil…',
+  'perfil.baja.titulo': 'Encerrar minha conta',
+  'perfil.baja.texto': 'Se você não quiser mais usar o Foodies, pode encerrar sua conta.',
+  'perfil.baja.boton': 'Encerrar minha conta',
+  'perfil.baja.confirmarAria': 'Confirmar o encerramento da conta',
+  'perfil.baja.pregunta': 'Tem certeza de que quer encerrar sua conta?',
+  'perfil.baja.consecuencias':
+    'Vamos cancelar todas as suas reservas futuras e avisar os restaurantes. Sua sessão será encerrada e você não poderá mais entrar com esta conta.',
+  'perfil.baja.mantener': 'Não, manter minha conta',
+  'perfil.baja.confirmar': 'Sim, encerrar',
+  'perfil.baja.procesando': 'Encerrando…',
+  'perfil.baja.error': 'Não conseguimos encerrar sua conta. Tente novamente.',
   // Reviews
   'resena.estrellaUna': '{n} estrela',
   'resena.estrellaVarias': '{n} estrelas',
@@ -411,6 +422,9 @@ export const PT: Traducciones = {
   'resena.lista.escribirAria': 'Escrever uma avaliação',
   'resena.lista.yaComiste': 'Já comeu aqui?',
   'resena.lista.compartiAyuda': 'Compartilhe sua experiência e ajude outros foodies a escolher.',
+  'resena.lista.sinAsistenciaTitulo': 'Avaliações de quem foi',
+  'resena.lista.sinAsistencia':
+    'Você poderá avaliar este restaurante depois de visitá-lo com uma reserva e o restaurante marcar que você compareceu.',
   'resena.lista.escribir': 'Escrever avaliação',
   'resena.lista.comparti': 'Compartilhe sua experiência',
   'resena.lista.iniciaComoCliente': 'Entre como cliente para deixar sua avaliação.',

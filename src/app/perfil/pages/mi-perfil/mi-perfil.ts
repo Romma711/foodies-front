@@ -1,6 +1,8 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { backendMessage, isConnectionError } from '../../../core/http/api-error';
+import { Mensaje } from '@core/i18n/traducir';
 import { ClientePerfilService } from '../../services/cliente-perfil.service';
 import { TPipe } from '@core/i18n/t.pipe';
 
@@ -100,6 +102,61 @@ import { TPipe } from '@core/i18n/t.pipe';
               </span>
             </a>
           </nav>
+
+          <section
+            class="mt-10 rounded-2xl border border-red-100 bg-white/90 p-6 shadow-card"
+            aria-labelledby="baja-titulo"
+          >
+            <h2 id="baja-titulo" class="text-lg font-extrabold tracking-tight text-ink-900">
+              {{ 'perfil.baja.titulo' | t }}
+            </h2>
+            <p class="mt-1 text-sm leading-6 text-ink-500">{{ 'perfil.baja.texto' | t }}</p>
+            @if (errorBaja(); as mensaje) {
+              <p
+                role="alert"
+                class="mt-4 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-800"
+              >
+                {{ mensaje | t }}
+              </p>
+            }
+            @if (confirmandoBaja()) {
+              <div
+                class="mt-4 flex flex-col gap-3 rounded-xl border border-red-100 bg-red-50/60 p-4"
+                role="group"
+                [attr.aria-label]="'perfil.baja.confirmarAria' | t"
+                data-testid="confirmar-baja"
+              >
+                <p class="text-sm font-semibold text-red-900">{{ 'perfil.baja.pregunta' | t }}</p>
+                <p class="text-sm leading-6 text-red-900">{{ 'perfil.baja.consecuencias' | t }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    [disabled]="dandoDeBaja()"
+                    class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-red-900 ring-1 ring-red-200 transition hover:bg-red-100 disabled:opacity-60"
+                    (click)="confirmandoBaja.set(false)"
+                  >
+                    {{ 'perfil.baja.mantener' | t }}
+                  </button>
+                  <button
+                    type="button"
+                    [disabled]="dandoDeBaja()"
+                    class="inline-flex items-center justify-center rounded-full bg-red-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-900 disabled:cursor-progress disabled:opacity-60"
+                    (click)="darDeBaja()"
+                  >
+                    {{ (dandoDeBaja() ? 'perfil.baja.procesando' : 'perfil.baja.confirmar') | t }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <button
+                type="button"
+                class="mt-4 inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-red-800 ring-1 ring-red-200 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                (click)="iniciarBaja()"
+              >
+                {{ 'perfil.baja.boton' | t }}
+              </button>
+            }
+          </section>
         } @else if (cargando()) {
           <p class="mt-8 text-sm font-medium text-ink-500" role="status">
             {{ 'perfil.cargando' | t }}
@@ -126,6 +183,12 @@ import { TPipe } from '@core/i18n/t.pipe';
 export class MiPerfil {
   private readonly perfilService = inject(ClientePerfilService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+
+  /** In-page confirmation step of the account deactivation (no window.confirm). */
+  protected readonly confirmandoBaja = signal(false);
+  protected readonly dandoDeBaja = signal(false);
+  protected readonly errorBaja = signal<Mensaje | null>(null);
 
   protected readonly perfil = this.perfilService.perfil;
   protected readonly cargando = this.perfilService.cargando;
@@ -139,6 +202,34 @@ export class MiPerfil {
 
   protected inicial(): string {
     return this.nombreCompleto().trim().charAt(0).toUpperCase() || 'F';
+  }
+
+  protected iniciarBaja(): void {
+    this.errorBaja.set(null);
+    this.confirmandoBaja.set(true);
+  }
+
+  protected darDeBaja(): void {
+    this.dandoDeBaja.set(true);
+    this.errorBaja.set(null);
+    this.perfilService
+      .darDeBaja()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.dandoDeBaja.set(false);
+          void this.router.navigateByUrl('/');
+        },
+        error: (error: unknown) => {
+          this.dandoDeBaja.set(false);
+          const texto = backendMessage(error);
+          this.errorBaja.set(
+            texto
+              ? { texto }
+              : { clave: isConnectionError(error) ? 'comun.errorConexion' : 'perfil.baja.error' },
+          );
+        },
+      });
   }
 
   protected recargar(): void {

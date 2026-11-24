@@ -54,6 +54,20 @@
             (creada)="alCrear($event)"
             (cancelada)="cerrarFormulario()"
           />
+        } @else if (!yaReseno() && !asistio()) {
+          @if (!cargandoReservas()) {
+            <div
+              class="rounded-2xl border border-line/70 bg-white/85 p-5 shadow-card"
+              data-testid="resena-sin-asistencia"
+            >
+              <h3 class="text-base font-bold text-ink-900">
+                {{ 'resena.lista.sinAsistenciaTitulo' | t }}
+              </h3>
+              <p class="mt-0.5 text-sm leading-6 text-ink-500">
+                {{ 'resena.lista.sinAsistencia' | t }}
+              </p>
+            </div>
+          }
         } @else if (!yaReseno()) {
           <div
             class="flex flex-col gap-4 rounded-2xl border border-line/70 bg-white/85 p-5 shadow-card sm:flex-row sm:items-center sm:justify-between"

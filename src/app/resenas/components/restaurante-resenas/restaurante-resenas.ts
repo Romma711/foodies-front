@@ -15,6 +15,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ResenaDetailDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
+import { ReservaService } from '../../../reservas/services/reserva.service';
 import { OPCIONES_ORDEN, OrdenResenas, filtrarYOrdenar } from '../../utils/ordenar-resenas';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { RatingDistribution } from '../rating-distribution/rating-distribution';
@@ -34,6 +35,7 @@ import { I18n } from '@core/i18n/i18n.service';
 })
 export class RestauranteResenas {
   private readonly resenaService = inject(ResenaService);
+  private readonly reservaService = inject(ReservaService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toasts = inject(ToastService);
@@ -66,6 +68,17 @@ export class RestauranteResenas {
   protected readonly chipActivo = 'bg-ink-900 text-white ring-ink-900';
   protected readonly chipInactivo = 'bg-white text-ink-700 ring-line hover:bg-cream-100';
 
+  /**
+   * Rule D12: only a client with an attended (ASISTIO) reservation at this restaurant can review
+   * it. The server enforces it too (403).
+   */
+  readonly asistio = computed(() =>
+    this.reservaService
+      .reservas()
+      .some((r) => r.idRestaurant === this.restauranteId() && r.estadoReserva === 'ASISTIO'),
+  );
+  readonly cargandoReservas = this.reservaService.loading;
+
   readonly yaReseno = computed(() =>
     this.resenas().some((resena) => this.misResenaIds().has(resena.id)),
   );
@@ -94,6 +107,10 @@ export class RestauranteResenas {
           .cargarMisResenas(usuarioId)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe();
+        this.reservaService
+          .listarPorUsuario(usuarioId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({ error: () => undefined });
       }
     });
   }

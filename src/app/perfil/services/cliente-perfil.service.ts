@@ -71,6 +71,25 @@ export class ClientePerfilService {
       );
   }
 
+  /**
+   * Da de baja la cuenta del cliente (baja lógica, regla D7): el servidor cancela sus reservas
+   * futuras y avisa a los restaurantes. Al terminar cierra la sesión del cliente.
+   */
+  darDeBaja(): Observable<void> {
+    const usuarioId = this.auth.userId('CLIENTE');
+    if (usuarioId === null) {
+      return throwError(() => new Error('Sin sesión de cliente'));
+    }
+    return this.http
+      .delete<void>(`${this.apiUrl}/${usuarioId}`, { context: withRole('CLIENTE') })
+      .pipe(
+        tap(() => {
+          this.limpiar();
+          this.auth.logout('CLIENTE');
+        }),
+      );
+  }
+
   /** Al cerrar sesión: que el próximo cliente no vea los datos del anterior. */
   limpiar(): void {
     this._perfil.set(null);

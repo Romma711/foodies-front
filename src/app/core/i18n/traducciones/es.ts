@@ -361,6 +361,17 @@ export const ES = {
   'perfil.resenasTexto': 'Lo que opinaste de los restaurantes que visitaste.',
   'perfil.reservasTexto': 'El estado de tus mesas reservadas.',
   'perfil.cargando': 'Cargando tu perfil…',
+  'perfil.baja.titulo': 'Dar de baja mi cuenta',
+  'perfil.baja.texto': 'Si ya no querés usar Foodies, podés dar de baja tu cuenta.',
+  'perfil.baja.boton': 'Dar de baja mi cuenta',
+  'perfil.baja.confirmarAria': 'Confirmar la baja de la cuenta',
+  'perfil.baja.pregunta': '¿Seguro que querés dar de baja tu cuenta?',
+  'perfil.baja.consecuencias':
+    'Vamos a cancelar todas tus reservas futuras y avisarles a los restaurantes. Se cierra tu sesión y ya no vas a poder ingresar con esta cuenta.',
+  'perfil.baja.mantener': 'No, mantener mi cuenta',
+  'perfil.baja.confirmar': 'Sí, dar de baja',
+  'perfil.baja.procesando': 'Dando de baja…',
+  'perfil.baja.error': 'No pudimos dar de baja tu cuenta. Intentá de nuevo.',
   // Reviews
   'resena.estrellaUna': '{n} estrella',
   'resena.estrellaVarias': '{n} estrellas',
@@ -409,6 +420,9 @@ export const ES = {
   'resena.lista.escribirAria': 'Escribir una reseña',
   'resena.lista.yaComiste': '¿Ya comiste acá?',
   'resena.lista.compartiAyuda': 'Compartí tu experiencia y ayudá a otros foodies a elegir.',
+  'resena.lista.sinAsistenciaTitulo': 'Reseñas de quienes fueron',
+  'resena.lista.sinAsistencia':
+    'Vas a poder dejar tu reseña cuando visites este restaurante con una reserva y el restaurante marque que asististe.',
   'resena.lista.escribir': 'Escribir reseña',
   'resena.lista.comparti': 'Compartí tu experiencia',
   'resena.lista.iniciaComoCliente': 'Iniciá sesión como cliente para dejar tu reseña.',

@@ -359,6 +359,17 @@ export const EN: Traducciones = {
   'perfil.resenasTexto': 'What you thought of the restaurants you visited.',
   'perfil.reservasTexto': 'The status of your booked tables.',
   'perfil.cargando': 'Loading your profile…',
+  'perfil.baja.titulo': 'Close my account',
+  'perfil.baja.texto': 'If you no longer want to use Foodies, you can close your account.',
+  'perfil.baja.boton': 'Close my account',
+  'perfil.baja.confirmarAria': 'Confirm closing the account',
+  'perfil.baja.pregunta': 'Are you sure you want to close your account?',
+  'perfil.baja.consecuencias':
+    'We will cancel all your upcoming reservations and notify the restaurants. You will be logged out and will no longer be able to sign in with this account.',
+  'perfil.baja.mantener': 'No, keep my account',
+  'perfil.baja.confirmar': 'Yes, close it',
+  'perfil.baja.procesando': 'Closing…',
+  'perfil.baja.error': 'We could not close your account. Try again.',
   // Reviews
   'resena.estrellaUna': '{n} star',
   'resena.estrellaVarias': '{n} stars',
@@ -407,6 +418,9 @@ export const EN: Traducciones = {
   'resena.lista.escribirAria': 'Write a review',
   'resena.lista.yaComiste': 'Have you eaten here?',
   'resena.lista.compartiAyuda': 'Share your experience and help other foodies choose.',
+  'resena.lista.sinAsistenciaTitulo': 'Reviews from real guests',
+  'resena.lista.sinAsistencia':
+    'You can review this restaurant after you visit it with a reservation and the restaurant marks that you attended.',
   'resena.lista.escribir': 'Write review',
   'resena.lista.comparti': 'Share your experience',
   'resena.lista.iniciaComoCliente': 'Log in as a customer to leave your review.',
