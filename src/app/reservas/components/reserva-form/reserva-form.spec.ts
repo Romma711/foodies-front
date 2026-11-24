@@ -8,6 +8,10 @@ import { EspaciosService } from '../../services/espacios.service';
 import { HorariosService } from '../../services/horarios.service';
 import { fechaLocal } from '../../utils/reserva-reglas';
 import { ReservaService } from '../../services/reserva.service';
+import { DisponibilidadService } from '../../services/disponibilidad.service';
+import { Disponibilidad } from '../../models/disponibilidad';
+import { ListaEsperaService } from '../../../lista-espera/services/lista-espera.service';
+import { Mensaje } from '../../../core/i18n/traducir';
 import { ReservaForm } from './reserva-form';
 
 describe('ReservaForm', () => {
@@ -30,6 +34,9 @@ describe('ReservaForm', () => {
   let espacios: EspacioPublico[];
   let listarEspacios: ReturnType<typeof vi.fn>;
   let franjas: FranjaHoraria[];
+  let disponibilidad: Disponibilidad;
+  let anotar: ReturnType<typeof vi.fn>;
+  let errorLista: WritableSignal<Mensaje | null>;
 
   beforeEach(async () => {
     saving = signal(false);
@@ -41,12 +48,23 @@ describe('ReservaForm', () => {
     ];
     listarEspacios = vi.fn(() => of(espacios));
     franjas = [];
+    disponibilidad = { fecha: fechaLocal(1), porTurnos: false, turnos: [] };
+    anotar = vi.fn(() => of({ id: 1 }));
+    errorLista = signal<Mensaje | null>(null);
 
     await TestBed.configureTestingModule({
       imports: [ReservaForm],
       providers: [
         { provide: EspaciosService, useValue: { listar: listarEspacios } },
         { provide: HorariosService, useValue: { listar: vi.fn(() => of(franjas)) } },
+        {
+          provide: DisponibilidadService,
+          useValue: { consultar: vi.fn(() => of(disponibilidad)) },
+        },
+        {
+          provide: ListaEsperaService,
+          useValue: { saving: signal(false), error: errorLista.asReadonly(), anotar },
+        },
         {
           provide: ReservaService,
           useValue: {
@@ -165,7 +183,8 @@ describe('ReservaForm', () => {
     const opciones = Array.from(host.querySelectorAll('#reserva-horario option')).map((o) =>
       o.textContent?.trim(),
     );
-    expect(opciones).toEqual(['21:00 hs', '21:30 hs', '22:00 hs', '22:30 hs']);
+    // Rule D11: the last arrival is 60 minutes before closing.
+    expect(opciones).toEqual(['21:00 hs', '21:30 hs', '22:00 hs']);
     expect(host.querySelector('[data-testid="horario-del-dia"]')?.textContent).toContain(
       '21:00 a 23:00',
     );
@@ -194,5 +213,143 @@ describe('ReservaForm', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
       'No se pudo conectar con el servidor.',
     );
+  });
+
+  describe('con turnos (RF24) y lista de espera (RF25)', () => {
+    function conTurnos(): void {
+      disponibilidad = {
+        fecha: fechaLocal(1),
+        porTurnos: true,
+        turnos: [
+          {
+            idTurno: 11,
+            inicio: '20:00',
+            fin: '21:30',
+            espacios: [
+              { idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 0 },
+              { idEspacio: 4, nombre: 'Patio', tipo: 'PATIO', libres: 1 },
+            ],
+          },
+          {
+            idTurno: 12,
+            inicio: '21:30',
+            fin: '23:00',
+            espacios: [
+              { idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 12 },
+              { idEspacio: 4, nombre: 'Patio', tipo: 'PATIO', libres: 0 },
+            ],
+          },
+        ],
+      };
+    }
+
+    async function renderizar() {
+      const fixture = crearComponente();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function turno(host: HTMLElement, id: number): HTMLElement {
+      return host.querySelector(`[data-turno="${id}"]`) as HTMLElement;
+    }
+
+    it('muestra los turnos con los lugares libres por espacio en lugar del horario', async () => {
+      conTurnos();
+      const host = (await renderizar()).nativeElement as HTMLElement;
+
+      expect(host.querySelector('#reserva-horario')).toBeNull();
+      expect(turno(host, 11).textContent).toContain('20:00 a 21:30');
+      expect(turno(host, 11).textContent).toContain('Salón principal: completo · Patio: 1 lugar');
+      expect(turno(host, 12).textContent).toContain(
+        'Salón principal: 12 lugares · Patio: completo',
+      );
+    });
+
+    it('deshabilita el turno lleno para la cantidad elegida y ofrece la lista de espera', async () => {
+      conTurnos();
+      const host = (await renderizar()).nativeElement as HTMLElement;
+
+      const lleno = turno(host, 11);
+      expect(lleno.querySelector<HTMLInputElement>('input[type="radio"]')!.disabled).toBe(true);
+      expect(lleno.textContent).toContain('Completo');
+      expect(lleno.textContent).toContain('Sumarme a la lista de espera');
+      const libre = turno(host, 12);
+      expect(libre.querySelector<HTMLInputElement>('input[type="radio"]')!.disabled).toBe(false);
+      expect(libre.querySelector<HTMLInputElement>('input[type="radio"]')!.checked).toBe(true);
+      expect(libre.textContent).not.toContain('Sumarme a la lista de espera');
+    });
+
+    it('envía el turno elegido y su hora de inicio como llegada', async () => {
+      conTurnos();
+      const fixture = await renderizar();
+
+      await enviar(fixture);
+
+      expect(crear).toHaveBeenCalledWith(
+        expect.objectContaining({ idTurno: 12, horarioLlegada: '21:30', idEspacio: 3 }),
+      );
+    });
+
+    it('avisa cuando ese día no quedan turnos y no deja reservar', async () => {
+      conTurnos();
+      disponibilidad = { ...disponibilidad, turnos: [] };
+      const fixture = await renderizar();
+
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('[data-testid="sin-turnos"]')
+          ?.textContent,
+      ).toContain('Ese día no quedan turnos disponibles');
+      await enviar(fixture);
+      expect(crear).not.toHaveBeenCalled();
+    });
+
+    it('anota al cliente en la lista de espera del turno lleno y lo confirma', async () => {
+      conTurnos();
+      const fixture = await renderizar();
+      const host = fixture.nativeElement as HTMLElement;
+
+      turno(host, 11).querySelector<HTMLButtonElement>('button')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(anotar).toHaveBeenCalledWith({
+        idRestaurant: 5,
+        fechaReserva: fechaLocal(1),
+        horarioLlegada: '20:00',
+        idTurno: 11,
+        cantidad: 2,
+      });
+      expect(host.querySelector('[data-testid="aviso-lista"]')?.textContent).toContain(
+        'Te anotamos en la lista de espera de las 20:00',
+      );
+    });
+
+    it('muestra tal cual el mensaje del servidor cuando no puede anotarlo', async () => {
+      conTurnos();
+      errorLista.set({ texto: 'Hay lugar en ese horario: reservá directamente' });
+      const host = (await renderizar()).nativeElement as HTMLElement;
+
+      expect(host.querySelector('[data-testid="error-lista"]')?.textContent).toContain(
+        'Hay lugar en ese horario: reservá directamente',
+      );
+    });
+
+    it('sin turnos ofrece la lista de espera cuando ningún espacio tiene lugar', async () => {
+      espacios = [
+        { id: 3, tipo: 'SALON', nombre: 'Salón principal', hayLugar: false },
+        { id: 4, tipo: 'PATIO', nombre: 'Patio', hayLugar: false },
+      ];
+      const fixture = await renderizar();
+      const host = fixture.nativeElement as HTMLElement;
+      const aviso = host.querySelector('[data-testid="dia-completo"]') as HTMLElement;
+
+      expect(aviso.textContent).toContain('No hay lugar para esa fecha y cantidad');
+      aviso.querySelector('button')!.click();
+
+      expect(anotar).toHaveBeenCalledWith(
+        expect.objectContaining({ idTurno: null, horarioLlegada: '20:00', cantidad: 2 }),
+      );
+    });
   });
 });

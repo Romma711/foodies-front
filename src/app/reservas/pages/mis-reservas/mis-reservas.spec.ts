@@ -7,6 +7,8 @@ import { ReservaDetailDTO, ReservaListDTO } from '../../models';
 import { EspaciosService } from '../../services/espacios.service';
 import { ReservaService } from '../../services/reserva.service';
 import { fechaLocal } from '../../utils/reserva-reglas';
+import { DisponibilidadService } from '../../services/disponibilidad.service';
+import { Disponibilidad } from '../../models/disponibilidad';
 import { MisReservas } from './mis-reservas';
 
 describe('MisReservas', () => {
@@ -59,6 +61,7 @@ describe('MisReservas', () => {
   let cancelar: ReturnType<typeof vi.fn>;
   let limpiarErrorMutacion: ReturnType<typeof vi.fn>;
   let modificar: ReturnType<typeof vi.fn>;
+  let disponibilidad: Disponibilidad;
 
   beforeEach(async () => {
     reservas = signal(reservasMock);
@@ -70,11 +73,16 @@ describe('MisReservas', () => {
     cancelar = vi.fn(() => of(cancelada));
     limpiarErrorMutacion = vi.fn();
     modificar = vi.fn();
+    disponibilidad = { fecha: fechaLocal(5), porTurnos: false, turnos: [] };
 
     await TestBed.configureTestingModule({
       imports: [MisReservas],
       providers: [
         provideRouter([]),
+        {
+          provide: DisponibilidadService,
+          useValue: { consultar: vi.fn(() => of(disponibilidad)) },
+        },
         {
           provide: AuthService,
           useValue: { userId: vi.fn(() => 29) },
@@ -237,6 +245,56 @@ describe('MisReservas', () => {
         idEspacio: 3,
       });
       expect(elemento.querySelector('form[aria-label="Modificar la reserva #6"]')).toBeNull();
+    });
+
+    it('con turnos, deja mantener el propio turno aunque esté completo y envía el turno', async () => {
+      disponibilidad = {
+        fecha,
+        porTurnos: true,
+        turnos: [
+          {
+            idTurno: 11,
+            inicio: '20:00',
+            fin: '21:30',
+            espacios: [{ idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 0 }],
+          },
+          {
+            idTurno: 12,
+            inicio: '21:30',
+            fin: '23:00',
+            espacios: [{ idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 0 }],
+          },
+        ],
+      };
+      reservas.set([{ ...pendiente, idTurno: 11 }]);
+      modificar.mockReturnValue(of({ ...cancelada, fecha, estadoReserva: 'PENDIENTE' }));
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      const propio = formulario.querySelector<HTMLInputElement>('[data-turno="11"] input')!;
+      const otro = formulario.querySelector<HTMLInputElement>('[data-turno="12"] input')!;
+      expect(formulario.querySelector('select')).toBeNull();
+      expect(propio.disabled).toBe(false);
+      expect(propio.checked).toBe(true);
+      expect(otro.disabled).toBe(true);
+      expect(formulario.textContent).not.toContain('Sumarme a la lista de espera');
+
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+
+      expect(modificar).toHaveBeenCalledWith(6, {
+        fechaReserva: fecha,
+        horarioLlegada: '20:00',
+        cantidad: 2,
+        idEspacio: 3,
+        idTurno: 11,
+      });
     });
 
     it('permite cambiar a otro espacio con lugar y no a uno sin lugar', async () => {

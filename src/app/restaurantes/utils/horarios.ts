@@ -44,8 +44,18 @@ export function franjasDelDia(franjas: readonly FranjaHoraria[], dia: DiaSemana)
   return franjas.filter((f) => f.dia === dia).sort((a, b) => a.apertura.localeCompare(b.apertura));
 }
 
+/** Minutes before closing of the latest arrival the restaurant accepts (rule D11). */
+export const MINUTOS_ULTIMA_LLEGADA = 60;
+
+function aMinutos(hora: string): number {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** True when `hora` is a valid arrival: inside the range and at least 60 minutes before closing. */
 function incluye(franja: FranjaHoraria, hora: string): boolean {
-  return hora >= franja.apertura && (franja.cierre === '00:00' || hora < franja.cierre);
+  const cierre = franja.cierre === '00:00' ? 24 * 60 : aMinutos(franja.cierre);
+  return hora >= franja.apertura && aMinutos(hora) <= cierre - MINUTOS_ULTIMA_LLEGADA;
 }
 
 /**

@@ -15,6 +15,8 @@ export interface ReservaFormModel {
   fechaReserva: string;
   horarioLlegada: string;
   cantidad: number;
+  /** Id del turno elegido como texto; '' cuando el restaurante no trabaja por turnos. */
+  idTurno: string;
 }
 
 /** Translation keys of the schedule and capacity rules (validator messages). */
@@ -44,6 +46,7 @@ export function textoHorarioDelDia(
 }
 
 export const MENSAJE_SIN_LUGAR = clave('reserva.regla.sinLugar');
+export const MENSAJE_TURNO = clave('reserva.regla.turno');
 
 /** True cuando el espacio elegido ya informó que no hay lugar para la fecha y cantidad pedidas. */
 export function espacioSinLugar(espacios: readonly EspacioPublico[], idEspacio: string): boolean {

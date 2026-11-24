@@ -19,16 +19,14 @@ describe('horarios de atención', () => {
     expect(franjasDelDia(franjas, 'MONDAY')).toEqual([]);
   });
 
-  it('ofrece solo los horarios dentro de las franjas, sin incluir la hora de cierre', () => {
+  it('ofrece solo los horarios de las franjas hasta 60 minutos antes del cierre (regla D11)', () => {
     expect(horariosDelDia(ofrecidos, franjas, '2026-11-14')).toEqual([
       '12:00',
       '12:30',
-      '15:30',
       '20:00',
       '23:00',
-      '23:30',
     ]);
-    expect(horariosDelDia(ofrecidos, franjas, '2026-11-17')).toEqual(['20:00', '23:00', '23:30']);
+    expect(horariosDelDia(ofrecidos, franjas, '2026-11-17')).toEqual(['20:00', '23:00']);
   });
 
   it('un día sin franjas está cerrado y sin horario cargado no hay restricción', () => {

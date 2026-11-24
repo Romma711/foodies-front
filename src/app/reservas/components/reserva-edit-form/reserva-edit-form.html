@@ -42,30 +42,32 @@
       }
     </div>
 
-    <div>
-      <label [for]="ids().horario" class="text-sm font-bold text-ink-900">{{
-        'reserva.horario' | t
-      }}</label>
-      <select
-        [id]="ids().horario"
-        [formField]="editForm.horarioLlegada"
-        [attr.aria-invalid]="
-          editForm.horarioLlegada().touched() && editForm.horarioLlegada().invalid()
-        "
-        class="mt-2 block w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
-      >
-        @for (horario of horarios(); track horario) {
-          <option [value]="horario">{{ 'reserva.horaHs' | t: { hora: horario } }}</option>
+    @if (!porTurnos()) {
+      <div>
+        <label [for]="ids().horario" class="text-sm font-bold text-ink-900">{{
+          'reserva.horario' | t
+        }}</label>
+        <select
+          [id]="ids().horario"
+          [formField]="editForm.horarioLlegada"
+          [attr.aria-invalid]="
+            editForm.horarioLlegada().touched() && editForm.horarioLlegada().invalid()
+          "
+          class="mt-2 block w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
+        >
+          @for (horario of horarios(); track horario) {
+            <option [value]="horario">{{ 'reserva.horaHs' | t: { hora: horario } }}</option>
+          }
+        </select>
+        @if (horarios().length === 0) {
+          <p class="mt-1.5 text-xs font-medium text-red-700" role="status">
+            {{ 'reserva.regla.cerrado' | t }}
+          </p>
+        } @else if (horarioDelDia(); as texto) {
+          <p class="mt-1.5 text-xs text-ink-500">{{ texto }}</p>
         }
-      </select>
-      @if (horarios().length === 0) {
-        <p class="mt-1.5 text-xs font-medium text-red-700" role="status">
-          {{ 'reserva.regla.cerrado' | t }}
-        </p>
-      } @else if (horarioDelDia(); as texto) {
-        <p class="mt-1.5 text-xs text-ink-500">{{ texto }}</p>
-      }
-    </div>
+      </div>
+    }
 
     <div>
       <label [for]="ids().cantidad" class="text-sm font-bold text-ink-900">{{
@@ -87,6 +89,17 @@
       }
     </div>
   </div>
+
+  @if (porTurnos()) {
+    <app-turno-selector
+      [idBase]="ids().turno"
+      [formField]="editForm.idTurno"
+      [turnos]="turnos()"
+      [cantidad]="editForm.cantidad().value()"
+      [cargando]="disponibilidadResource.isLoading()"
+      [conListaEspera]="false"
+    />
+  }
 
   <app-espacio-selector
     [idBase]="ids().espacio"
