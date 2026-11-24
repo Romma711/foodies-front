@@ -13,6 +13,7 @@ import { Mensaje } from '@core/i18n/traducir';
 import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit-form';
+import { MiListaEspera } from '../../../lista-espera/components/mi-lista-espera/mi-lista-espera';
 import { ESTADOS_ACTIVOS, EstadoReserva, ReservaListDTO } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
 import {
@@ -34,7 +35,7 @@ import { TPipe } from '@core/i18n/t.pipe';
 import { I18n } from '@core/i18n/i18n.service';
 
 @Component({
-  imports: [TPipe, RouterLink, ReservaEditForm],
+  imports: [TPipe, RouterLink, ReservaEditForm, MiListaEspera],
   selector: 'app-mis-reservas',
   templateUrl: './mis-reservas.html',
 })

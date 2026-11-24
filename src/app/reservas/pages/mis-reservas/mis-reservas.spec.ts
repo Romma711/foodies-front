@@ -9,6 +9,7 @@ import { ReservaService } from '../../services/reserva.service';
 import { fechaLocal } from '../../utils/reserva-reglas';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { Disponibilidad } from '../../models/disponibilidad';
+import { ListaEsperaService } from '../../../lista-espera/services/lista-espera.service';
 import { MisReservas } from './mis-reservas';
 
 describe('MisReservas', () => {
@@ -79,6 +80,16 @@ describe('MisReservas', () => {
       imports: [MisReservas],
       providers: [
         provideRouter([]),
+        {
+          provide: ListaEsperaService,
+          useValue: {
+            entradas: signal([]),
+            loading: signal(false),
+            saving: signal(false),
+            error: signal(null),
+            listarMias: vi.fn(() => of([])),
+          },
+        },
         {
           provide: DisponibilidadService,
           useValue: { consultar: vi.fn(() => of(disponibilidad)) },
