@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { SelectorIdioma } from '../../core/i18n/selector-idioma/selector-idioma';
 import { CuentaMenu } from '../../shared/ui/cuenta-menu/cuenta-menu';
 
 interface AdminNavItem {
@@ -15,7 +16,7 @@ interface AdminNavItem {
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet, SelectorIdioma],
   template: `
     <div class="min-h-dvh lg:flex">
       <div
@@ -106,6 +107,8 @@ interface AdminNavItem {
             }
           </ul>
         </nav>
+
+        <app-selector-idioma />
 
         <app-cuenta-menu [nombre]="nombre()" (cerrarSesion)="cerrarSesion()" />
       </aside>

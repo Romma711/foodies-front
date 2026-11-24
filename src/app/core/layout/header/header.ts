@@ -5,9 +5,10 @@ import { AuthService } from '../../auth/auth.service';
 import { PORTALS } from '../../auth/portals';
 import { ClientePerfilService } from '../../../perfil/services/cliente-perfil.service';
 import { ClienteMenu } from './cliente-menu/cliente-menu';
+import { SelectorIdioma } from '../../i18n/selector-idioma/selector-idioma';
 
 @Component({
-  imports: [ClienteMenu, RouterLink, RouterLinkActive],
+  imports: [ClienteMenu, RouterLink, RouterLinkActive, SelectorIdioma],
   selector: 'app-header',
   templateUrl: './header.html',
   host: {

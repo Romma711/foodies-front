@@ -42,6 +42,7 @@
     </nav>
 
     <div class="hidden items-center gap-2 md:flex">
+      <app-selector-idioma />
       @for (role of activeRoles(); track role) {
         @if (role === 'CLIENTE') {
           <app-cliente-menu (cerrarSesion)="logout(role)" />
@@ -99,41 +100,44 @@
       }
     </div>
 
-    <button
-      #toggleMenuMovil
-      type="button"
-      class="grid size-10 place-items-center rounded-full text-ink-700 transition hover:bg-white/70 md:hidden"
-      [attr.aria-expanded]="menuAbierto()"
-      aria-controls="menu-movil"
-      [attr.aria-label]="menuAbierto() ? 'Cerrar menú' : 'Abrir menú'"
-      (click)="toggleMenu()"
-    >
-      @if (menuAbierto()) {
-        <svg
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          aria-hidden="true"
-        >
-          <path d="M6 6l12 12M18 6 6 18" />
-        </svg>
-      } @else {
-        <svg
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          aria-hidden="true"
-        >
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
-      }
-    </button>
+    <div class="flex items-center gap-1 md:hidden">
+      <app-selector-idioma />
+      <button
+        #toggleMenuMovil
+        type="button"
+        class="grid size-10 place-items-center rounded-full text-ink-700 transition hover:bg-white/70 md:hidden"
+        [attr.aria-expanded]="menuAbierto()"
+        aria-controls="menu-movil"
+        [attr.aria-label]="menuAbierto() ? 'Cerrar menú' : 'Abrir menú'"
+        (click)="toggleMenu()"
+      >
+        @if (menuAbierto()) {
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        } @else {
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        }
+      </button>
+    </div>
   </div>
 
   @if (menuAbierto()) {

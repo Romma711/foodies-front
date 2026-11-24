@@ -2,12 +2,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PORTALS } from '../../../core/auth/portals';
+import { SelectorIdioma } from '../../../core/i18n/selector-idioma/selector-idioma';
 import { CuentaMenu } from '../../../shared/ui/cuenta-menu/cuenta-menu';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
 
 /** Estructura del panel del restaurante: barra lateral con las secciones + la sección activa. */
 @Component({
-  imports: [CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet, SelectorIdioma],
   selector: 'app-panel-layout',
   styleUrl: './panel-layout.css',
   templateUrl: './panel-layout.html',
