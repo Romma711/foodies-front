@@ -42,6 +42,7 @@ describe('PanelLayout', () => {
       'Reservas',
       'Espacios',
       'Horarios',
+      'Turnos',
       'Capacidad',
     ]);
   });

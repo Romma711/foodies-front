@@ -1,0 +1,139 @@
+<header class="page-header">
+  <h1>{{ 'panel.turnos.titulo' | t }}</h1>
+  <p class="subtitle">{{ 'panel.turnos.subtitulo' | t }}</p>
+</header>
+
+@if (loading()) {
+  <p role="status">{{ 'panel.turnos.cargando' | t }}</p>
+} @else if (loadError(); as message) {
+  <div class="stack">
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="stack">
+    @if (error(); as message) {
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    }
+    <p class="visually-hidden" role="status">{{ status() | t }}</p>
+    @if (status(); as message) {
+      <p class="alert alert-success" aria-hidden="true">{{ message | t }}</p>
+    }
+
+    <form class="card turno-form" novalidate (submit)="onSubmit($event)">
+      <h2>
+        {{ (editandoId() === null ? 'panel.turnos.nuevo' : 'panel.turnos.editando') | t }}
+      </h2>
+      <div class="campos">
+        <div class="field">
+          <label for="turno-dia">{{ 'panel.turnos.dia' | t }}</label>
+          <select id="turno-dia" [value]="form().dia" (change)="cambiarDia($event)">
+            @for (dia of dias; track dia) {
+              <option [value]="dia" [selected]="form().dia === dia">{{ labels[dia] | t }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="turno-inicio">{{ 'panel.turnos.inicio' | t }}</label>
+          <input
+            id="turno-inicio"
+            type="time"
+            step="900"
+            required
+            [value]="form().inicio"
+            (input)="cambiarInicio($event)"
+          />
+        </div>
+        <div class="field">
+          <label for="turno-duracion">{{ 'panel.turnos.duracion' | t }}</label>
+          <input
+            id="turno-duracion"
+            type="number"
+            inputmode="numeric"
+            step="15"
+            [min]="duracionMinima"
+            [max]="duracionMaxima"
+            aria-describedby="turno-duracion-ayuda"
+            [value]="form().duracionMinutos"
+            (input)="cambiarDuracion($event)"
+          />
+        </div>
+      </div>
+      <p id="turno-duracion-ayuda" class="muted">
+        {{ 'panel.turnos.duracionAyuda' | t: { min: duracionMinima, max: duracionMaxima } }}
+      </p>
+      <div class="actions">
+        @if (editandoId() !== null) {
+          <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+            {{ 'comun.cancelar' | t }}
+          </button>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          @if (guardando()) {
+            {{ 'resena.guardando' | t }}
+          } @else if (editandoId() === null) {
+            {{ 'panel.turnos.agregar' | t }}
+          } @else {
+            {{ 'panel.turnos.guardar' | t }}
+          }
+        </button>
+      </div>
+    </form>
+
+    @if (turnos().length === 0) {
+      <p class="card aviso" data-testid="sin-turnos">{{ 'panel.turnos.sinTurnos' | t }}</p>
+    }
+
+    @for (grupo of porDia(); track grupo.dia) {
+      @if (grupo.turnos.length) {
+        <section class="card dia" [attr.aria-labelledby]="'turnos-' + grupo.dia">
+          <h2 [id]="'turnos-' + grupo.dia">{{ labels[grupo.dia] | t }}</h2>
+          <ul class="lista">
+            @for (turno of grupo.turnos; track turno.id) {
+              <li class="turno" [attr.data-turno]="turno.id">
+                <span class="rango">
+                  {{ 'reserva.turno.rango' | t: { inicio: turno.inicio, fin: turno.fin } }}
+                  <span class="muted">
+                    {{ 'panel.turnos.minutos' | t: { n: turno.duracionMinutos } }}
+                  </span>
+                </span>
+                <span class="acciones">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [attr.aria-label]="
+                      'panel.turnos.editarAria'
+                        | t: { dia: (labels[turno.dia] | t), inicio: turno.inicio }
+                    "
+                    (click)="editar(turno)"
+                  >
+                    {{ 'panel.turnos.editar' | t }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [attr.aria-label]="
+                      'panel.turnos.quitarAria'
+                        | t: { dia: (labels[turno.dia] | t), inicio: turno.inicio }
+                    "
+                    (click)="quitar(turno)"
+                  >
+                    {{ 'panel.turnos.quitar' | t }}
+                  </button>
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    <p class="muted">{{ 'panel.turnos.nota' | t }}</p>
+  </div>
+}
+
+<app-confirm-dialog />

@@ -65,6 +65,12 @@ export class PanelLayout {
       icono: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v4l3 2',
     },
     {
+      path: 'turnos',
+      label: 'panel.seccion.turnos' as const,
+      exact: false,
+      icono: 'M5 5h14v15H5V5Zm0 5h14M9 3v4m6-4v4M9 14h2m2 0h2m-6 3h2',
+    },
+    {
       path: 'capacidad',
       label: 'panel.seccion.capacidad' as const,
       exact: false,

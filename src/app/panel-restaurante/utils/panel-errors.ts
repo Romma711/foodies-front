@@ -32,6 +32,18 @@ export function mensajeDeNegocio(error: unknown): Mensaje | null {
   return null;
 }
 
+/**
+ * Mensaje de un 409 (por ejemplo, un turno repetido o con reservas futuras), tal como lo escribe el
+ * backend. Null si el error es de otro tipo.
+ */
+export function mensajeDeConflicto(error: unknown): Mensaje | null {
+  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
+    const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
+    return typeof mensaje === 'string' && mensaje.trim() ? { texto: mensaje } : null;
+  }
+  return null;
+}
+
 /** Las fechas de reserva llegan como `yyyy-MM-dd`; se leen como fecha local, no como medianoche UTC. */
 export function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split('-').map(Number);

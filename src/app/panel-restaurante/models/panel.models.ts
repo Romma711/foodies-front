@@ -1,5 +1,6 @@
 import { EspecialidadDeComida } from '../../core/auth/auth.models';
 import { TipoEspacio } from '../../restaurantes/models/espacios';
+import { DiaSemana } from '../../restaurantes/utils/horarios';
 
 /** `CartaDTO` */
 export interface Carta {
@@ -94,3 +95,23 @@ export interface CupoEspecialRequest {
 export const MAX_MOTIVO_CUPO = 120;
 
 export const MAX_CARTA_BYTES = 10 * 1024 * 1024;
+
+/** `TurnoDTO`: shift of one weekday. `inicio` and `fin` are `HH:mm`. */
+export interface Turno {
+  id: number;
+  dia: DiaSemana;
+  inicio: string;
+  fin: string;
+  duracionMinutos: number;
+}
+
+/** `TurnoRequestDTO`: `duracionMinutos` defaults to 90 on the server. */
+export interface TurnoRequest {
+  dia: DiaSemana;
+  inicio: string;
+  duracionMinutos: number;
+}
+
+export const DURACION_TURNO_POR_DEFECTO = 90;
+export const DURACION_TURNO_MINIMA = 15;
+export const DURACION_TURNO_MAXIMA = 360;

@@ -33,6 +33,11 @@ export const panelRoutes: Routes = [
         loadComponent: () => import('./pages/horarios/horarios').then((m) => m.HorariosPanel),
       },
       {
+        path: 'turnos',
+        title: 'titulo.panel.turnos',
+        loadComponent: () => import('./pages/turnos/turnos').then((m) => m.TurnosPanel),
+      },
+      {
         path: 'capacidad',
         title: 'titulo.panel.capacidad',
         loadComponent: () =>

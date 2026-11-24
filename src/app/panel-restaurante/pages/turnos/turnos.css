@@ -1,0 +1,62 @@
+@import '../panel-page.css';
+
+.stack {
+  max-width: 44rem;
+}
+
+.muted,
+.aviso {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.turno-form,
+.dia {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+}
+
+h2 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.lista {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.turno {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rango {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-weight: 600;
+}
+
+.acciones {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

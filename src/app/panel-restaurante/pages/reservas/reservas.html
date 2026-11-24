@@ -74,34 +74,26 @@
               <span [class]="'badge badge-' + reserva.estado.toLowerCase()">{{
                 estadoLabel[reserva.estado] | t
               }}</span>
-              @if (reserva.estado !== 'CANCELADA') {
+              @let disponibles = accionesDe(reserva);
+              @if (disponibles.length) {
                 <div class="actions">
-                  @if (reserva.estado === 'PENDIENTE') {
+                  @for (estado of disponibles; track estado) {
                     <button
                       type="button"
-                      class="btn btn-primary"
+                      class="btn"
+                      [class.btn-primary]="estado === 'ACEPTADA' || estado === 'ASISTIO'"
+                      [class.btn-secondary]="estado !== 'ACEPTADA' && estado !== 'ASISTIO'"
+                      [attr.data-accion]="estado"
                       [disabled]="updatingId() === reserva.id"
                       [attr.aria-label]="
-                        'panel.reservas.aceptarAria'
+                        acciones[estado].aria
                           | t: { nombre: reserva.nombreCliente, hora: hora(reserva) }
                       "
-                      (click)="cambiarEstado(reserva, 'ACEPTADA')"
+                      (click)="cambiarEstado(reserva, estado)"
                     >
-                      {{ 'panel.reservas.aceptar' | t }}
+                      {{ acciones[estado].boton | t }}
                     </button>
                   }
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    [disabled]="updatingId() === reserva.id"
-                    [attr.aria-label]="
-                      'panel.reservas.cancelarAria'
-                        | t: { nombre: reserva.nombreCliente, hora: hora(reserva) }
-                    "
-                    (click)="cambiarEstado(reserva, 'CANCELADA')"
-                  >
-                    {{ 'comun.cancelar' | t }}
-                  </button>
                 </div>
               }
             </li>

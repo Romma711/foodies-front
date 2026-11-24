@@ -15,6 +15,8 @@ import {
   MiRestaurante,
   MiRestaurantePatch,
   ReservaPanel,
+  Turno,
+  TurnoRequest,
 } from '../models/panel.models';
 
 /** API del gestor del restaurante. Cada llamada usa la sesión RESTAURANTE, nunca el token de otro rol. */
@@ -163,5 +165,30 @@ export class RestaurantePanelService {
       { estado },
       { context: withRole('RESTAURANTE') },
     );
+  }
+
+  /** Shifts of the restaurant (rule D2). Without shifts capacity is per day. */
+  getTurnos(): Observable<Turno[]> {
+    return this.http.get<Turno[]>(`${this.meUrl}/turnos`, { context: withRole('RESTAURANTE') });
+  }
+
+  crearTurno(turno: TurnoRequest): Observable<Turno> {
+    return this.http.post<Turno>(`${this.meUrl}/turnos`, turno, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** 409 when the shift has future active reservations (rule D24). */
+  actualizarTurno(id: number, turno: TurnoRequest): Observable<Turno> {
+    return this.http.put<Turno>(`${this.meUrl}/turnos/${id}`, turno, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** 409 when the shift has future active reservations (rule D24). */
+  eliminarTurno(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/turnos/${id}`, {
+      context: withRole('RESTAURANTE'),
+    });
   }
 }
