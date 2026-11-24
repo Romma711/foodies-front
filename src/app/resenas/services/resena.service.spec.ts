@@ -117,7 +117,7 @@ describe('ResenaService', () => {
       { status: 404, statusText: 'Not Found' },
     );
 
-    expect(service.error()).toBe('La reseña no existe.');
+    expect(service.error()).toEqual({ texto: 'La reseña no existe.' });
     expect(service.loading()).toBe(false);
   });
 
@@ -132,7 +132,9 @@ describe('ResenaService', () => {
       { status: 400, statusText: 'Bad Request' },
     );
 
-    expect(service.mutationError()).toBe('Ya realizaste una reseña para este restaurante.');
+    expect(service.mutationError()).toEqual({
+      texto: 'Ya realizaste una reseña para este restaurante.',
+    });
     expect(service.error()).toBeNull();
     expect(service.saving()).toBe(false);
   });
@@ -151,8 +153,10 @@ describe('ResenaService', () => {
       { status: 400, statusText: 'Bad Request' },
     );
 
-    expect(service.mutationError()).toContain('El comentario debe tener entre 10 y 255 caracteres');
-    expect(service.mutationError()).toContain('La calificación mínima es 1');
+    const error = service.mutationError();
+    const texto = error && 'texto' in error ? error.texto : '';
+    expect(texto).toContain('El comentario debe tener entre 10 y 255 caracteres');
+    expect(texto).toContain('La calificación mínima es 1');
   });
 
   it('debería cargar los ids de las reseñas propias sin pisar el listado', () => {
@@ -286,6 +290,8 @@ describe('ResenaService', () => {
       );
 
     expect(service.resenas().length).toBe(1);
-    expect(service.mutationError()).toBe('No podés modificar una reseña de otro usuario.');
+    expect(service.mutationError()).toEqual({
+      texto: 'No podés modificar una reseña de otro usuario.',
+    });
   });
 });

@@ -13,10 +13,12 @@ import {
 import { ResenaListDTO } from '../../models';
 import { formatearFechaResena } from '../../utils/fecha-resena';
 import { StarRating } from '../star-rating/star-rating';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 @Component({
   selector: 'app-resena-card',
-  imports: [StarRating],
+  imports: [TPipe, StarRating],
   template: `
     <article
       class="flex h-full flex-col rounded-2xl border border-line/60 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
@@ -51,7 +53,7 @@ import { StarRating } from '../star-rating/star-rating';
           <button
             type="button"
             class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-            aria-label="Editar tu reseña"
+            [attr.aria-label]="'resena.editarTuResena' | t"
             (click)="editar.emit()"
           >
             <svg
@@ -73,7 +75,7 @@ import { StarRating } from '../star-rating/star-rating';
             #botonEliminar
             type="button"
             class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-red-50 hover:text-red-700"
-            aria-label="Eliminar reseña"
+            [attr.aria-label]="'resena.eliminarResena' | t"
             (click)="pedirConfirmacion()"
           >
             <svg
@@ -107,9 +109,9 @@ import { StarRating } from '../star-rating/star-rating';
         <div
           class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-4"
           role="group"
-          aria-label="Confirmar eliminación"
+          [attr.aria-label]="'resena.confirmarEliminacion' | t"
         >
-          <p class="text-sm font-semibold text-ink-900">¿Eliminar esta reseña?</p>
+          <p class="text-sm font-semibold text-ink-900">{{ 'resena.preguntaEliminar' | t }}</p>
           <div class="flex gap-2">
             <button
               #botonCancelar
@@ -118,7 +120,7 @@ import { StarRating } from '../star-rating/star-rating';
               [disabled]="eliminando()"
               (click)="cancelarEliminacion()"
             >
-              Cancelar
+              {{ 'comun.cancelar' | t }}
             </button>
             <button
               type="button"
@@ -126,7 +128,7 @@ import { StarRating } from '../star-rating/star-rating';
               [disabled]="eliminando()"
               (click)="eliminar.emit()"
             >
-              {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+              {{ (eliminando() ? 'resena.eliminando' : 'resena.eliminar') | t }}
             </button>
           </div>
         </div>
@@ -135,6 +137,7 @@ import { StarRating } from '../star-rating/star-rating';
   `,
 })
 export class ResenaCard {
+  private readonly i18n = inject(I18n);
   readonly resena = input.required<ResenaListDTO>();
   readonly editable = input(false);
   readonly eliminable = input(false);
@@ -153,9 +156,13 @@ export class ResenaCard {
   private readonly palette = ['#fde7dc', '#e7f0ff', '#e7f6ec', '#f3e8ff', '#fff4d6', '#ffe4e6'];
 
   /** Creation date in Spanish, or null for old reviews saved without one. */
-  readonly fecha = computed(() => formatearFechaResena(this.resena().fechaCreacion));
+  readonly fecha = computed(() =>
+    formatearFechaResena(this.resena().fechaCreacion, this.i18n.locale()),
+  );
 
-  readonly nombre = computed(() => this.resena().nombreUsuario?.trim() || 'Anónimo');
+  readonly nombre = computed(
+    () => this.resena().nombreUsuario?.trim() || this.i18n.t('resena.anonimo'),
+  );
 
   readonly iniciales = computed(() => {
     const palabras = this.nombre().split(/\s+/).filter(Boolean);

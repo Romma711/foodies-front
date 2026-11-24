@@ -1,3 +1,4 @@
+import { Mensaje } from '../../../core/i18n/traducir';
 import { WritableSignal, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -36,12 +37,12 @@ describe('RestauranteResenas', () => {
 
   let resenas: WritableSignal<ResenaListDTO[]>;
   let cargando: WritableSignal<boolean>;
-  let error: WritableSignal<string | null>;
+  let error: WritableSignal<Mensaje | null>;
   let autenticado: WritableSignal<boolean>;
   let admin: WritableSignal<boolean>;
   let eliminar: ReturnType<typeof vi.fn>;
   let saving: WritableSignal<boolean>;
-  let mutationError: WritableSignal<string | null>;
+  let mutationError: WritableSignal<Mensaje | null>;
   let listarPorRestaurante: ReturnType<typeof vi.fn>;
   let crear: ReturnType<typeof vi.fn>;
   let misResenaIds: WritableSignal<ReadonlySet<number>>;
@@ -50,12 +51,12 @@ describe('RestauranteResenas', () => {
   beforeEach(async () => {
     resenas = signal(mock);
     cargando = signal(false);
-    error = signal<string | null>(null);
+    error = signal<Mensaje | null>(null);
     autenticado = signal(false);
     admin = signal(false);
     eliminar = vi.fn(() => of(undefined));
     saving = signal(false);
-    mutationError = signal<string | null>(null);
+    mutationError = signal<Mensaje | null>(null);
     listarPorRestaurante = vi.fn(() => of(mock));
     crear = vi.fn(() => of(detalle));
     misResenaIds = signal<ReadonlySet<number>>(new Set());
@@ -184,7 +185,7 @@ describe('RestauranteResenas', () => {
   });
 
   it('debería mostrar el error y permitir reintentar', () => {
-    error.set('No se pudo conectar con el servidor.');
+    error.set({ clave: 'comun.errorConexion' });
     const fixture = crearComponente('5');
     const alerta = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
 
@@ -391,7 +392,7 @@ describe('RestauranteResenas', () => {
       misResenaIds.set(new Set([1]));
       eliminar.mockReturnValue(throwError(() => new Error('403')));
       const fixture = crearComponente('5');
-      mutationError.set('No podés modificar una reseña de otro usuario.');
+      mutationError.set({ texto: 'No podés modificar una reseña de otro usuario.' });
 
       confirmar(fixture, 0);
 

@@ -5,11 +5,13 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { StarRating } from '../../components/star-rating/star-rating';
 import { ResenaService } from '../../services/resena.service';
 import { formatearFechaResena } from '../../utils/fecha-resena';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 /** Reseñas que escribió el cliente, cada una con el restaurante al que corresponde. */
 @Component({
   selector: 'app-mis-resenas',
-  imports: [RouterLink, StarRating],
+  imports: [TPipe, RouterLink, StarRating],
   template: `
     <main class="relative isolate overflow-hidden">
       <div
@@ -23,42 +25,44 @@ import { formatearFechaResena } from '../../utils/fecha-resena';
         <header class="max-w-xl">
           <p class="text-xs font-bold tracking-[0.22em] text-brand-700 uppercase">Foodies</p>
           <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
-            Mis reseñas
+            {{ 'nav.misResenas' | t }}
           </h1>
           <p class="mt-3 text-base leading-7 text-ink-500 sm:text-lg">
-            Lo que opinaste de los restaurantes que visitaste.
+            {{ 'perfil.resenasTexto' | t }}
           </p>
         </header>
 
         @if (cargando()) {
-          <p class="mt-8 text-sm font-medium text-ink-500" role="status">Cargando tus reseñas…</p>
+          <p class="mt-8 text-sm font-medium text-ink-500" role="status">
+            {{ 'misResenas.cargando' | t }}
+          </p>
         } @else if (error(); as mensaje) {
           <div
             class="mt-8 flex flex-col gap-3 rounded-2xl border border-red-100 bg-red-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
             role="alert"
           >
-            <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
+            <p class="text-sm font-medium text-red-800">{{ mensaje | t }}</p>
             <button
               type="button"
               class="inline-flex shrink-0 items-center justify-center rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700"
               (click)="recargar()"
             >
-              Reintentar
+              {{ 'comun.reintentar' | t }}
             </button>
           </div>
         } @else if (resenas().length === 0) {
           <div
             class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white/80 px-6 py-16 text-center shadow-card"
           >
-            <h2 class="text-lg font-bold text-ink-900">Todavía no escribiste reseñas</h2>
+            <h2 class="text-lg font-bold text-ink-900">{{ 'misResenas.vacioTitulo' | t }}</h2>
             <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-              Después de visitar un restaurante, contá cómo te fue desde su página.
+              {{ 'misResenas.vacioTexto' | t }}
             </p>
             <a
               routerLink="/restaurantes"
               class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
             >
-              Ver restaurantes
+              {{ 'detalle.verRestaurantes' | t }}
             </a>
           </div>
         } @else {
@@ -96,10 +100,13 @@ import { formatearFechaResena } from '../../utils/fecha-resena';
 export class MisResenas {
   private readonly auth = inject(AuthService);
   private readonly resenaService = inject(ResenaService);
+  private readonly i18n = inject(I18n);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly resenas = this.resenaService.misResenas;
-  protected readonly formatearFecha = formatearFechaResena;
+  protected formatearFecha(valor: string | null | undefined): string | null {
+    return formatearFechaResena(valor, this.i18n.locale());
+  }
   protected readonly cargando = this.resenaService.loading;
   protected readonly error = this.resenaService.error;
 

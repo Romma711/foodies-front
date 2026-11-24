@@ -22,11 +22,13 @@ import { ResenaCard } from '../resena-card/resena-card';
 import { ResenaForm } from '../resena-form/resena-form';
 import { StarRating } from '../star-rating/star-rating';
 import { ToastOutlet } from '../../../shared/ui/toast/toast-outlet';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 /** Reviews block of a restaurant: summary, chart, write/edit/delete flows and the review grid. */
 @Component({
   selector: 'app-restaurante-resenas',
-  imports: [RatingDistribution, ResenaCard, ResenaForm, StarRating, ToastOutlet, RouterLink],
+  imports: [TPipe, RatingDistribution, ResenaCard, ResenaForm, StarRating, ToastOutlet, RouterLink],
   providers: [ToastService],
   templateUrl: './restaurante-resenas.html',
 })
@@ -35,6 +37,7 @@ export class RestauranteResenas {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toasts = inject(ToastService);
+  private readonly i18n = inject(I18n);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
@@ -132,7 +135,7 @@ export class RestauranteResenas {
 
   alActualizar(): void {
     this.editandoId.set(null);
-    this.toasts.exito('Tu reseña se actualizó.');
+    this.toasts.exito(this.i18n.t('resena.toast.actualizada'));
   }
 
   esPropia(id: number): boolean {
@@ -153,11 +156,16 @@ export class RestauranteResenas {
       .subscribe({
         next: () => {
           this.eliminandoId.set(null);
-          this.toasts.exito(propia ? 'Tu reseña se eliminó.' : 'La reseña se eliminó.');
+          this.toasts.exito(
+            this.i18n.t(propia ? 'resena.toast.eliminadaPropia' : 'resena.toast.eliminada'),
+          );
         },
         error: () => {
           this.eliminandoId.set(null);
-          this.toasts.error(this.resenaService.mutationError() ?? 'No se pudo eliminar la reseña.');
+          const error = this.resenaService.mutationError();
+          this.toasts.error(
+            error ? this.i18n.mensaje(error) : this.i18n.t('resena.toast.errorEliminar'),
+          );
         },
       });
   }
@@ -174,8 +182,8 @@ export class RestauranteResenas {
     const nombre = resena.nombreUsuario?.trim();
     this.toasts.exito(
       nombre
-        ? `¡Gracias, ${nombre}! Tu reseña ya está publicada.`
-        : '¡Gracias! Tu reseña ya está publicada.',
+        ? this.i18n.t('resena.toast.graciasNombre', { nombre })
+        : this.i18n.t('resena.toast.gracias'),
     );
   }
 

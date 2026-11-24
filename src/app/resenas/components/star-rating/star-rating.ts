@@ -1,8 +1,11 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 let nextStarRatingId = 0;
 
 @Component({
+  imports: [TPipe],
   selector: 'app-star-rating',
   template: `
     @if (interactive()) {
@@ -25,7 +28,7 @@ let nextStarRatingId = 0;
               [name]="groupName"
               [value]="star"
               [checked]="value() === star"
-              [attr.aria-label]="star + ' de ' + max() + ' estrellas'"
+              [attr.aria-label]="'resena.estrellaDe' | t: { n: star, max: max() }"
               [attr.aria-invalid]="invalid() || null"
               [attr.aria-describedby]="describedBy() || null"
               (change)="seleccionar(star)"
@@ -52,7 +55,7 @@ let nextStarRatingId = 0;
             aria-hidden="true"
             data-testid="valor"
           >
-            {{ value() }} de {{ max() }}
+            {{ 'resena.valorDe' | t: { n: value(), max: max() } }}
           </span>
         }
       </div>
@@ -102,6 +105,7 @@ let nextStarRatingId = 0;
   `,
 })
 export class StarRating {
+  private readonly i18n = inject(I18n);
   readonly value = input.required<number>();
   readonly max = input(5);
   readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('sm');
@@ -137,8 +141,8 @@ export class StarRating {
   readonly ariaLabel = computed(() => {
     const value = this.value();
     return value > 0
-      ? `Calificación: ${value.toFixed(1)} de ${this.max()} estrellas`
-      : 'Sin calificación';
+      ? this.i18n.t('resena.calificacionAria', { valor: value.toFixed(1), max: this.max() })
+      : this.i18n.t('resena.sinCalificacion');
   });
 
   readonly pixelSize = computed(() => ({ sm: 16, md: 20, lg: 28, xl: 36 })[this.size()]);

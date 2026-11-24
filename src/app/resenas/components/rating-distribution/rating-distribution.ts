@@ -10,6 +10,8 @@ import {
 import { ChartConfiguration } from 'chart.js';
 import { DistribucionCalificacion } from '../../models';
 import { BAR_CHART_FACTORY, BarChart } from '../../../shared/charts/bar-chart-factory';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 // Chart.js draws on a canvas, so it cannot read Tailwind classes; these mirror the @theme tokens.
 const COLOR_STAR = '#f5a524';
@@ -17,27 +19,36 @@ const COLOR_TRACK = '#f4ede3';
 const COLOR_INK_500 = '#6e655b';
 
 @Component({
+  imports: [TPipe],
   selector: 'app-rating-distribution',
   template: `
     <figure>
-      <figcaption class="sr-only">Distribución de calificaciones</figcaption>
+      <figcaption class="sr-only">{{ 'resena.distribucion' | t }}</figcaption>
       <div class="relative h-36">
         <canvas #canvas aria-hidden="true"></canvas>
       </div>
       <table class="sr-only">
         <thead>
           <tr>
-            <th scope="col">Calificación</th>
-            <th scope="col">Reseñas</th>
+            <th scope="col">{{ 'resena.calificacion' | t }}</th>
+            <th scope="col">{{ 'resena.resenas' | t }}</th>
           </tr>
         </thead>
         <tbody>
           @for (item of distribucion(); track item.estrellas) {
             <tr>
               <th scope="row">
-                {{ item.estrellas }} {{ item.estrellas === 1 ? 'estrella' : 'estrellas' }}
+                {{
+                  (item.estrellas === 1 ? 'resena.estrellaUna' : 'resena.estrellaVarias')
+                    | t: { n: item.estrellas }
+                }}
               </th>
-              <td>{{ item.cantidad }} {{ item.cantidad === 1 ? 'reseña' : 'reseñas' }}</td>
+              <td>
+                {{
+                  (item.cantidad === 1 ? 'resena.cantidadUna' : 'resena.cantidadVarias')
+                    | t: { n: item.cantidad }
+                }}
+              </td>
             </tr>
           }
         </tbody>
@@ -50,6 +61,7 @@ export class RatingDistribution {
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly crearGrafico = inject(BAR_CHART_FACTORY);
+  private readonly i18n = inject(I18n);
   private grafico: BarChart | null = null;
 
   constructor() {
@@ -111,7 +123,12 @@ export class RatingDistribution {
             callbacks: {
               label: (context) => {
                 const cantidad = Number(context.raw);
-                return `${cantidad} ${cantidad === 1 ? 'reseña' : 'reseñas'}`;
+                return this.i18n.t(
+                  cantidad === 1 ? 'resena.cantidadUna' : 'resena.cantidadVarias',
+                  {
+                    n: cantidad,
+                  },
+                );
               },
             },
           },

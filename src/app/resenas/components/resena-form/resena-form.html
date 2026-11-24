@@ -5,18 +5,18 @@
   <div class="flex items-start justify-between gap-4">
     <div>
       <h2 id="titulo-formulario" class="text-xl font-extrabold tracking-tight text-ink-900">
-        {{ esEdicion() ? 'Editar tu reseña' : 'Tu reseña' }}
+        {{ (esEdicion() ? 'resena.editarTuResena' : 'resena.tuResena') | t }}
       </h2>
       @if (nombreRestaurante(); as nombre) {
-        <p class="mt-1 text-sm text-ink-500">Sobre {{ nombre }}</p>
+        <p class="mt-1 text-sm text-ink-500">{{ 'resena.sobre' | t: { nombre } }}</p>
       } @else {
-        <p class="mt-1 text-sm text-ink-500">Contanos cómo fue tu experiencia.</p>
+        <p class="mt-1 text-sm text-ink-500">{{ 'resena.contanos' | t }}</p>
       }
     </div>
     <button
       type="button"
       class="rounded-full p-2 text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-      aria-label="Cerrar formulario de reseña"
+      [attr.aria-label]="'resena.cerrarFormulario' | t"
       (click)="cancelar()"
     >
       <svg
@@ -38,15 +38,15 @@
       class="mt-5 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-sm font-medium text-red-800"
       role="alert"
     >
-      {{ mensaje }}
+      {{ mensaje | t }}
     </div>
   }
 
   <form class="mt-6 space-y-6" novalidate (submit)="enviar($event)">
     <fieldset>
-      <legend class="text-sm font-bold text-ink-900">Tu calificación</legend>
+      <legend class="text-sm font-bold text-ink-900">{{ 'resena.tuCalificacion' | t }}</legend>
       <p id="calificacion-ayuda" class="mt-1 text-xs text-ink-500">
-        Tocá una estrella para puntuar del 1 al 5.
+        {{ 'resena.tocaEstrella' | t }}
       </p>
 
       <div class="mt-3">
@@ -54,7 +54,7 @@
           [value]="modelo().calificacion"
           [interactive]="true"
           size="xl"
-          [label]="'Tu calificación'"
+          [label]="'resena.tuCalificacion' | t"
           [describedBy]="'calificacion-ayuda calificacion-error'"
           [invalid]="formulario.calificacion().touched() && formulario.calificacion().invalid()"
           (valueChange)="setCalificacion($event)"
@@ -66,23 +66,25 @@
         as errorCalificacion
       ) {
         <p id="calificacion-error" class="mt-2 text-xs font-medium text-red-700">
-          {{ errorCalificacion.message }}
+          {{ errorCalificacion.message | tClave }}
         </p>
       }
     </fieldset>
 
     <div>
       <div class="flex items-baseline justify-between gap-4">
-        <label for="comentario" class="text-sm font-bold text-ink-900"> Tu comentario </label>
+        <label for="comentario" class="text-sm font-bold text-ink-900">
+          {{ 'resena.tuComentario' | t }}
+        </label>
         <span id="comentario-contador" class="text-xs font-medium text-ink-500">
-          {{ restantes() }} caracteres restantes
+          {{ 'resena.restantes' | t: { n: restantes() } }}
         </span>
       </div>
 
       <textarea
         id="comentario"
         rows="4"
-        placeholder="¿Qué te pareció la comida, el ambiente y la atención?"
+        [placeholder]="'resena.placeholder' | t"
         class="mt-2 block w-full resize-y rounded-xl border border-line bg-cream-50/60 px-4 py-3 text-sm leading-6 text-ink-900 placeholder:text-ink-500 focus:border-brand-500 focus:bg-white focus:outline-none"
         [formField]="formulario.comentario"
         [attr.aria-invalid]="formulario.comentario().touched() && formulario.comentario().invalid()"
@@ -94,7 +96,7 @@
         as errorComentario
       ) {
         <p id="comentario-error" class="mt-2 text-xs font-medium text-red-700">
-          {{ errorComentario.message }}
+          {{ errorComentario.message | tClave }}
         </p>
       }
     </div>
@@ -105,7 +107,7 @@
         class="inline-flex items-center justify-center rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-cream-100"
         (click)="cancelar()"
       >
-        Cancelar
+        {{ 'comun.cancelar' | t }}
       </button>
       <button
         type="submit"
@@ -117,9 +119,9 @@
             class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
             aria-hidden="true"
           ></span>
-          {{ esEdicion() ? 'Guardando…' : 'Publicando…' }}
+          {{ (esEdicion() ? 'resena.guardando' : 'resena.publicando') | t }}
         } @else {
-          {{ esEdicion() ? 'Guardar cambios' : 'Publicar reseña' }}
+          {{ (esEdicion() ? 'resena.guardarCambios' : 'resena.publicar') | t }}
         }
       </button>
     </div>
