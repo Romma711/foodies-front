@@ -13,13 +13,14 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { PORTALS } from '../../../core/auth/portals';
 import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
 import { PortalNavigation } from '../../../core/auth/portal-navigation';
+import { SelectorIdioma } from '../../../core/i18n/selector-idioma/selector-idioma';
 import { safeReturnUrl } from '../../../core/auth/return-url';
 import { isConnectionError } from '../../../core/http/api-error';
 import { clave, Mensaje } from '@core/i18n/traducir';
 import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [TClavePipe, TPipe, FormField, RouterLink, VolverAlInicio],
+  imports: [TClavePipe, TPipe, FormField, RouterLink, VolverAlInicio, SelectorIdioma],
   selector: 'app-login',
   templateUrl: './login.html',
 })
@@ -27,6 +28,8 @@ export class Login {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly portals = inject(PortalNavigation);
+  /** The dashboard host has no header, so the login shows the language selector itself. */
+  protected readonly esDashboard = this.portals.esDashboard();
 
   /** Bound from the route `data.role`. */
   readonly role = input.required<Role>();

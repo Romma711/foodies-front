@@ -20,6 +20,8 @@ import {
 import { AuthService } from '../../../core/auth/auth.service';
 import { PORTALS } from '../../../core/auth/portals';
 import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
+import { SelectorIdioma } from '../../../core/i18n/selector-idioma/selector-idioma';
+import { PortalNavigation } from '../../../core/auth/portal-navigation';
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { errorDeFotosRegistro } from '../../../restaurantes/utils/fotos';
 import { backendMessage, isConnectionError } from '../../../core/http/api-error';
@@ -40,13 +42,23 @@ interface RegisterFormModel {
 }
 
 @Component({
-  imports: [TClavePipe, TPipe, FormField, RegistroFotos, RouterLink, VolverAlInicio],
+  imports: [
+    TClavePipe,
+    TPipe,
+    FormField,
+    RegistroFotos,
+    RouterLink,
+    VolverAlInicio,
+    SelectorIdioma,
+  ],
   selector: 'app-register',
   templateUrl: './register.html',
 })
 export class Register {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  /** The dashboard host has no header, so the page shows the language selector itself. */
+  protected readonly esDashboard = inject(PortalNavigation).esDashboard();
 
   /** Bound from the route `data.role`. ADMIN accounts are never created from the front. */
   readonly role = input.required<RegistrableRole>();
