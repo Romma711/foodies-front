@@ -98,7 +98,7 @@ export class AdminEntidadesService {
 
   /**
    * Adds a strike and makes the backend email the warning (to the client, or to the restaurant's
-   * manager). Errors come back as an `Error` whose message is ready to show to the admin.
+   * manager). Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin.
    */
   aplicarStrike(tipo: TipoEntidad, id: number, motivo: string): Observable<StrikeResultado> {
     const ruta = tipo === 'cliente' ? 'usuarios' : 'restaurantes';
@@ -128,7 +128,7 @@ export class AdminEntidadesService {
       );
   }
 
-  /** Errors come back as an `Error` whose message is ready to show to the admin. */
+  /** Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin. */
   private cambiarActivo(ruta: string, activo: boolean): Observable<EstadoActivo> {
     return this.http
       .patch<EstadoActivo>(`${this.apiUrl}/${ruta}`, { activo }, { context: withRole('ADMIN') })

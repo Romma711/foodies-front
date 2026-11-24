@@ -1,7 +1,5 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 
-export const CONNECTION_ERROR_MESSAGE = 'No se pudo conectar con el servidor.';
-
 /**
  * Human-readable message from the backend's `GlobalExceptionHandler`, or `null` when it sent none.
  *

@@ -4,7 +4,7 @@
 
 Front-end de **Foodies**, una plataforma de reservas y reseñas de restaurantes de Mar del Plata. Clientes, restaurantes y administradores usan la misma aplicación, cada uno en su propio portal y con su propia sesión.
 
-Hecho con **Angular 22** sin zone.js, **signals**, **Signal Forms** y **Tailwind CSS v4**, y probado con **494 tests** en Vitest.
+Hecho con **Angular 22** sin zone.js, **signals**, **Signal Forms** y **Tailwind CSS v4**, y probado con **520 tests** en Vitest.
 
 [![CI](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml/badge.svg)](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml)
 
@@ -110,7 +110,30 @@ Al arrancar, la app mira el hostname. Si empieza con `dashboard.` carga las ruta
 
 ### Rutas
 
-Las 37 rutas usan carga diferida (`loadComponent` o `loadChildren`) y tienen su propio `title`. El bundle inicial tiene un presupuesto: el build avisa en 500 kB y falla en 1 MB.
+Las 37 rutas usan carga diferida (`loadComponent` o `loadChildren`) y tienen su propio `title`. El bundle inicial tiene un presupuesto: el build avisa en 550 kB y falla en 1 MB.
+
+## Idiomas
+
+La app pública y los dos paneles se usan en español (idioma por defecto y de origen de todos los textos), inglés y portugués de Brasil. El selector está en el header de la app y en la barra lateral de cada panel. El cambio es inmediato, sin recargar: la elección se guarda en `localStorage` (`foodies.idioma`) y actualiza `<html lang>`. Fechas y números usan el formato del idioma (`es-AR`, `en-US`, `pt-BR`).
+
+Todo vive en `src/app/core/i18n/`:
+
+| Pieza | Para qué |
+|---|---|
+| `traducciones/es.ts`, `en.ts`, `pt.ts` | Un diccionario por idioma, con claves planas `<área>.<pantalla>.<texto>` |
+| `I18n` (servicio) | `idioma()`, `usar(idioma)`, `t(clave, parámetros)`, `fecha()`, `numero()` y `locale()` |
+| pipe `t` | `{{ 'nav.restaurantes' \| t }}` o `{{ 'reserva.personas' \| t: { n: 4 } }}` en los templates |
+| `Mensaje` | Un texto para mostrar más tarde: `{ clave }` se traduce al mostrarlo; `{ texto }` es un mensaje del back y se muestra tal cual |
+| pipe `tClave`, `clave()` y `claveConParametros()` | Mensajes de los validadores de Signal Forms, que solo aceptan `string` |
+| `TituloTraducido` | El `title` de cada ruta es una clave; el título de la pestaña sigue al idioma |
+
+Para agregar un texto:
+
+1. Sumá la clave en `es.ts`, con el texto en español, dentro del grupo de su pantalla. Los valores variables van entre llaves: `'Reserva #{id}'`.
+2. Sumá la misma clave, en el mismo lugar, en `en.ts` y `pt.ts`.
+3. Usala con el pipe `t` en el template, o con `inject(I18n).t('clave')` en TypeScript (dentro de un `computed` se actualiza sola al cambiar de idioma).
+
+El tipo `Clave` sale de `es.ts`, así que una clave mal escrita no compila. Si a `en.ts` o `pt.ts` le falta una clave, la app muestra el español y el test `traducciones/paridad.spec.ts` falla con la lista de claves faltantes, sobrantes, vacías o con marcadores `{…}` distintos. No se traducen los nombres de restaurantes, los datos de las personas ni los mensajes de error que manda el back.
 
 ## Estilos
 
@@ -136,7 +159,7 @@ axe-core no reporta violaciones en las páginas del cliente, en escritorio ni en
 | Servicios (`HttpTestingController`) | 28 | URL, método, cuerpo y rol de cada pedido |
 | Accesibilidad (axe-core) | 13 | Violaciones WCAG dentro de los tests |
 
-Son 494 tests en 74 archivos, y la suite completa tarda unos 25 segundos. Los nombres de los tests están en español y describen la regla que prueban. Las dependencias que jsdom no puede ejecutar, como el canvas de Chart.js, entran por un `InjectionToken` y en los tests se reemplazan por dobles.
+Son 520 tests en 79 archivos, y la suite completa tarda unos 25 segundos. Los nombres de los tests están en español y describen la regla que prueban. Las dependencias que jsdom no puede ejecutar, como el canvas de Chart.js, entran por un `InjectionToken` y en los tests se reemplazan por dobles.
 
 ## Equipo
 

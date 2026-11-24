@@ -117,7 +117,7 @@ export class AdminModeracionService {
 
   /**
    * Deletes through the regular reviews endpoint, which lets admins remove any review.
-   * Errors come back as an `Error` whose message is ready to show to the admin.
+   * Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin.
    */
   eliminar(id: number): Observable<void> {
     return this.http

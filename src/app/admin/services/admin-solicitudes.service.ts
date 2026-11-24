@@ -55,7 +55,7 @@ export class AdminSolicitudesService {
     return this.resolver(restaurantId, 'rechazar', 'admin.error.rechazarSolicitud');
   }
 
-  /** Errors come back as an `Error` whose message is ready to show to the admin. */
+  /** Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin. */
   private resolver(
     restaurantId: number,
     accion: 'aprobar' | 'rechazar',
