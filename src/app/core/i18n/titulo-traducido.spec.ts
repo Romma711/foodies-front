@@ -19,6 +19,12 @@ describe('TituloTraducido', () => {
     });
   });
 
+  // Tests share one jsdom: leave Spanish behind for the next spec file.
+  afterEach(() => {
+    localStorage.removeItem('foodies.idioma');
+    document.documentElement.lang = 'es';
+  });
+
   it('traduce el título de la ruta y lo actualiza al cambiar de idioma', async () => {
     await TestBed.inject(Router).navigateByUrl('/');
     const title = TestBed.inject(Title);

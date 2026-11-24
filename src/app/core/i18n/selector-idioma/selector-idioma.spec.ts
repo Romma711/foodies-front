@@ -6,6 +6,12 @@ import { SelectorIdioma } from './selector-idioma';
 describe('SelectorIdioma', () => {
   beforeEach(() => localStorage.clear());
 
+  // Tests share one jsdom: leave Spanish behind for the next spec file.
+  afterEach(() => {
+    localStorage.removeItem('foodies.idioma');
+    document.documentElement.lang = 'es';
+  });
+
   const render = async () => {
     const fixture = TestBed.createComponent(SelectorIdioma);
     await fixture.whenStable();

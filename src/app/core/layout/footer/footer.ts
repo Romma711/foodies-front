@@ -1,9 +1,10 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   selector: 'app-footer',
   templateUrl: './footer.html',
 })
@@ -14,8 +15,8 @@ export class Footer {
   protected readonly clienteLogueado = computed(() => this.auth.isAuthenticated('CLIENTE'));
 
   protected readonly enlacesCliente = [
-    { path: '/mis-reservas', label: 'Mis reservas' },
-    { path: '/mis-resenas', label: 'Mis reseñas' },
-    { path: '/perfil', label: 'Mi perfil' },
+    { path: '/mis-reservas', label: 'nav.misReservas' as const },
+    { path: '/mis-resenas', label: 'nav.misResenas' as const },
+    { path: '/perfil', label: 'nav.miPerfil' as const },
   ];
 }

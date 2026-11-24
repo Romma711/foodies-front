@@ -12,7 +12,11 @@ import {
 } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable } from 'rxjs';
-import { EspecialidadDeComida, ESPECIALIDADES, RegistrableRole } from '../../../core/auth/auth.models';
+import {
+  EspecialidadDeComida,
+  ESPECIALIDADES,
+  RegistrableRole,
+} from '../../../core/auth/auth.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PORTALS } from '../../../core/auth/portals';
 import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
@@ -24,6 +28,7 @@ import {
   isConnectionError,
 } from '../../../core/http/api-error';
 import { RegistroFotos } from '../../components/registro-fotos/registro-fotos';
+import { TPipe } from '@core/i18n/t.pipe';
 
 interface RegisterFormModel {
   nombre: string;
@@ -38,7 +43,7 @@ interface RegisterFormModel {
 }
 
 @Component({
-  imports: [FormField, RegistroFotos, RouterLink, VolverAlInicio],
+  imports: [TPipe, FormField, RegistroFotos, RouterLink, VolverAlInicio],
   selector: 'app-register',
   templateUrl: './register.html',
 })
@@ -126,13 +131,13 @@ export class Register {
     if (this.isRestaurante() && value.especialidadDeComida !== '') {
       return this.auth.registerRestaurante(
         {
-        email: value.email,
-        password: value.password,
-        telefono: value.telefono,
-        nombreRestaurante: value.nombreRestaurante,
-        direccion: value.direccion,
-        especialidadDeComida: value.especialidadDeComida,
-        cupoMaximo: value.cupoMaximo,
+          email: value.email,
+          password: value.password,
+          telefono: value.telefono,
+          nombreRestaurante: value.nombreRestaurante,
+          direccion: value.direccion,
+          especialidadDeComida: value.especialidadDeComida,
+          cupoMaximo: value.cupoMaximo,
         },
         { fotos: this.fotos(), portada: this.portada() },
       );

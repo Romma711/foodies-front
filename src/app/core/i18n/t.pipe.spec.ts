@@ -12,6 +12,12 @@ class Anfitrion {}
 describe('TPipe', () => {
   beforeEach(() => localStorage.clear());
 
+  // Tests share one jsdom: leave Spanish behind for the next spec file.
+  afterEach(() => {
+    localStorage.removeItem('foodies.idioma');
+    document.documentElement.lang = 'es';
+  });
+
   it('vuelve a pintar el texto cuando cambia el idioma, sin recargar', async () => {
     const fixture = TestBed.createComponent(Anfitrion);
     await fixture.whenStable();

@@ -15,9 +15,10 @@ import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-in
 import { PortalNavigation } from '../../../core/auth/portal-navigation';
 import { safeReturnUrl } from '../../../core/auth/return-url';
 import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../../core/http/api-error';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [FormField, RouterLink, VolverAlInicio],
+  imports: [TPipe, FormField, RouterLink, VolverAlInicio],
   selector: 'app-login',
   templateUrl: './login.html',
 })

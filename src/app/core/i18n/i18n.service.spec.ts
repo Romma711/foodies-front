@@ -10,6 +10,12 @@ describe('I18n', () => {
 
   const servicio = () => TestBed.inject(I18n);
 
+  // Tests share one jsdom: leave Spanish behind for the next spec file.
+  afterEach(() => {
+    localStorage.removeItem('foodies.idioma');
+    document.documentElement.lang = 'es';
+  });
+
   it('arranca en español cuando no hay una elección guardada', () => {
     const i18n = servicio();
 
