@@ -34,6 +34,7 @@ export class ResenaService {
   private readonly _error = signal<Mensaje | null>(null);
   private readonly _mutationError = signal<Mensaje | null>(null);
   private readonly _misResenaIds = signal<ReadonlySet<number>>(new Set());
+  private readonly _restaurantesResenados = signal<ReadonlySet<number>>(new Set());
 
   readonly resenas = this._resenas.asReadonly();
   /** Reviews written by the signed-in client, each with the restaurant it is about. */
@@ -45,6 +46,8 @@ export class ResenaService {
   readonly mutationError = this._mutationError.asReadonly();
   /** Ids of the reviews written by the signed-in client; the list DTO has no owner field. */
   readonly misResenaIds = this._misResenaIds.asReadonly();
+  /** Restaurants the logged-in client already reviewed (one review per restaurant). */
+  readonly restaurantesResenados = this._restaurantesResenados.asReadonly();
 
   readonly totalResenas = computed(() => this._resenas().length);
 
@@ -98,6 +101,11 @@ export class ResenaService {
         context: withRole('CLIENTE'),
       })
       .pipe(
+        tap((resenas) =>
+          this._restaurantesResenados.set(
+            new Set((resenas ?? []).map((resena) => resena.restauranteId)),
+          ),
+        ),
         map((resenas) => new Set((resenas ?? []).map((resena) => resena.id))),
         catchError(() => of(new Set<number>())),
         tap((ids) => this._misResenaIds.set(ids)),

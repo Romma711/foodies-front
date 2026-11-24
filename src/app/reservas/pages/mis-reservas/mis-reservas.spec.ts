@@ -10,6 +10,7 @@ import { fechaLocal } from '../../utils/reserva-reglas';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { Disponibilidad } from '../../models/disponibilidad';
 import { ListaEsperaService } from '../../../lista-espera/services/lista-espera.service';
+import { ResenaService } from '../../../resenas/services/resena.service';
 import { MisReservas } from './mis-reservas';
 
 describe('MisReservas', () => {
@@ -63,6 +64,7 @@ describe('MisReservas', () => {
   let limpiarErrorMutacion: ReturnType<typeof vi.fn>;
   let modificar: ReturnType<typeof vi.fn>;
   let disponibilidad: Disponibilidad;
+  let restaurantesResenados: WritableSignal<ReadonlySet<number>>;
 
   beforeEach(async () => {
     reservas = signal(reservasMock);
@@ -75,11 +77,19 @@ describe('MisReservas', () => {
     limpiarErrorMutacion = vi.fn();
     modificar = vi.fn();
     disponibilidad = { fecha: fechaLocal(5), porTurnos: false, turnos: [] };
+    restaurantesResenados = signal<ReadonlySet<number>>(new Set());
 
     await TestBed.configureTestingModule({
       imports: [MisReservas],
       providers: [
         provideRouter([]),
+        {
+          provide: ResenaService,
+          useValue: {
+            restaurantesResenados: restaurantesResenados.asReadonly(),
+            cargarMisResenas: vi.fn(() => of(new Set<number>())),
+          },
+        },
         {
           provide: ListaEsperaService,
           useValue: {
@@ -515,6 +525,20 @@ describe('MisReservas', () => {
       );
 
       expect(enlace?.getAttribute('href')).toBe('/restaurantes/5');
+    });
+
+    it('no invita a reseñar un restaurante que el cliente ya reseñó', () => {
+      restaurantesResenados.set(new Set([5]));
+      reservas.set([
+        { ...base, estadoReserva: 'ASISTIO' },
+        { ...base, id: 25, idRestaurant: 9, estadoReserva: 'ASISTIO' },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const [resenado, pendiente] = [...elemento.querySelectorAll('li')];
+
+      expect(resenado.textContent).toContain('Gracias por tu visita y por dejar tu reseña.');
+      expect(resenado.textContent).not.toContain('Dejar mi reseña');
+      expect(pendiente.textContent).toContain('Dejar mi reseña');
     });
 
     it('permite cancelar también una reserva confirmada', () => {

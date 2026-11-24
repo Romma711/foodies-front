@@ -345,6 +345,7 @@ export const PT: Traducciones = {
   'misReservas.rechazada': 'O restaurante não pôde aceitar esta reserva.',
   'misReservas.asistio': 'Obrigado pela visita. Agora você já pode avaliar o restaurante.',
   'misReservas.dejarResena': 'Escrever minha avaliação',
+  'misReservas.asistioResenada': 'Obrigado pela visita e pela sua avaliação.',
   'misReservas.noAsistio':
     'O restaurante registrou que você não compareceu. Três ausências somam um strike.',
   'misReservas.vencida': 'O restaurante não confirmou a reserva antes do horário de chegada.',

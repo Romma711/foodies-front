@@ -343,6 +343,7 @@ export const ES = {
   'misReservas.rechazada': 'El restaurante no pudo aceptar esta reserva.',
   'misReservas.asistio': 'Gracias por tu visita. Ya podés dejar tu reseña del restaurante.',
   'misReservas.dejarResena': 'Dejar mi reseña',
+  'misReservas.asistioResenada': 'Gracias por tu visita y por dejar tu reseña.',
   'misReservas.noAsistio':
     'El restaurante registró que no asististe. Tres ausencias suman un strike.',
   'misReservas.vencida': 'El restaurante no confirmó la reserva antes del horario de llegada.',

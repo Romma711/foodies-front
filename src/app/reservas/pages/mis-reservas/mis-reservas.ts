@@ -16,6 +16,7 @@ import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit
 import { MiListaEspera } from '../../../lista-espera/components/mi-lista-espera/mi-lista-espera';
 import { ESTADOS_ACTIVOS, EstadoReserva, ReservaListDTO } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
+import { ResenaService } from '../../../resenas/services/resena.service';
 import {
   estadoLabel,
   formatearFechaReserva,
@@ -43,6 +44,9 @@ export class MisReservas {
   private readonly auth = inject(AuthService);
   private readonly i18n = inject(I18n);
   private readonly reservaService = inject(ReservaService);
+  private readonly resenaService = inject(ResenaService);
+  /** Attended reservations link to the review only where the client has not reviewed yet. */
+  protected readonly restaurantesResenados = this.resenaService.restaurantesResenados;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -169,5 +173,9 @@ export class MisReservas {
       .listarPorUsuario(usuarioId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+    this.resenaService
+      .cargarMisResenas(usuarioId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 }

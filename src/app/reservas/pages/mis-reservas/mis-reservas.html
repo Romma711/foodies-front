@@ -210,17 +210,23 @@
                     </p>
                   }
                   @case ('ASISTIO') {
-                    <div class="flex flex-wrap items-center justify-between gap-3">
+                    @if (restaurantesResenados().has(reserva.idRestaurant)) {
                       <p class="text-sm leading-6 text-emerald-900" data-testid="mensaje-estado">
-                        {{ 'misReservas.asistio' | t }}
+                        {{ 'misReservas.asistioResenada' | t }}
                       </p>
-                      <a
-                        [routerLink]="['/restaurantes', reserva.idRestaurant]"
-                        class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                      >
-                        {{ 'misReservas.dejarResena' | t }}
-                      </a>
-                    </div>
+                    } @else {
+                      <div class="flex flex-wrap items-center justify-between gap-3">
+                        <p class="text-sm leading-6 text-emerald-900" data-testid="mensaje-estado">
+                          {{ 'misReservas.asistio' | t }}
+                        </p>
+                        <a
+                          [routerLink]="['/restaurantes', reserva.idRestaurant]"
+                          class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                        >
+                          {{ 'misReservas.dejarResena' | t }}
+                        </a>
+                      </div>
+                    }
                   }
                   @default {
                     <p
