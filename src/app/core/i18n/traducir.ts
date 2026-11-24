@@ -31,6 +31,11 @@ function interpolar(texto: string, parametros: ParametrosTraduccion): string {
   );
 }
 
+/** A `t` function: `I18n.t` in components, `traductorEspanol` as the default of pure helpers. */
+export type Traductor = (clave: Clave, parametros?: ParametrosTraduccion) => string;
+
+export const traductorEspanol: Traductor = (clave, parametros) => traducir('es', clave, parametros);
+
 /** Identity that type-checks a key stored where only a `string` fits (validator messages). */
 export function clave(valor: Clave): Clave {
   return valor;

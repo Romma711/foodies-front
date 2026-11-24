@@ -1,12 +1,14 @@
 import { Component, input, model } from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../restaurantes/models/espacios';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /**
  * Elección del espacio (salón, patio, barra) de una reserva. Se usa con `[formField]`: el valor es
  * el id del espacio como texto. No muestra capacidades, solo si hay lugar para la fecha y cantidad.
  */
 @Component({
+  imports: [TPipe],
   selector: 'app-espacio-selector',
   template: `
     <fieldset [attr.aria-describedby]="errors().length && touched() ? idBase() + '-error' : null">
@@ -14,7 +16,9 @@ import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../restaurantes/model
       @if (cargando()) {
         <p class="mt-2 text-sm text-ink-500" role="status">Buscando espacios…</p>
       } @else if (espacios().length === 0) {
-        <p class="mt-2 text-sm text-ink-500">Este restaurante todavía no tiene espacios para reservar.</p>
+        <p class="mt-2 text-sm text-ink-500">
+          Este restaurante todavía no tiene espacios para reservar.
+        </p>
       } @else {
         <div class="mt-2 grid gap-2 sm:grid-cols-2">
           @for (espacio of espacios(); track espacio.id) {
@@ -35,7 +39,7 @@ import { EspacioPublico, TIPO_ESPACIO_LABELS } from '../../../restaurantes/model
               <span class="flex flex-col">
                 <span class="font-semibold text-ink-900">{{ espacio.nombre }}</span>
                 <span class="text-xs text-ink-500">
-                  {{ tipos[espacio.tipo] }}
+                  {{ tipos[espacio.tipo] | t }}
                   @if (espacio.hayLugar === false) {
                     · Sin lugar para esa fecha y cantidad
                   }

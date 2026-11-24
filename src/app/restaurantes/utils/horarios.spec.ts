@@ -1,3 +1,4 @@
+import { Traductor, traducir } from '../../core/i18n/traducir';
 import { FranjaHoraria, diaDeFecha, franjasDelDia, horariosDelDia, textoFranjas } from './horarios';
 
 describe('horarios de atención', () => {
@@ -39,5 +40,14 @@ describe('horarios de atención', () => {
   it('describe las franjas para el cliente', () => {
     expect(textoFranjas(franjasDelDia(franjas, 'SATURDAY'))).toBe('12:00 a 16:00 y 20:00 a 00:00');
     expect(textoFranjas([])).toBe('Cerrado');
+  });
+
+  it('describe las franjas en el idioma del traductor', () => {
+    const t: Traductor = (clave, parametros) => traducir('en', clave, parametros);
+
+    expect(textoFranjas(franjasDelDia(franjas, 'SATURDAY'), t)).toBe(
+      '12:00 to 16:00 and 20:00 to 00:00',
+    );
+    expect(textoFranjas([], t)).toBe('Closed');
   });
 });

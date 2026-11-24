@@ -9,6 +9,7 @@ import {
 } from '../../../restaurantes/utils/horarios';
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 interface Franja {
   apertura: string;
@@ -26,6 +27,7 @@ const FRANJA_SUGERIDA: Franja = { apertura: '20:00', cierre: '00:00' };
 
 /** Días y franjas en los que el restaurante recibe reservas. */
 @Component({
+  imports: [TPipe],
   selector: 'app-horarios',
   styleUrl: './horarios.css',
   templateUrl: './horarios.html',

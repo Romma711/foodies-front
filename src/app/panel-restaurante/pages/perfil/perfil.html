@@ -61,7 +61,7 @@
       >
         <option value="">Elegí una</option>
         @for (especialidad of especialidades; track especialidad) {
-          <option [value]="especialidad">{{ especialidadLabels[especialidad] }}</option>
+          <option [value]="especialidad">{{ especialidadLabels[especialidad] | t }}</option>
         }
       </select>
       @if (perfilForm.especialidad().touched() && perfilForm.especialidad().errors()[0]; as error) {
@@ -89,8 +89,8 @@
         Aceptar reservas automáticamente
       </label>
       <p id="perfil-auto-hint" class="muted">
-        Las reservas se aceptan solas hasta el porcentaje que elijas del cupo de cada espacio. Las que
-        superen ese límite quedan pendientes para que las revises.
+        Las reservas se aceptan solas hasta el porcentaje que elijas del cupo de cada espacio. Las
+        que superen ese límite quedan pendientes para que las revises.
       </p>
 
       @if (!perfilForm.porcentajeAutoAceptacion().hidden()) {
@@ -107,8 +107,8 @@
           aria-describedby="perfil-porcentaje-hint perfil-porcentaje-error"
         />
         <p id="perfil-porcentaje-hint" class="muted">
-          Con tu capacidad total actual se aceptan solas hasta {{ personasAutoAceptadas() }} personas
-          por día, repartidas según el cupo de cada espacio.
+          Con tu capacidad total actual se aceptan solas hasta
+          {{ personasAutoAceptadas() }} personas por día, repartidas según el cupo de cada espacio.
         </p>
         @if (
           perfilForm.porcentajeAutoAceptacion().touched() &&

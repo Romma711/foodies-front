@@ -6,12 +6,12 @@ const ESTADO_LABELS: Record<EstadoReserva, string> = {
   CANCELADA: 'Cancelada',
 };
 
-export function formatearFechaReserva(value: string): string {
+export function formatearFechaReserva(value: string, locale = 'es-AR'): string {
   const fecha = new Date(value);
   if (Number.isNaN(fecha.getTime())) {
     return value;
   }
-  const formateada = new Intl.DateTimeFormat('es-AR', {
+  const formateada = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

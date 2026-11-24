@@ -6,6 +6,7 @@ import { EspecialidadDeComida, ESPECIALIDADES } from '../../../core/auth/auth.mo
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { panelErrorMessage } from '../../utils/panel-errors';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 interface PerfilModel {
   nombre: string;
@@ -19,7 +20,7 @@ interface PerfilModel {
 const PORCENTAJE_SUGERIDO = 60;
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [TPipe, FormField, RouterLink],
   selector: 'app-perfil',
   styleUrl: './perfil.css',
   templateUrl: './perfil.html',
@@ -91,7 +92,8 @@ export class Perfil implements OnInit {
     this.saved.set(false);
     this.saveError.set(null);
     await submit(this.perfilForm, async () => {
-      const { nombre, ubicacion, especialidad, autoAceptar, porcentajeAutoAceptacion } = this.model();
+      const { nombre, ubicacion, especialidad, autoAceptar, porcentajeAutoAceptacion } =
+        this.model();
       if (especialidad === '') {
         return undefined;
       }

@@ -30,7 +30,7 @@
 
     @for (d of dias(); track d.dia) {
       <fieldset class="card dia">
-        <legend>{{ labels[d.dia] }}</legend>
+        <legend>{{ labels[d.dia] | t }}</legend>
         <label class="abierto" [for]="'abierto-' + d.dia">
           <input
             type="checkbox"
@@ -68,7 +68,7 @@
                 <button
                   type="button"
                   class="btn btn-secondary"
-                  [attr.aria-label]="'Quitar la franja ' + (i + 1) + ' del ' + labels[d.dia]"
+                  [attr.aria-label]="'Quitar la franja ' + (i + 1) + ' del ' + (labels[d.dia] | t)"
                   (click)="quitarFranja(d.dia, i)"
                 >
                   Quitar
@@ -81,7 +81,7 @@
               <button
                 type="button"
                 class="btn btn-secondary"
-                [attr.aria-label]="'Agregar franja al ' + labels[d.dia]"
+                [attr.aria-label]="'Agregar franja al ' + (labels[d.dia] | t)"
                 (click)="agregarFranja(d.dia)"
               >
                 Agregar franja

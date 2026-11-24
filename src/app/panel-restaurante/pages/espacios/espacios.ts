@@ -11,6 +11,7 @@ import {
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
 import { Espacio, MAX_NOMBRE_ESPACIO } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 interface EspacioModel {
   tipo: TipoEspacio;
@@ -22,7 +23,7 @@ const MODELO_VACIO: EspacioModel = { tipo: 'SALON', nombre: '', capacidad: 10 };
 
 /** Salones, patios y barras del restaurante, cada uno con su capacidad por día. */
 @Component({
-  imports: [ConfirmDialog, FormField],
+  imports: [TPipe, ConfirmDialog, FormField],
   selector: 'app-espacios',
   styleUrl: './espacios.css',
   templateUrl: './espacios.html',

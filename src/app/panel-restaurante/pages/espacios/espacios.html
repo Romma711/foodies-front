@@ -25,7 +25,12 @@
 
     <p class="total">Capacidad total: {{ capacidadTotal() }} personas por día</p>
 
-    <form class="card stack" novalidate aria-labelledby="espacio-form-titulo" (submit)="onSubmit($event)">
+    <form
+      class="card stack"
+      novalidate
+      aria-labelledby="espacio-form-titulo"
+      (submit)="onSubmit($event)"
+    >
       <h2 id="espacio-form-titulo">
         {{ editando() ? 'Editar ' + editando()!.nombre : 'Agregar un espacio' }}
       </h2>
@@ -35,7 +40,7 @@
           <label for="espacio-tipo">Tipo</label>
           <select id="espacio-tipo" [formField]="espacioForm.tipo">
             @for (tipo of tipos; track tipo) {
-              <option [value]="tipo">{{ tipoLabels[tipo] }}</option>
+              <option [value]="tipo">{{ tipoLabels[tipo] | t }}</option>
             }
           </select>
         </div>
@@ -47,7 +52,9 @@
             type="number"
             inputmode="numeric"
             [formField]="espacioForm.capacidad"
-            [attr.aria-invalid]="espacioForm.capacidad().touched() && espacioForm.capacidad().invalid()"
+            [attr.aria-invalid]="
+              espacioForm.capacidad().touched() && espacioForm.capacidad().invalid()
+            "
             aria-describedby="espacio-capacidad-error"
           />
           @if (espacioForm.capacidad().touched() && espacioForm.capacidad().errors()[0]; as error) {
@@ -73,17 +80,21 @@
 
       <div class="actions">
         <button type="submit" class="btn btn-primary" [disabled]="espacioForm().submitting()">
-          {{ espacioForm().submitting() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Agregar' }}
+          {{
+            espacioForm().submitting() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Agregar'
+          }}
         </button>
         @if (editando()) {
-          <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">Cancelar</button>
+          <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+            Cancelar
+          </button>
         }
       </div>
     </form>
 
     @for (grupo of grupos(); track grupo.tipo) {
       <section class="stack" [attr.aria-labelledby]="'grupo-' + grupo.tipo">
-        <h3 [id]="'grupo-' + grupo.tipo">{{ grupo.titulo }}</h3>
+        <h3 [id]="'grupo-' + grupo.tipo">{{ grupo.titulo | t }}</h3>
         <ul class="list">
           @for (espacio of grupo.espacios; track espacio.id) {
             <li class="card espacio" [class.inactivo]="!espacio.activo">
@@ -95,7 +106,8 @@
                   }
                 </p>
                 <p class="muted">
-                  {{ espacio.capacidad }} {{ espacio.capacidad === 1 ? 'persona' : 'personas' }} por día
+                  {{ espacio.capacidad }} {{ espacio.capacidad === 1 ? 'persona' : 'personas' }} por
+                  día
                 </p>
               </div>
               <div class="actions">

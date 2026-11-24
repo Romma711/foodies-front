@@ -5,9 +5,10 @@ import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades
 import { panelErrorMessage, toIsoDate } from '../../utils/panel-errors';
 import { MiRestaurante, ReservaPanel } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   selector: 'app-resumen',
   styleUrl: './resumen.css',
   templateUrl: './resumen.html',

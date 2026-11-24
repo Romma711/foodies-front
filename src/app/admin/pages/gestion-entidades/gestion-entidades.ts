@@ -36,6 +36,8 @@ import {
   hayFiltrosClientes,
   hayFiltrosRestaurantes,
 } from '../../utils/filtros-entidades';
+import { TPipe } from '@core/i18n/t.pipe';
+import { Clave } from '@core/i18n/traducir';
 
 type Pestana = 'clientes' | 'restaurantes';
 
@@ -51,7 +53,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
  */
 @Component({
   selector: 'app-gestion-entidades',
-  imports: [NgTemplateOutlet, StrikeModal, ToastOutlet],
+  imports: [TPipe, NgTemplateOutlet, StrikeModal, ToastOutlet],
   providers: [ToastService],
   template: `
     <section aria-labelledby="titulo-entidades">
@@ -295,7 +297,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
               >
                 <option value="">Todas</option>
                 @for (especialidad of especialidades; track especialidad) {
-                  <option [value]="especialidad">{{ especialidadLabels[especialidad] }}</option>
+                  <option [value]="especialidad">{{ especialidadLabels[especialidad] | t }}</option>
                 }
               </select>
             </div>
@@ -350,7 +352,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                     <td class="px-4 py-3">
                       <p class="font-semibold text-ink-900">{{ restaurante.nombre }}</p>
                       <p class="text-xs text-ink-500">
-                        {{ especialidad(restaurante) }} · {{ restaurante.ubicacion }}
+                        {{ especialidad(restaurante) | t }} · {{ restaurante.ubicacion }}
                       </p>
                     </td>
                     <td class="px-4 py-3">
@@ -592,7 +594,7 @@ export class GestionEntidades {
     return [cliente.nombre, cliente.apellido].filter(Boolean).join(' ') || cliente.email;
   }
 
-  protected especialidad(restaurante: EntidadRestaurante): string {
+  protected especialidad(restaurante: EntidadRestaurante): Clave {
     return especialidadLabel(restaurante.especialidad);
   }
 

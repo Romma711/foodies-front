@@ -1,3 +1,4 @@
+import { Traductor, traductorEspanol } from '../../core/i18n/traducir';
 import { especialidadLabel } from '../../restaurantes/models/especialidades';
 import { RestauranteListDTO } from '../../restaurantes/models/restaurante.models';
 import { Calificacion } from '../services/calificacion.service';
@@ -17,11 +18,12 @@ export interface PopupRestaurante {
  *
  * Built with DOM APIs and `textContent` (never `innerHTML`) because restaurant names come from
  * user input. The link keeps a real `href` for middle-click and screen readers, while a plain click
- * goes through `navegar` so the SPA does not reload.
+ * goes through `navegar` so the SPA does not reload. Texts use `t`, read when the popup is built.
  */
 export function crearPopupRestaurante(
   restaurante: RestauranteListDTO,
   navegar: (url: string) => void,
+  t: Traductor = traductorEspanol,
 ): PopupRestaurante {
   const url = `/restaurantes/${restaurante.id}`;
 
@@ -36,7 +38,7 @@ export function crearPopupRestaurante(
 
   const cuerpo = crear('div', 'p-4');
   const especialidad = crear('p', 'text-xs font-semibold tracking-wide text-brand-700 uppercase');
-  especialidad.textContent = especialidadLabel(restaurante.especialidad);
+  especialidad.textContent = t(especialidadLabel(restaurante.especialidad));
   const titulo = crear('h3', 'mt-1 text-base font-extrabold tracking-tight text-ink-900');
   titulo.textContent = restaurante.nombre;
   const direccion = crear('p', 'mt-0.5 truncate text-xs text-ink-500');
@@ -44,14 +46,14 @@ export function crearPopupRestaurante(
 
   const calificacion = crear('p', 'mt-2 text-sm text-ink-500');
   calificacion.dataset['testid'] = 'calificacion';
-  calificacion.textContent = 'Cargando calificación…';
+  calificacion.textContent = t('mapa.cargandoCalificacion');
 
   const enlace = crear(
     'a',
     'mt-3 inline-flex items-center rounded-full bg-ink-900 px-4 py-2 text-xs font-semibold !text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900',
   ) as HTMLAnchorElement;
   enlace.href = url;
-  enlace.textContent = 'Ver restaurante';
+  enlace.textContent = t('catalogo.verRestaurante');
   enlace.addEventListener('click', (evento) => {
     if (evento.button !== 0 || evento.metaKey || evento.ctrlKey || evento.shiftKey) {
       return;
@@ -72,11 +74,11 @@ export function crearPopupRestaurante(
 
   return {
     elemento,
-    mostrarCargando: () => mostrarTexto('Cargando calificación…'),
-    mostrarError: () => mostrarTexto('No pudimos cargar la calificación.'),
+    mostrarCargando: () => mostrarTexto(t('mapa.cargandoCalificacion')),
+    mostrarError: () => mostrarTexto(t('mapa.errorCalificacion')),
     mostrarCalificacion({ promedio, total }) {
       if (total === 0) {
-        mostrarTexto('Sin reseñas todavía');
+        mostrarTexto(t('mapa.sinResenas'));
         return;
       }
       calificacion.replaceChildren();
@@ -84,7 +86,10 @@ export function crearPopupRestaurante(
       calificacion.setAttribute('role', 'img');
       calificacion.setAttribute(
         'aria-label',
-        `Calificación: ${valor} de 5 (${total} ${total === 1 ? 'reseña' : 'reseñas'})`,
+        t('mapa.calificacion', {
+          valor,
+          total: t(total === 1 ? 'resena.cantidadUna' : 'resena.cantidadVarias', { n: total }),
+        }),
       );
       const llenas = Math.round(promedio);
       const estrellas = crear('span', 'tracking-tight text-star');

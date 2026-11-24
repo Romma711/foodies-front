@@ -15,20 +15,19 @@
         class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line"
       >
         <span class="size-1.5 rounded-full bg-brand-500" aria-hidden="true"></span>
-        Reservas sin llamadas ni esperas
+        {{ 'home.etiqueta' | t }}
       </span>
 
       <h1
         id="home-titulo"
         class="mt-5 text-4xl leading-tight font-extrabold tracking-tight text-ink-900 sm:text-6xl"
       >
-        Tu próxima mesa está a
-        <span class="text-brand-600">un clic</span>
+        {{ 'home.titulo1' | t }}
+        <span class="text-brand-600">{{ 'home.titulo2' | t }}</span>
       </h1>
 
       <p class="mt-5 max-w-xl text-base leading-7 text-ink-500 sm:text-lg">
-        Descubrí restaurantes cerca tuyo, reservá en segundos y compartí tu experiencia con la
-        comunidad Foodies.
+        {{ 'home.bajada' | t }}
       </p>
 
       <form
@@ -36,20 +35,20 @@
         role="search"
         (submit)="buscar($event, campoBusqueda.value)"
       >
-        <label for="home-buscar" class="sr-only">Buscar restaurante por nombre</label>
+        <label for="home-buscar" class="sr-only">{{ 'catalogo.buscarEtiqueta' | t }}</label>
         <input
           #campoBusqueda
           id="home-buscar"
           type="search"
           autocomplete="off"
-          placeholder="¿A dónde querés ir? Buscá por nombre"
+          [placeholder]="'home.buscarPlaceholder' | t"
           class="min-w-0 flex-1 rounded-full border border-line bg-white/90 px-5 py-3 text-sm text-ink-900 shadow-card placeholder:text-ink-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
         />
         <button
           type="submit"
           class="inline-flex items-center justify-center rounded-full bg-ink-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
         >
-          Buscar
+          {{ 'home.buscar' | t }}
         </button>
       </form>
 
@@ -58,7 +57,7 @@
           routerLink="/restaurantes"
           class="inline-flex items-center justify-center gap-2 rounded-full bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
         >
-          Explorar restaurantes
+          {{ 'home.explorar' | t }}
           <svg
             class="size-4"
             viewBox="0 0 24 24"
@@ -77,20 +76,20 @@
             routerLink="/mis-reservas"
             class="inline-flex items-center justify-center rounded-full bg-white/80 px-6 py-3 text-sm font-semibold text-ink-900 ring-1 ring-line transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
           >
-            Ver mis reservas
+            {{ 'home.verMisReservas' | t }}
           </a>
         } @else {
           <a
             routerLink="/register"
             class="inline-flex items-center justify-center rounded-full bg-white/80 px-6 py-3 text-sm font-semibold text-ink-900 ring-1 ring-line transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
           >
-            Crear mi cuenta
+            {{ 'home.crearMiCuenta' | t }}
           </a>
         }
       </div>
     </div>
 
-    <ul class="mt-12 flex flex-wrap gap-2" aria-label="Especialidades disponibles">
+    <ul class="mt-12 flex flex-wrap gap-2" [attr.aria-label]="'home.especialidades' | t">
       @for (especialidad of especialidades; track especialidad.valor) {
         <li>
           <a
@@ -98,7 +97,7 @@
             [queryParams]="{ especialidad: especialidad.valor }"
             class="inline-flex rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
           >
-            {{ especialidad.etiqueta }}
+            {{ especialidad.etiqueta | t }}
           </a>
         </li>
       }
@@ -107,7 +106,7 @@
 
   <section class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8" aria-labelledby="home-pasos">
     <h2 id="home-pasos" class="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
-      Cómo funciona
+      {{ 'home.comoFunciona' | t }}
     </h2>
     <ol class="mt-6 grid gap-5 sm:grid-cols-3">
       @for (paso of pasos; track paso.titulo; let i = $index) {
@@ -118,8 +117,8 @@
           >
             {{ i + 1 }}
           </span>
-          <h3 class="mt-4 text-lg font-bold text-ink-900">{{ paso.titulo }}</h3>
-          <p class="mt-2 text-sm leading-6 text-ink-500">{{ paso.texto }}</p>
+          <h3 class="mt-4 text-lg font-bold text-ink-900">{{ paso.titulo | t }}</h3>
+          <p class="mt-2 text-sm leading-6 text-ink-500">{{ paso.texto | t }}</p>
         </li>
       }
     </ol>
@@ -136,18 +135,20 @@
           id="home-destacados"
           class="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl"
         >
-          Para ir conociendo
+          {{ 'home.paraIrConociendo' | t }}
         </h2>
         <a
           routerLink="/restaurantes"
           class="shrink-0 rounded-full text-sm font-semibold text-brand-700 hover:underline"
         >
-          Ver todos
+          {{ 'catalogo.verTodos' | t }}
         </a>
       </div>
 
       @if (cargando()) {
-        <p class="mt-6 text-sm font-medium text-ink-500" role="status">Cargando restaurantes…</p>
+        <p class="mt-6 text-sm font-medium text-ink-500" role="status">
+          {{ 'catalogo.cargando' | t }}
+        </p>
       } @else {
         <ul class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           @for (restaurante of destacados(); track restaurante.id) {
@@ -171,7 +172,7 @@
                   <span
                     class="absolute top-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-100"
                   >
-                    {{ especialidadLabels[restaurante.especialidad] }}
+                    {{ especialidadLabels[restaurante.especialidad] | t }}
                   </span>
                   <span
                     class="absolute bottom-4 left-4 grid size-12 place-items-center rounded-2xl bg-white/95 text-lg font-extrabold text-brand-700 shadow-card"
@@ -198,16 +199,18 @@
       class="flex flex-col gap-5 rounded-3xl bg-ink-900 p-8 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10"
     >
       <div>
-        <h2 class="text-2xl font-extrabold tracking-tight">¿Tenés un restaurante?</h2>
+        <h2 class="text-2xl font-extrabold tracking-tight">
+          {{ 'catalogo.tenesRestaurante' | t }}
+        </h2>
         <p class="mt-2 max-w-lg text-sm leading-6 text-cream-200">
-          Sumalo a Foodies, gestioná tus mesas y empezá a recibir reservas desde tu panel.
+          {{ 'home.sumalo' | t }}
         </p>
       </div>
       <a
         routerLink="/restaurante/register"
         class="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-900 transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
-        Quiero sumarme
+        {{ 'catalogo.quieroSumarme' | t }}
       </a>
     </div>
   </section>

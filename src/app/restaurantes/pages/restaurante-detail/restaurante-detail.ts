@@ -18,10 +18,7 @@ import { ESPECIALIDAD_LABELS } from '../../models/especialidades';
 import { ReservaForm } from '../../../reservas/components/reserva-form/reserva-form';
 import { RestauranteResenas } from '../../../resenas/components/restaurante-resenas/restaurante-resenas';
 import { ReservaDetailDTO } from '../../../reservas/models';
-import {
-  formatearFechaReserva,
-  formatearHora,
-} from '../../../reservas/utils/reserva-formato';
+import { formatearFechaReserva, formatearHora } from '../../../reservas/utils/reserva-formato';
 import { CartaPublicaDTO, FotoPublicaDTO } from '../../models/restaurante.models';
 import { RestauranteService } from '../../services/restaurante.service';
 import { HorariosService } from '../../../reservas/services/horarios.service';
@@ -32,9 +29,11 @@ import {
   franjasDelDia,
   textoFranjas,
 } from '../../utils/horarios';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 @Component({
-  imports: [ReservaForm, RestauranteResenas, RouterLink],
+  imports: [TPipe, ReservaForm, RestauranteResenas, RouterLink],
   selector: 'app-restaurante-detail',
   templateUrl: './restaurante-detail.html',
 })
@@ -54,6 +53,8 @@ export class RestauranteDetail {
   protected readonly restaurante = this.restauranteService.restaurante;
   protected readonly cargando = this.restauranteService.loading;
   protected readonly error = this.restauranteService.error;
+  private readonly i18n = inject(I18n);
+  private readonly t = this.i18n.t.bind(this.i18n);
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   protected readonly esCliente = computed(() => this.auth.isAuthenticated('CLIENTE'));
   protected readonly usuarioId = computed(() => this.auth.userId('CLIENTE'));
@@ -67,14 +68,16 @@ export class RestauranteDetail {
       ? []
       : DIAS_SEMANA.map((dia) => ({
           dia: DIA_SEMANA_LABELS[dia],
-          texto: textoFranjas(franjasDelDia(this.franjas(), dia)),
+          texto: textoFranjas(franjasDelDia(this.franjas(), dia), this.t),
         })),
   );
   protected readonly fotos = signal<FotoPublicaDTO[]>([]);
   protected readonly portada = computed(() => this.fotos().find((f) => f.portada) ?? null);
   protected readonly galeria = computed(() => this.fotos().filter((f) => !f.portada));
 
-  protected readonly formatearFecha = formatearFechaReserva;
+  protected formatearFecha(valor: string): string {
+    return formatearFechaReserva(valor, this.i18n.locale());
+  }
   protected readonly formatearHora = formatearHora;
 
   constructor() {

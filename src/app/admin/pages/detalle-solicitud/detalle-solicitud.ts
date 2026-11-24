@@ -17,11 +17,13 @@ import { firstValueFrom } from 'rxjs';
 import { especialidadLabel } from '../../../restaurantes/models/especialidades';
 import { SolicitudRestaurante } from '../../models/solicitud-restaurante';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
+import { TPipe } from '@core/i18n/t.pipe';
+import { Clave } from '@core/i18n/traducir';
 
 /** Detalle de un restaurante pendiente, con los botones para aceptarlo o rechazarlo. */
 @Component({
   selector: 'app-detalle-solicitud',
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   template: `
     <a
       routerLink="/admin/aceptar"
@@ -162,7 +164,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
         >
           <div>
             <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">Especialidad</dt>
-            <dd class="mt-1 font-semibold text-ink-900">{{ especialidad(resto) }}</dd>
+            <dd class="mt-1 font-semibold text-ink-900">{{ especialidad(resto) | t }}</dd>
           </div>
           <div>
             <dt class="text-xs font-bold uppercase tracking-wide text-ink-500">Dirección</dt>
@@ -279,7 +281,7 @@ export class DetalleSolicitud {
       .subscribe({ error: () => undefined });
   }
 
-  protected especialidad(solicitud: SolicitudRestaurante): string {
+  protected especialidad(solicitud: SolicitudRestaurante): Clave {
     return especialidadLabel(solicitud.especialidad);
   }
 

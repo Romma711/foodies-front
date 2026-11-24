@@ -181,7 +181,7 @@
               >
                 <option value="">{{ 'auth.registro.elegiUna' | t }}</option>
                 @for (especialidad of especialidades; track especialidad) {
-                  <option [value]="especialidad">{{ especialidadLabels[especialidad] }}</option>
+                  <option [value]="especialidad">{{ especialidadLabels[especialidad] | t }}</option>
                 }
               </select>
               @if (
