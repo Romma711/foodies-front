@@ -1,3 +1,5 @@
+import { Mensaje } from '../../core/i18n/traducir';
+
 /** Reglas de las fotos de un restaurante. El backend valida lo mismo; esto evita viajes inútiles. */
 export const TIPOS_IMAGEN = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const ACCEPT_IMAGEN = TIPOS_IMAGEN.join(',');
@@ -12,23 +14,23 @@ export interface Foto {
   portada: boolean;
 }
 
-export function errorDeImagen(archivo: File): string | null {
+export function errorDeImagen(archivo: File): Mensaje | null {
   if (!(TIPOS_IMAGEN as readonly string[]).includes(archivo.type)) {
-    return `"${archivo.name}" no es una imagen JPG, PNG o WebP.`;
+    return { clave: 'fotos.error.tipo', parametros: { nombre: archivo.name } };
   }
   if (archivo.size > MAX_FOTO_BYTES) {
-    return `"${archivo.name}" pesa más de 5 MB.`;
+    return { clave: 'fotos.error.peso', parametros: { nombre: archivo.name } };
   }
   return null;
 }
 
 /** Fotos del registro: entre 3 y 5. */
-export function errorDeFotosRegistro(fotos: readonly File[]): string | null {
+export function errorDeFotosRegistro(fotos: readonly File[]): Mensaje | null {
   if (fotos.length < MIN_FOTOS) {
-    return `Subí al menos ${MIN_FOTOS} fotos del restaurante.`;
+    return { clave: 'fotos.error.pocas', parametros: { min: MIN_FOTOS } };
   }
   if (fotos.length > MAX_FOTOS) {
-    return `Podés subir hasta ${MAX_FOTOS} fotos.`;
+    return { clave: 'fotos.error.muchas', parametros: { max: MAX_FOTOS } };
   }
   for (const archivo of fotos) {
     const error = errorDeImagen(archivo);

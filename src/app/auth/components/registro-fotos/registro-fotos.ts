@@ -5,9 +5,11 @@ import {
   MAX_FOTOS,
   MIN_FOTOS,
 } from '../../../restaurantes/utils/fotos';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /** Elección de las fotos del registro: entre 3 y 5, y cuál de ellas es la portada. */
 @Component({
+  imports: [TPipe],
   selector: 'app-registro-fotos',
   templateUrl: './registro-fotos.html',
 })

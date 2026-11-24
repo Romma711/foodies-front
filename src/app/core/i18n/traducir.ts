@@ -8,6 +8,12 @@ export type { Clave } from './traducciones/es';
 /** Values replacing `{name}` placeholders in a text. */
 export type ParametrosTraduccion = Readonly<Record<string, string | number>>;
 
+/**
+ * A message to show later: a key, translated when it is shown (so a language switch re-renders it),
+ * or a text that must be shown as is, such as an error message written by the backend.
+ */
+export type Mensaje = { clave: Clave; parametros?: ParametrosTraduccion } | { texto: string };
+
 export const DICCIONARIOS: Readonly<Record<Idioma, Traducciones>> = { es: ES, en: EN, pt: PT };
 
 /**
@@ -23,4 +29,9 @@ function interpolar(texto: string, parametros: ParametrosTraduccion): string {
   return texto.replace(/\{(\w+)\}/g, (marcador, nombre: string) =>
     nombre in parametros ? String(parametros[nombre]) : marcador,
   );
+}
+
+/** Identity that type-checks a key stored where only a `string` fits (validator messages). */
+export function clave(valor: Clave): Clave {
+  return valor;
 }

@@ -10,6 +10,7 @@ import {
 } from '../../../restaurantes/utils/fotos';
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { I18n } from '@core/i18n/i18n.service';
 
 /** Foto a reemplazar con el archivo que se elija; null para subir una nueva. */
 type Destino = Foto | null;
@@ -23,6 +24,7 @@ type Destino = Foto | null;
 })
 export class FotosPanel implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
+  private readonly i18n = inject(I18n);
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
   private readonly confirm = viewChild.required(ConfirmDialog);
   private destino: Destino = null;
@@ -78,7 +80,7 @@ export class FotosPanel implements OnInit {
     this.status.set(null);
     const invalida = errorDeImagen(archivo);
     if (invalida) {
-      this.error.set(invalida);
+      this.error.set(this.i18n.mensaje(invalida));
       return;
     }
 
@@ -95,7 +97,8 @@ export class FotosPanel implements OnInit {
       }
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'No pudimos subir la foto. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ??
+          panelErrorMessage(error, 'No pudimos subir la foto. Intentá de nuevo.'),
       );
     } finally {
       this.busy.set(false);
@@ -138,7 +141,8 @@ export class FotosPanel implements OnInit {
       this.status.set('Foto eliminada.');
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'No pudimos eliminar la foto. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ??
+          panelErrorMessage(error, 'No pudimos eliminar la foto. Intentá de nuevo.'),
       );
     } finally {
       this.busy.set(false);

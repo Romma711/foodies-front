@@ -22,13 +22,10 @@ import { PORTALS } from '../../../core/auth/portals';
 import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { errorDeFotosRegistro } from '../../../restaurantes/utils/fotos';
-import {
-  backendMessage,
-  CONNECTION_ERROR_MESSAGE,
-  isConnectionError,
-} from '../../../core/http/api-error';
+import { backendMessage, isConnectionError } from '../../../core/http/api-error';
 import { RegistroFotos } from '../../components/registro-fotos/registro-fotos';
-import { TPipe } from '@core/i18n/t.pipe';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { clave, Mensaje } from '@core/i18n/traducir';
 
 interface RegisterFormModel {
   nombre: string;
@@ -43,7 +40,7 @@ interface RegisterFormModel {
 }
 
 @Component({
-  imports: [TPipe, FormField, RegistroFotos, RouterLink, VolverAlInicio],
+  imports: [TClavePipe, TPipe, FormField, RegistroFotos, RouterLink, VolverAlInicio],
   selector: 'app-register',
   templateUrl: './register.html',
 })
@@ -58,7 +55,7 @@ export class Register {
   protected readonly isRestaurante = computed(() => this.role() === 'RESTAURANTE');
   protected readonly especialidades = ESPECIALIDADES;
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
-  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly errorMessage = signal<Mensaje | null>(null);
   /** Restaurant requests need admin approval, so they stay here with a confirmation. */
   protected readonly pendingApproval = signal(false);
   protected readonly fotos = signal<File[]>([]);
@@ -80,28 +77,34 @@ export class Register {
   protected readonly registerForm = form(this.model, (path) => {
     const whenCliente = { when: () => !this.isRestaurante() };
     const whenRestaurante = { when: () => this.isRestaurante() };
-    required(path.nombre, { ...whenCliente, message: 'El nombre es obligatorio.' });
-    required(path.apellido, { ...whenCliente, message: 'El apellido es obligatorio.' });
-    required(path.email, { message: 'El email es obligatorio.' });
-    email(path.email, { message: 'Ingresá un email válido.' });
-    required(path.password, { message: 'La contraseña es obligatoria.' });
+    required(path.nombre, { ...whenCliente, message: clave('auth.validacion.nombreObligatorio') });
+    required(path.apellido, {
+      ...whenCliente,
+      message: clave('auth.validacion.apellidoObligatorio'),
+    });
+    required(path.email, { message: clave('auth.validacion.emailObligatorio') });
+    email(path.email, { message: clave('auth.validacion.emailInvalido') });
+    required(path.password, { message: clave('auth.validacion.contrasenaObligatoria') });
     minLength(path.password, 6, {
-      message: 'La contraseña debe tener entre 6 y 30 caracteres.',
+      message: clave('auth.validacion.contrasenaLargo'),
     });
     maxLength(path.password, 30, {
-      message: 'La contraseña debe tener entre 6 y 30 caracteres.',
+      message: clave('auth.validacion.contrasenaLargo'),
     });
-    required(path.telefono, { message: 'El teléfono es obligatorio.' });
+    required(path.telefono, { message: clave('auth.validacion.telefonoObligatorio') });
     required(path.nombreRestaurante, {
       ...whenRestaurante,
-      message: 'El nombre del restaurante es obligatorio.',
+      message: clave('auth.validacion.nombreRestauranteObligatorio'),
     });
-    required(path.direccion, { ...whenRestaurante, message: 'La dirección es obligatoria.' });
+    required(path.direccion, {
+      ...whenRestaurante,
+      message: clave('auth.validacion.direccionObligatoria'),
+    });
     required(path.especialidadDeComida, {
       ...whenRestaurante,
-      message: 'Elegí una especialidad.',
+      message: clave('auth.validacion.especialidadObligatoria'),
     });
-    min(path.cupoMaximo, 1, { message: 'La capacidad debe ser al menos 1.' });
+    min(path.cupoMaximo, 1, { message: clave('auth.validacion.capacidadMinima') });
   });
 
   protected async onSubmit(event: Event): Promise<void> {
@@ -152,15 +155,16 @@ export class Register {
   }
 }
 
-function toMessage(error: unknown): string {
+function toMessage(error: unknown): Mensaje {
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
-    return 'Ya existe una cuenta con este email.';
+    return { clave: 'auth.error.emailExistente' };
   }
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
-    return backendMessage(error) ?? 'Algunos datos no son válidos. Revisá el formulario.';
+    const mensaje = backendMessage(error);
+    return mensaje ? { texto: mensaje } : { clave: 'auth.error.datosInvalidos' };
   }
   if (isConnectionError(error)) {
-    return CONNECTION_ERROR_MESSAGE;
+    return { clave: 'comun.errorConexion' };
   }
-  return 'Algo salió mal. Intentá de nuevo.';
+  return { clave: 'comun.errorGenerico' };
 }

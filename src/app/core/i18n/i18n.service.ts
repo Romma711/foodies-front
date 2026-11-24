@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Service, signal } from '@angular/core';
 import { esIdioma, Idioma, IDIOMA_POR_DEFECTO, opcionIdioma } from './idiomas';
-import { Clave, ParametrosTraduccion, traducir } from './traducir';
+import { Clave, Mensaje, ParametrosTraduccion, traducir } from './traducir';
 
 const CLAVE_STORAGE = 'foodies.idioma';
 
@@ -35,6 +35,11 @@ export class I18n {
   /** Text of `clave` in the current language; reading it inside a template or `computed` tracks it. */
   t(clave: Clave, parametros?: ParametrosTraduccion): string {
     return traducir(this._idioma(), clave, parametros);
+  }
+
+  /** Text of a stored message: translated when it is a key, as is when it came from the backend. */
+  mensaje(mensaje: Mensaje): string {
+    return 'texto' in mensaje ? mensaje.texto : this.t(mensaje.clave, mensaje.parametros);
   }
 
   /** Formats a date in the current language. */
