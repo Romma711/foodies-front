@@ -8,6 +8,7 @@ import {
   MAX_FRANJAS_POR_DIA,
 } from '../../../restaurantes/utils/horarios';
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
+import { Mensaje } from '@core/i18n/traducir';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
 import { TPipe } from '@core/i18n/t.pipe';
 
@@ -38,9 +39,9 @@ export class HorariosPanel implements OnInit {
   protected readonly labels = DIA_SEMANA_LABELS;
   protected readonly maxFranjas = MAX_FRANJAS_POR_DIA;
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
-  protected readonly error = signal<string | null>(null);
-  protected readonly status = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
+  protected readonly status = signal<Mensaje | null>(null);
   protected readonly guardando = signal(false);
   protected readonly dias = signal<DiaEditable[]>(semanaVacia());
   /** Sin franjas guardadas no hay restricción de horario para las reservas. */
@@ -58,7 +59,7 @@ export class HorariosPanel implements OnInit {
     try {
       this.aplicar(await firstValueFrom(this.panel.getHorarios()));
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tu horario.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.horarios.error.cargar'));
     } finally {
       this.loading.set(false);
     }
@@ -104,11 +105,10 @@ export class HorariosPanel implements OnInit {
       );
     try {
       this.aplicar(await firstValueFrom(this.panel.guardarHorarios(franjas)));
-      this.status.set('Horario guardado.');
+      this.status.set({ clave: 'panel.horarios.guardado' });
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ??
-          panelErrorMessage(error, 'No pudimos guardar el horario. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.horarios.error.guardar'),
       );
     } finally {
       this.guardando.set(false);

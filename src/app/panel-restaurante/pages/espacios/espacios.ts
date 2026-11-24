@@ -11,7 +11,9 @@ import {
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
 import { Espacio, MAX_NOMBRE_ESPACIO } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
-import { TPipe } from '@core/i18n/t.pipe';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { clave, claveConParametros, Mensaje } from '@core/i18n/traducir';
 
 interface EspacioModel {
   tipo: TipoEspacio;
@@ -23,12 +25,13 @@ const MODELO_VACIO: EspacioModel = { tipo: 'SALON', nombre: '', capacidad: 10 };
 
 /** Salones, patios y barras del restaurante, cada uno con su capacidad por día. */
 @Component({
-  imports: [TPipe, ConfirmDialog, FormField],
+  imports: [TClavePipe, TPipe, ConfirmDialog, FormField],
   selector: 'app-espacios',
   styleUrl: './espacios.css',
   templateUrl: './espacios.html',
 })
 export class EspaciosPanel implements OnInit {
+  private readonly i18n = inject(I18n);
   private readonly panel = inject(RestaurantePanelService);
   private readonly confirm = viewChild.required(ConfirmDialog);
 
@@ -36,9 +39,9 @@ export class EspaciosPanel implements OnInit {
   protected readonly tipoLabels = TIPO_ESPACIO_LABELS;
   protected readonly maxNombre = MAX_NOMBRE_ESPACIO;
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
-  protected readonly error = signal<string | null>(null);
-  protected readonly status = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
+  protected readonly status = signal<Mensaje | null>(null);
   protected readonly espacios = signal<Espacio[]>([]);
   /** Espacio que se está editando; null cuando el formulario agrega uno nuevo. */
   protected readonly editando = signal<Espacio | null>(null);
@@ -62,12 +65,16 @@ export class EspaciosPanel implements OnInit {
   private readonly model = signal<EspacioModel>({ ...MODELO_VACIO });
   protected readonly espacioForm = form(this.model, (path) => {
     validate(path.nombre, ({ value }) =>
-      value().trim() ? null : { kind: 'required', message: 'Indicá el nombre del espacio.' },
+      value().trim()
+        ? null
+        : { kind: 'required', message: clave('panel.espacios.validacion.nombre') },
     );
     maxLength(path.nombre, MAX_NOMBRE_ESPACIO, {
-      message: `El nombre puede tener hasta ${MAX_NOMBRE_ESPACIO} caracteres.`,
+      message: claveConParametros('panel.espacios.validacion.nombreLargo', {
+        max: MAX_NOMBRE_ESPACIO,
+      }),
     });
-    min(path.capacidad, 1, { message: 'La capacidad debe ser al menos 1.' });
+    min(path.capacidad, 1, { message: clave('auth.validacion.capacidadMinima') });
   });
 
   ngOnInit(): void {
@@ -80,7 +87,7 @@ export class EspaciosPanel implements OnInit {
     try {
       this.espacios.set(await firstValueFrom(this.panel.getEspacios()));
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tus espacios.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.espacios.error.cargar'));
     } finally {
       this.loading.set(false);
     }
@@ -114,12 +121,13 @@ export class EspaciosPanel implements OnInit {
             : this.panel.crearEspacio(request),
         );
         this.reemplazar(guardado);
-        this.status.set(editando ? 'Espacio guardado.' : 'Espacio agregado.');
+        this.status.set({
+          clave: editando ? 'panel.espacios.guardado' : 'panel.espacios.agregado',
+        });
         this.cancelarEdicion();
       } catch (error) {
         this.error.set(
-          mensajeDeNegocio(error) ??
-            panelErrorMessage(error, 'No pudimos guardar el espacio. Intentá de nuevo.'),
+          mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.espacios.error.guardar'),
         );
       }
       return undefined;
@@ -131,11 +139,9 @@ export class EspaciosPanel implements OnInit {
     const activo = !espacio.activo;
     if (!activo) {
       const confirmado = await this.confirm().open({
-        heading: `¿Desactivar ${espacio.nombre}?`,
-        message:
-          'Los clientes no van a poder reservar en este espacio hasta que lo vuelvas a activar. ' +
-          'No se borra nada.',
-        confirmLabel: 'Desactivar',
+        heading: this.i18n.t('panel.espacios.desactivarTitulo', { nombre: espacio.nombre }),
+        message: this.i18n.t('panel.espacios.desactivarTexto'),
+        confirmLabel: this.i18n.t('panel.espacios.desactivar'),
         tone: 'danger',
       });
       if (!confirmado) {
@@ -145,11 +151,10 @@ export class EspaciosPanel implements OnInit {
     this.cambiando.set(espacio.id);
     try {
       this.reemplazar(await firstValueFrom(this.panel.cambiarActivoEspacio(espacio.id, activo)));
-      this.status.set(activo ? 'Espacio activado.' : 'Espacio desactivado.');
+      this.status.set({ clave: activo ? 'panel.espacios.activado' : 'panel.espacios.desactivado' });
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ??
-          panelErrorMessage(error, 'No pudimos cambiar el espacio. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.espacios.error.cambiar'),
       );
     } finally {
       this.cambiando.set(null);

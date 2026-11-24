@@ -4,14 +4,17 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../shared/ui/confirm-dialog/confirm-dialog';
 import { formatearFechaHora, panelErrorMessage } from '../../utils/panel-errors';
+import { Mensaje } from '@core/i18n/traducir';
 import { Carta as CartaModel, MAX_CARTA_BYTES } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 /** Las URLs de la carta vienen del backend: almacenamiento local (`/api/files/…`) o el dominio público de R2. */
 const PREVIEWABLE_URL = /^(\/api\/files\/|https:\/\/)/;
 
 @Component({
-  imports: [ConfirmDialog],
+  imports: [TPipe, ConfirmDialog],
   selector: 'app-carta',
   styleUrl: './carta.css',
   templateUrl: './carta.html',
@@ -19,20 +22,23 @@ const PREVIEWABLE_URL = /^(\/api\/files\/|https:\/\/)/;
 export class CartaPanel implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly i18n = inject(I18n);
 
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
   private readonly confirm = viewChild.required(ConfirmDialog);
 
-  protected readonly formatearFechaHora = formatearFechaHora;
+  protected formatearFechaHora(valor: string): string {
+    return formatearFechaHora(valor, this.i18n.locale());
+  }
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
   protected readonly carta = signal<CartaModel | null>(null);
   /** Porcentaje de subida mientras se sube el archivo; null en otro caso. */
   protected readonly progress = signal<number | null>(null);
   protected readonly busy = signal(false);
   protected readonly dragActive = signal(false);
-  protected readonly error = signal<string | null>(null);
-  protected readonly status = signal<string | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
+  protected readonly status = signal<Mensaje | null>(null);
 
   protected readonly previewUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.carta()?.url;
@@ -52,7 +58,7 @@ export class CartaPanel implements OnInit {
       const resto = await firstValueFrom(this.panel.getMiRestaurante());
       this.carta.set(resto.carta);
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tu carta.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.carta.error.cargar'));
     } finally {
       this.loading.set(false);
     }
@@ -96,9 +102,9 @@ export class CartaPanel implements OnInit {
     if (
       this.carta() &&
       !(await this.confirm().open({
-        heading: '¿Reemplazar tu carta?',
-        message: `"${file.name}" va a reemplazar la carta que ven tus clientes.`,
-        confirmLabel: 'Reemplazar carta',
+        heading: this.i18n.t('panel.carta.reemplazarTitulo'),
+        message: this.i18n.t('panel.carta.reemplazarTexto', { nombre: file.name }),
+        confirmLabel: this.i18n.t('panel.carta.reemplazarBoton'),
       }))
     ) {
       return;
@@ -112,13 +118,11 @@ export class CartaPanel implements OnInit {
           this.progress.set(Math.round((100 * event.loaded) / event.total));
         } else if (event.type === HttpEventType.Response && event.body) {
           this.carta.set(event.body);
-          this.status.set('Carta subida. Tus clientes ya la pueden ver.');
+          this.status.set({ clave: 'panel.carta.subida' });
         }
       },
       error: (error: unknown) => {
-        this.error.set(
-          panelErrorMessage(error, 'No pudimos subir el archivo. Revisá que sea un PDF válido.'),
-        );
+        this.error.set(panelErrorMessage(error, 'panel.carta.error.subir'));
         this.finishUpload();
       },
       complete: () => this.finishUpload(),
@@ -129,9 +133,9 @@ export class CartaPanel implements OnInit {
     this.error.set(null);
     this.status.set(null);
     const confirmed = await this.confirm().open({
-      heading: '¿Eliminar tu carta?',
-      message: 'Tus clientes no van a ver ninguna carta hasta que subas una nueva.',
-      confirmLabel: 'Eliminar carta',
+      heading: this.i18n.t('panel.carta.eliminarTitulo'),
+      message: this.i18n.t('panel.carta.eliminarTexto'),
+      confirmLabel: this.i18n.t('panel.carta.eliminarBoton'),
       tone: 'danger',
     });
     if (!confirmed) {
@@ -141,9 +145,9 @@ export class CartaPanel implements OnInit {
     try {
       await firstValueFrom(this.panel.eliminarCarta());
       this.carta.set(null);
-      this.status.set('Carta eliminada.');
+      this.status.set({ clave: 'panel.carta.eliminada' });
     } catch (error) {
-      this.error.set(panelErrorMessage(error, 'No pudimos eliminar la carta. Intentá de nuevo.'));
+      this.error.set(panelErrorMessage(error, 'panel.carta.error.eliminar'));
     } finally {
       this.busy.set(false);
     }
@@ -164,13 +168,13 @@ export class CartaPanel implements OnInit {
   }
 }
 
-function validate(file: File): string | null {
+function validate(file: File): Mensaje | null {
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
   if (!isPdf) {
-    return 'Elegí un archivo PDF.';
+    return { clave: 'panel.carta.error.noPdf' };
   }
   if (file.size > MAX_CARTA_BYTES) {
-    return 'El archivo pesa más de 10 MB.';
+    return { clave: 'panel.error.archivoGrande' };
   }
   return null;
 }

@@ -40,3 +40,28 @@ export const traductorEspanol: Traductor = (clave, parametros) => traducir('es',
 export function clave(valor: Clave): Clave {
   return valor;
 }
+
+const SEPARADOR_PARAMETROS = '|';
+
+/**
+ * A key plus its values packed in one `string`, for validator messages that need a value such as a
+ * maximum length. The `tClave` pipe unpacks it.
+ */
+export function claveConParametros(valor: Clave, parametros: ParametrosTraduccion): string {
+  return valor + SEPARADOR_PARAMETROS + JSON.stringify(parametros);
+}
+
+/** Inverse of `claveConParametros`; a plain key comes back without values. */
+export function desempaquetarClave(texto: string): {
+  clave: Clave;
+  parametros?: ParametrosTraduccion;
+} {
+  const corte = texto.indexOf(SEPARADOR_PARAMETROS);
+  if (corte < 0) {
+    return { clave: texto as Clave };
+  }
+  return {
+    clave: texto.slice(0, corte) as Clave,
+    parametros: JSON.parse(texto.slice(corte + 1)) as ParametrosTraduccion,
+  };
+}

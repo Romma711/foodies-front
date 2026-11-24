@@ -1,26 +1,30 @@
 <header class="page-header">
-  <h1>Perfil</h1>
-  <p class="subtitle">Lo que ven los clientes sobre tu restaurante.</p>
+  <h1>{{ 'panel.perfil.titulo' | t }}</h1>
+  <p class="subtitle">{{ 'panel.perfil.subtitulo' | t }}</p>
 </header>
 
 @if (loading()) {
-  <p role="status">Cargando tu restaurante…</p>
+  <p role="status">{{ 'panel.cargandoRestaurante' | t }}</p>
 } @else if (loadError(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else {
   <form class="card stack" novalidate (submit)="onSubmit($event)">
     @if (saveError(); as message) {
-      <p class="alert alert-error" role="alert">{{ message }}</p>
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
     }
     @if (saved()) {
-      <p class="alert alert-success" role="status">Cambios guardados.</p>
+      <p class="alert alert-success" role="status">{{ 'panel.perfil.guardados' | t }}</p>
     }
 
     <div class="field">
-      <label for="perfil-nombre">Nombre del restaurante</label>
+      <label for="perfil-nombre">{{ 'auth.registro.nombreRestaurante' | t }}</label>
       <input
         id="perfil-nombre"
         type="text"
@@ -30,12 +34,12 @@
         aria-describedby="perfil-nombre-error"
       />
       @if (perfilForm.nombre().touched() && perfilForm.nombre().errors()[0]; as error) {
-        <p id="perfil-nombre-error" class="field-error">{{ error.message }}</p>
+        <p id="perfil-nombre-error" class="field-error">{{ error.message | tClave }}</p>
       }
     </div>
 
     <div class="field">
-      <label for="perfil-ubicacion">Dirección</label>
+      <label for="perfil-ubicacion">{{ 'auth.registro.direccion' | t }}</label>
       <input
         id="perfil-ubicacion"
         type="text"
@@ -45,12 +49,12 @@
         aria-describedby="perfil-ubicacion-error"
       />
       @if (perfilForm.ubicacion().touched() && perfilForm.ubicacion().errors()[0]; as error) {
-        <p id="perfil-ubicacion-error" class="field-error">{{ error.message }}</p>
+        <p id="perfil-ubicacion-error" class="field-error">{{ error.message | tClave }}</p>
       }
     </div>
 
     <div class="field">
-      <label for="perfil-especialidad">Especialidad</label>
+      <label for="perfil-especialidad">{{ 'auth.registro.especialidad' | t }}</label>
       <select
         id="perfil-especialidad"
         [formField]="perfilForm.especialidad"
@@ -59,26 +63,26 @@
         "
         aria-describedby="perfil-especialidad-error"
       >
-        <option value="">Elegí una</option>
+        <option value="">{{ 'auth.registro.elegiUna' | t }}</option>
         @for (especialidad of especialidades; track especialidad) {
           <option [value]="especialidad">{{ especialidadLabels[especialidad] | t }}</option>
         }
       </select>
       @if (perfilForm.especialidad().touched() && perfilForm.especialidad().errors()[0]; as error) {
-        <p id="perfil-especialidad-error" class="field-error">{{ error.message }}</p>
+        <p id="perfil-especialidad-error" class="field-error">{{ error.message | tClave }}</p>
       }
     </div>
 
     <div class="field">
-      <p class="label">Capacidad total por día</p>
+      <p class="label">{{ 'panel.perfil.capacidadTotal' | t }}</p>
       <p id="perfil-cupo">
-        {{ capacidadTotal() }} personas por día, sumando tus espacios activos.
-        <a routerLink="../espacios">Configurar espacios</a>
+        {{ 'panel.perfil.capacidadTexto' | t: { n: capacidadTotal() } }}
+        <a routerLink="../espacios">{{ 'panel.perfil.configurarEspacios' | t }}</a>
       </p>
     </div>
 
     <fieldset class="field">
-      <legend>Aceptación automática</legend>
+      <legend>{{ 'panel.perfil.autoAceptacion' | t }}</legend>
       <label class="checkbox" for="perfil-auto">
         <input
           id="perfil-auto"
@@ -86,15 +90,14 @@
           [formField]="perfilForm.autoAceptar"
           aria-describedby="perfil-auto-hint"
         />
-        Aceptar reservas automáticamente
+        {{ 'panel.perfil.aceptarAuto' | t }}
       </label>
       <p id="perfil-auto-hint" class="muted">
-        Las reservas se aceptan solas hasta el porcentaje que elijas del cupo de cada espacio. Las
-        que superen ese límite quedan pendientes para que las revises.
+        {{ 'panel.perfil.autoTexto' | t }}
       </p>
 
       @if (!perfilForm.porcentajeAutoAceptacion().hidden()) {
-        <label for="perfil-porcentaje">Porcentaje de la capacidad (%)</label>
+        <label for="perfil-porcentaje">{{ 'panel.perfil.porcentaje' | t }}</label>
         <input
           id="perfil-porcentaje"
           type="number"
@@ -107,22 +110,21 @@
           aria-describedby="perfil-porcentaje-hint perfil-porcentaje-error"
         />
         <p id="perfil-porcentaje-hint" class="muted">
-          Con tu capacidad total actual se aceptan solas hasta
-          {{ personasAutoAceptadas() }} personas por día, repartidas según el cupo de cada espacio.
+          {{ 'panel.perfil.autoResultado' | t: { n: personasAutoAceptadas() } }}
         </p>
         @if (
           perfilForm.porcentajeAutoAceptacion().touched() &&
             perfilForm.porcentajeAutoAceptacion().errors()[0];
           as error
         ) {
-          <p id="perfil-porcentaje-error" class="field-error">{{ error.message }}</p>
+          <p id="perfil-porcentaje-error" class="field-error">{{ error.message | tClave }}</p>
         }
       }
     </fieldset>
 
     <div class="actions">
       <button type="submit" class="btn btn-primary" [disabled]="perfilForm().submitting()">
-        {{ perfilForm().submitting() ? 'Guardando…' : 'Guardar cambios' }}
+        {{ (perfilForm().submitting() ? 'resena.guardando' : 'resena.guardarCambios') | t }}
       </button>
     </div>
   </form>

@@ -1,30 +1,33 @@
 <header class="page-header">
-  <h1>Horarios</h1>
+  <h1>{{ 'panel.horarios.titulo' | t }}</h1>
   <p class="subtitle">
-    Elegí qué días abrís y en qué franjas recibís reservas, por ejemplo almuerzo y cena. Los
-    clientes solo pueden elegir horarios de llegada dentro de esas franjas.
+    {{ 'panel.horarios.subtitulo' | t }}
   </p>
 </header>
 
 @if (loading()) {
-  <p role="status">Cargando tu horario…</p>
+  <p role="status">{{ 'panel.horarios.cargando' | t }}</p>
 } @else if (loadError(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else {
   <form class="stack" novalidate (submit)="onSubmit($event)">
     @if (error(); as message) {
-      <p class="alert alert-error" role="alert">{{ message }}</p>
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
     }
-    <p class="visually-hidden" role="status">{{ status() }}</p>
+    <p class="visually-hidden" role="status">{{ status() | t }}</p>
     @if (status(); as message) {
-      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+      <p class="alert alert-success" aria-hidden="true">{{ message | t }}</p>
     }
     @if (sinHorario()) {
       <p class="card aviso">
-        Todavía no cargaste tu horario: se aceptan reservas a cualquier hora, todos los días.
+        {{ 'panel.horarios.sinHorario' | t }}
       </p>
     }
 
@@ -38,7 +41,7 @@
             [checked]="d.abierto"
             (change)="cambiarAbierto(d.dia, $event)"
           />
-          Abierto
+          {{ 'panel.horarios.abierto' | t }}
         </label>
 
         @if (d.abierto) {
@@ -46,7 +49,9 @@
             @for (franja of d.franjas; track $index; let i = $index) {
               <li class="franja">
                 <div class="field">
-                  <label [for]="'apertura-' + d.dia + '-' + i">Desde</label>
+                  <label [for]="'apertura-' + d.dia + '-' + i">{{
+                    'panel.horarios.desde' | t
+                  }}</label>
                   <input
                     type="time"
                     step="1800"
@@ -56,7 +61,9 @@
                   />
                 </div>
                 <div class="field">
-                  <label [for]="'cierre-' + d.dia + '-' + i">Hasta</label>
+                  <label [for]="'cierre-' + d.dia + '-' + i">{{
+                    'panel.horarios.hasta' | t
+                  }}</label>
                   <input
                     type="time"
                     step="1800"
@@ -68,10 +75,12 @@
                 <button
                   type="button"
                   class="btn btn-secondary"
-                  [attr.aria-label]="'Quitar la franja ' + (i + 1) + ' del ' + (labels[d.dia] | t)"
+                  [attr.aria-label]="
+                    'panel.horarios.quitarFranja' | t: { n: i + 1, dia: (labels[d.dia] | t) }
+                  "
                   (click)="quitarFranja(d.dia, i)"
                 >
-                  Quitar
+                  {{ 'fotos.quitar' | t }}
                 </button>
               </li>
             }
@@ -81,26 +90,27 @@
               <button
                 type="button"
                 class="btn btn-secondary"
-                [attr.aria-label]="'Agregar franja al ' + (labels[d.dia] | t)"
+                [attr.aria-label]="
+                  'panel.horarios.agregarFranjaAl' | t: { dia: (labels[d.dia] | t) }
+                "
                 (click)="agregarFranja(d.dia)"
               >
-                Agregar franja
+                {{ 'panel.horarios.agregarFranja' | t }}
               </button>
             </div>
           }
         } @else {
-          <p class="muted">Cerrado</p>
+          <p class="muted">{{ 'horario.cerrado' | t }}</p>
         }
       </fieldset>
     }
 
     <p class="muted">
-      "Hasta 00:00" significa hasta la medianoche. Si dejás todos los días cerrados, se quita el
-      horario y vuelven a aceptarse reservas a cualquier hora.
+      {{ 'panel.horarios.nota' | t }}
     </p>
     <div class="actions">
       <button type="submit" class="btn btn-primary" [disabled]="guardando()">
-        {{ guardando() ? 'Guardando…' : 'Guardar horario' }}
+        {{ (guardando() ? 'resena.guardando' : 'panel.horarios.guardar') | t }}
       </button>
     </div>
   </form>

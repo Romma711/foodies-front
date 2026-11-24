@@ -6,7 +6,7 @@
       class="panel-icon-btn"
       aria-controls="panel-sidebar"
       [attr.aria-expanded]="menuAbierto()"
-      [attr.aria-label]="menuAbierto() ? 'Cerrar menú del panel' : 'Abrir menú del panel'"
+      [attr.aria-label]="(menuAbierto() ? 'panel.cerrarMenu' : 'panel.abrirMenu') | t"
       (click)="alternarMenu()"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -22,7 +22,7 @@
   <aside id="panel-sidebar" class="panel-sidebar" [class.abierta]="menuAbierto()">
     <p class="panel-marca panel-marca-desktop">Foodies<span class="panel-marca-punto">.</span></p>
 
-    <nav class="panel-nav" aria-label="Panel del restaurante">
+    <nav class="panel-nav" [attr.aria-label]="'panel.nav' | t">
       <ul>
         @for (section of sections; track section.path) {
           <li>
@@ -34,7 +34,7 @@
               (click)="cerrarMenu()"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="section.icono" /></svg>
-              {{ section.label }}
+              {{ section.label | t }}
             </a>
           </li>
         }

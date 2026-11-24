@@ -11,6 +11,9 @@ import {
 } from '../../utils/panel-errors';
 import { CupoEspecial, Espacio, MAX_MOTIVO_CUPO } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { clave as claveI18n, claveConParametros, Mensaje } from '@core/i18n/traducir';
 
 interface CupoEspecialModel {
   espacioId: string;
@@ -19,25 +22,27 @@ interface CupoEspecialModel {
   motivo: string;
 }
 
-const claveDe = (cupo: Pick<CupoEspecial, 'idEspacio' | 'fecha'>) => `${cupo.idEspacio}-${cupo.fecha}`;
+const claveDe = (cupo: Pick<CupoEspecial, 'idEspacio' | 'fecha'>) =>
+  `${cupo.idEspacio}-${cupo.fecha}`;
 
 /** Días puntuales en los que un espacio recibe menos personas que su capacidad normal. */
 @Component({
-  imports: [ConfirmDialog, FormField],
+  imports: [TClavePipe, TPipe, ConfirmDialog, FormField],
   selector: 'app-cupos-especiales',
   styleUrl: './cupos-especiales.css',
   templateUrl: './cupos-especiales.html',
 })
 export class CuposEspeciales implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
+  private readonly i18n = inject(I18n);
   private readonly confirm = viewChild.required(ConfirmDialog);
   private readonly hoy = toIsoDate(new Date());
 
   protected readonly maxMotivo = MAX_MOTIVO_CUPO;
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
-  protected readonly error = signal<string | null>(null);
-  protected readonly status = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
+  protected readonly status = signal<Mensaje | null>(null);
   protected readonly espacios = signal<Espacio[]>([]);
   protected readonly cupos = signal<CupoEspecial[]>([]);
   /** Clave (espacio + fecha) del cupo que se está quitando, para deshabilitar solo su botón. */
@@ -47,7 +52,12 @@ export class CuposEspeciales implements OnInit {
   /** Solo se cargan cupos especiales en espacios activos. */
   protected readonly espaciosActivos = computed(() => this.espacios().filter((e) => e.activo));
 
-  private readonly model = signal<CupoEspecialModel>({ espacioId: '', fecha: '', cupo: 0, motivo: '' });
+  private readonly model = signal<CupoEspecialModel>({
+    espacioId: '',
+    fecha: '',
+    cupo: 0,
+    motivo: '',
+  });
 
   /** Espacio elegido en el formulario. */
   protected readonly espacioElegido = computed(
@@ -55,26 +65,30 @@ export class CuposEspeciales implements OnInit {
   );
 
   protected readonly cupoForm = form(this.model, (path) => {
-    required(path.espacioId, { message: 'Elegí un espacio.' });
-    required(path.fecha, { message: 'Elegí un día.' });
+    required(path.espacioId, { message: claveI18n('reserva.regla.espacio') });
+    required(path.fecha, { message: claveI18n('panel.cupos.validacion.dia') });
     validate(path.fecha, ({ value }) =>
       value() && value() < this.hoy
-        ? { kind: 'fechaPasada', message: 'Elegí un día de hoy en adelante.' }
+        ? { kind: 'fechaPasada', message: claveI18n('panel.cupos.validacion.diaPasado') }
         : null,
     );
     validate(path.cupo, ({ value }) => {
       const cupo = value();
       const capacidad = this.espacioElegido()?.capacidad ?? 0;
       return cupo === null || cupo === undefined || cupo < 0 || cupo > capacidad
-        ? { kind: 'rango', message: `El cupo debe estar entre 0 y ${capacidad}.` }
+        ? {
+            kind: 'rango',
+            message: claveConParametros('panel.cupos.validacion.rango', { max: capacidad }),
+          }
         : null;
     });
     maxLength(path.motivo, MAX_MOTIVO_CUPO, {
-      message: `El motivo puede tener hasta ${MAX_MOTIVO_CUPO} caracteres.`,
+      message: claveConParametros('panel.cupos.validacion.motivo', { max: MAX_MOTIVO_CUPO }),
     });
   });
 
-  protected readonly formatearFecha = (fecha: string) => formatearDia(parseLocalDate(fecha));
+  protected readonly formatearFecha = (fecha: string) =>
+    formatearDia(parseLocalDate(fecha), this.i18n.locale());
 
   ngOnInit(): void {
     void this.load();
@@ -101,7 +115,7 @@ export class CuposEspeciales implements OnInit {
         }));
       }
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar la capacidad especial.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.cupos.error.cargar'));
     } finally {
       this.loading.set(false);
     }
@@ -125,11 +139,10 @@ export class CuposEspeciales implements OnInit {
             (a, b) => a.fecha.localeCompare(b.fecha) || a.idEspacio - b.idEspacio,
           ),
         );
-        this.status.set('Capacidad especial guardada.');
+        this.status.set({ clave: 'panel.cupos.guardada' });
       } catch (error) {
         this.error.set(
-          mensajeDeNegocio(error) ??
-            panelErrorMessage(error, 'No pudimos guardar la capacidad especial. Intentá de nuevo.'),
+          mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.cupos.error.guardar'),
         );
       }
       return undefined;
@@ -141,11 +154,19 @@ export class CuposEspeciales implements OnInit {
     this.status.set(null);
     const capacidad = this.espacios().find((e) => e.id === cupo.idEspacio)?.capacidad;
     const confirmado = await this.confirm().open({
-      heading: '¿Quitar la capacidad especial?',
+      heading: this.i18n.t('panel.cupos.quitarTitulo'),
       message:
-        `${this.formatearFecha(cupo.fecha)}, ${cupo.espacioNombre} vuelve a su capacidad normal` +
-        (capacidad === undefined ? '.' : ` de ${capacidad} personas.`),
-      confirmLabel: 'Quitar',
+        capacidad === undefined
+          ? this.i18n.t('panel.cupos.quitarTexto', {
+              fecha: this.formatearFecha(cupo.fecha),
+              espacio: cupo.espacioNombre,
+            })
+          : this.i18n.t('panel.cupos.quitarTextoCapacidad', {
+              fecha: this.formatearFecha(cupo.fecha),
+              espacio: cupo.espacioNombre,
+              n: capacidad,
+            }),
+      confirmLabel: this.i18n.t('fotos.quitar'),
     });
     if (!confirmado) {
       return;
@@ -154,11 +175,9 @@ export class CuposEspeciales implements OnInit {
     try {
       await firstValueFrom(this.panel.eliminarCupoEspecial(cupo.idEspacio, cupo.fecha));
       this.cupos.update((cupos) => cupos.filter((c) => claveDe(c) !== claveDe(cupo)));
-      this.status.set('Capacidad especial quitada.');
+      this.status.set({ clave: 'panel.cupos.quitada' });
     } catch (error) {
-      this.error.set(
-        panelErrorMessage(error, 'No pudimos quitar la capacidad especial. Intentá de nuevo.'),
-      );
+      this.error.set(panelErrorMessage(error, 'panel.cupos.error.quitar'));
     } finally {
       this.quitando.set(null);
     }

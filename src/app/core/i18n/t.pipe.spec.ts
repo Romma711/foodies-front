@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { I18n } from './i18n.service';
 import { TClavePipe, TPipe } from './t.pipe';
-import { Mensaje } from './traducir';
+import { claveConParametros, Mensaje } from './traducir';
 
 @Component({
   imports: [TPipe],
@@ -14,12 +14,16 @@ class Anfitrion {}
   imports: [TClavePipe, TPipe],
   template: `<p id="clave">{{ deValidador | tClave }}</p>
     <p id="mensaje">{{ mensaje | t }}</p>
-    <p id="backend">{{ backend | t }}</p>`,
+    <p id="backend">{{ backend | t }}</p>
+    <p id="conValores">{{ conValores | tClave }}</p>
+    <p id="nulo">{{ nulo | t }}</p>`,
 })
 class AnfitrionMensajes {
   protected readonly deValidador: string = 'idioma.etiqueta';
   protected readonly mensaje: Mensaje = { clave: 'idioma.etiqueta' };
   protected readonly backend: Mensaje = { texto: 'Mensaje del back' };
+  protected readonly conValores = claveConParametros('fotos.error.muchas', { max: 5 });
+  protected readonly nulo: Mensaje | null = null;
 }
 
 describe('TPipe', () => {
@@ -53,5 +57,7 @@ describe('TPipe', () => {
     expect(texto('clave')).toBe('Language');
     expect(texto('mensaje')).toBe('Language');
     expect(texto('backend')).toBe('Mensaje del back');
+    expect(texto('conValores')).toBe('You can upload up to 5 photos.');
+    expect(texto('nulo')).toBe('');
   });
 });

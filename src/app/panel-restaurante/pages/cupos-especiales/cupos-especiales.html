@@ -1,31 +1,34 @@
 <header class="page-header">
-  <h1>Capacidad especial</h1>
+  <h1>{{ 'panel.cupos.titulo' | t }}</h1>
   <p class="subtitle">
-    Reducí la capacidad de un espacio en un día puntual, por ejemplo el patio por lluvia o el salón
-    por un evento privado. Los clientes no ven la capacidad: solo se enteran si hay lugar o no.
+    {{ 'panel.cupos.subtitulo' | t }}
   </p>
 </header>
 
 @if (loading()) {
-  <p role="status">Cargando la capacidad especial…</p>
+  <p role="status">{{ 'panel.cupos.cargando' | t }}</p>
 } @else if (loadError(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else {
   <div class="stack">
     @if (error(); as message) {
-      <p class="alert alert-error" role="alert">{{ message }}</p>
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
     }
-    <p class="visually-hidden" role="status">{{ status() }}</p>
+    <p class="visually-hidden" role="status">{{ status() | t }}</p>
     @if (status(); as message) {
-      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+      <p class="alert alert-success" aria-hidden="true">{{ message | t }}</p>
     }
 
     <form class="card stack" novalidate (submit)="onSubmit($event)">
       <div class="field">
-        <label for="cupo-espacio">Espacio</label>
+        <label for="cupo-espacio">{{ 'reserva.espacio' | t }}</label>
         <select
           id="cupo-espacio"
           [formField]="cupoForm.espacioId"
@@ -38,17 +41,19 @@
         </select>
         @if (espacioElegido(); as espacio) {
           <p id="cupo-espacio-hint" class="muted">
-            La capacidad normal de {{ espacio.nombre }} es de {{ espacio.capacidad }} personas por día.
+            {{
+              'panel.cupos.capacidadNormal' | t: { nombre: espacio.nombre, n: espacio.capacidad }
+            }}
           </p>
         }
         @if (cupoForm.espacioId().touched() && cupoForm.espacioId().errors()[0]; as error) {
-          <p id="cupo-espacio-error" class="field-error">{{ error.message }}</p>
+          <p id="cupo-espacio-error" class="field-error">{{ error.message | tClave }}</p>
         }
       </div>
 
       <div class="fields">
         <div class="field">
-          <label for="cupo-fecha">Día</label>
+          <label for="cupo-fecha">{{ 'panel.cupos.dia' | t }}</label>
           <input
             id="cupo-fecha"
             type="date"
@@ -57,12 +62,12 @@
             aria-describedby="cupo-fecha-error"
           />
           @if (cupoForm.fecha().touched() && cupoForm.fecha().errors()[0]; as error) {
-            <p id="cupo-fecha-error" class="field-error">{{ error.message }}</p>
+            <p id="cupo-fecha-error" class="field-error">{{ error.message | tClave }}</p>
           }
         </div>
 
         <div class="field">
-          <label for="cupo-cantidad">Personas ese día</label>
+          <label for="cupo-cantidad">{{ 'panel.cupos.personasEseDia' | t }}</label>
           <input
             id="cupo-cantidad"
             type="number"
@@ -71,15 +76,18 @@
             [attr.aria-invalid]="cupoForm.cupo().touched() && cupoForm.cupo().invalid()"
             aria-describedby="cupo-cantidad-hint cupo-cantidad-error"
           />
-          <p id="cupo-cantidad-hint" class="muted">0 si ese día no tomás reservas.</p>
+          <p id="cupo-cantidad-hint" class="muted">{{ 'panel.cupos.ceroAyuda' | t }}</p>
           @if (cupoForm.cupo().touched() && cupoForm.cupo().errors()[0]; as error) {
-            <p id="cupo-cantidad-error" class="field-error">{{ error.message }}</p>
+            <p id="cupo-cantidad-error" class="field-error">{{ error.message | tClave }}</p>
           }
         </div>
       </div>
 
       <div class="field">
-        <label for="cupo-motivo">Motivo <span class="muted">(opcional, solo lo ves vos)</span></label>
+        <label for="cupo-motivo"
+          >{{ 'panel.cupos.motivo' | t }}
+          <span class="muted">{{ 'panel.cupos.motivoAyuda' | t }}</span></label
+        >
         <input
           id="cupo-motivo"
           type="text"
@@ -88,19 +96,19 @@
           aria-describedby="cupo-motivo-error"
         />
         @if (cupoForm.motivo().touched() && cupoForm.motivo().errors()[0]; as error) {
-          <p id="cupo-motivo-error" class="field-error">{{ error.message }}</p>
+          <p id="cupo-motivo-error" class="field-error">{{ error.message | tClave }}</p>
         }
       </div>
 
       <div class="actions">
         <button type="submit" class="btn btn-primary" [disabled]="cupoForm().submitting()">
-          {{ cupoForm().submitting() ? 'Guardando…' : 'Guardar' }}
+          {{ (cupoForm().submitting() ? 'resena.guardando' : 'panel.cupos.guardar') | t }}
         </button>
       </div>
     </form>
 
     <section class="stack" aria-labelledby="cupos-proximos">
-      <h2 id="cupos-proximos">Próximos días</h2>
+      <h2 id="cupos-proximos">{{ 'panel.cupos.proximos' | t }}</h2>
       @if (cupos().length) {
         <ul class="list">
           @for (cupo of cupos(); track clave(cupo)) {
@@ -109,8 +117,16 @@
                 <p class="dia">{{ formatearFecha(cupo.fecha) }}</p>
                 <p class="espacio">{{ cupo.espacioNombre }}</p>
                 <p class="muted">
-                  {{ cupo.cupo }} {{ cupo.cupo === 1 ? 'persona' : 'personas' }} ·
-                  {{ cupo.reservadas }} ya reservadas
+                  {{
+                    'panel.cupos.yaReservadas'
+                      | t
+                        : {
+                            cupo:
+                              (cupo.cupo === 1 ? 'reserva.persona' : 'reserva.personas')
+                              | t: { n: cupo.cupo },
+                            n: cupo.reservadas,
+                          }
+                  }}
                 </p>
                 @if (cupo.motivo) {
                   <p class="muted">{{ cupo.motivo }}</p>
@@ -121,17 +137,18 @@
                 class="btn btn-secondary"
                 [disabled]="quitando() === clave(cupo)"
                 [attr.aria-label]="
-                  'Quitar la capacidad especial de ' + cupo.espacioNombre + ' del ' + formatearFecha(cupo.fecha)
+                  'panel.cupos.quitarAria'
+                    | t: { espacio: cupo.espacioNombre, fecha: formatearFecha(cupo.fecha) }
                 "
                 (click)="quitar(cupo)"
               >
-                Quitar
+                {{ 'fotos.quitar' | t }}
               </button>
             </li>
           }
         </ul>
       } @else {
-        <p class="card empty">No cargaste días con capacidad especial.</p>
+        <p class="card empty">{{ 'panel.cupos.vacio' | t }}</p>
       }
     </section>
   </div>
