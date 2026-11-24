@@ -27,12 +27,12 @@ import { turnoLleno } from '../../utils/turnos';
           @for (turno of turnos(); track turno.idTurno) {
             @let lleno = estaLleno(turno);
             <div
-              class="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-sm transition has-checked:border-brand-500 has-checked:bg-brand-500/10"
+              class="grid justify-items-start gap-2 rounded-xl border px-4 py-2.5 text-sm transition has-checked:border-brand-500 has-checked:bg-brand-500/10"
               [class.border-line]="value() !== '' + turno.idTurno"
               [attr.data-turno]="turno.idTurno"
             >
               <label
-                class="flex min-h-11 flex-1 items-center gap-3 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-700"
+                class="flex min-h-11 w-full items-center gap-3 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-700"
                 [class.cursor-pointer]="!lleno"
                 [class.cursor-not-allowed]="lleno"
               >

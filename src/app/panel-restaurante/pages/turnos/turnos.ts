@@ -1,4 +1,14 @@
-import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  Injector,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { firstValueFrom } from 'rxjs';
 import { I18n } from '@core/i18n/i18n.service';
 import { TPipe } from '@core/i18n/t.pipe';
@@ -35,6 +45,8 @@ export class TurnosPanel implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
   private readonly i18n = inject(I18n);
   private readonly confirm = viewChild.required(ConfirmDialog);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
 
   protected readonly dias = DIAS_SEMANA;
   protected readonly labels = DIA_SEMANA_LABELS;
@@ -107,6 +119,8 @@ export class TurnosPanel implements OnInit {
     this.status.set(null);
     this.editandoId.set(turno.id);
     this.form.set({ dia: turno.dia, inicio: turno.inicio, duracionMinutos: turno.duracionMinutos });
+    // The form sits above the list, so focus moves to it.
+    enfocarTrasRender(this.host, '#turno-dia', this.injector);
   }
 
   protected cancelarEdicion(): void {
