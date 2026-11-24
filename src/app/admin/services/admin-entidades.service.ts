@@ -4,7 +4,8 @@ import { Observable, catchError, finalize, forkJoin, map, tap, throwError } from
 import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
 import { EntidadCliente, EntidadRestaurante } from '../models/entidades-admin';
-import { mensajeErrorAdmin } from './mensaje-error-admin';
+import { ErrorAdmin, mensajeErrorAdmin } from './mensaje-error-admin';
+import { Mensaje } from '../../core/i18n/traducir';
 
 /** `StrikeResultadoDTO` */
 export interface StrikeResultado {
@@ -35,7 +36,7 @@ export class AdminEntidadesService {
   private readonly _clientes = signal<EntidadCliente[]>([]);
   private readonly _restaurantes = signal<EntidadRestaurante[]>([]);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   readonly clientes = this._clientes.asReadonly();
   readonly restaurantes = this._restaurantes.asReadonly();
@@ -62,7 +63,7 @@ export class AdminEntidadesService {
       }),
       map(() => undefined),
       catchError((error: unknown) => {
-        this._error.set(mensajeErrorAdmin(error, 'No se pudieron cargar las entidades.'));
+        this._error.set(mensajeErrorAdmin(error, 'admin.error.entidades'));
         return throwError(() => error);
       }),
       finalize(() => this._cargando.set(false)),
@@ -122,7 +123,7 @@ export class AdminEntidadesService {
           }
         }),
         catchError((error: unknown) =>
-          throwError(() => new Error(mensajeErrorAdmin(error, 'No se pudo aplicar el strike.'))),
+          throwError(() => new ErrorAdmin(mensajeErrorAdmin(error, 'admin.error.strike'))),
         ),
       );
   }
@@ -135,11 +136,8 @@ export class AdminEntidadesService {
         catchError((error: unknown) =>
           throwError(
             () =>
-              new Error(
-                mensajeErrorAdmin(
-                  error,
-                  activo ? 'No se pudo reactivar.' : 'No se pudo dar de baja.',
-                ),
+              new ErrorAdmin(
+                mensajeErrorAdmin(error, activo ? 'admin.error.reactivar' : 'admin.error.baja'),
               ),
           ),
         ),

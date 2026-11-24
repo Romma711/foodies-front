@@ -1,4 +1,6 @@
 import { Component, ElementRef, computed, input, output, signal, viewChild } from '@angular/core';
+import { TPipe } from '@core/i18n/t.pipe';
+import { Mensaje } from '@core/i18n/traducir';
 
 const MINIMO = 5;
 const MAXIMO = 255;
@@ -13,6 +15,7 @@ let siguienteId = 0;
  * except while `enviando`.
  */
 @Component({
+  imports: [TPipe],
   selector: 'app-strike-modal',
   template: `
     <dialog
@@ -25,23 +28,22 @@ let siguienteId = 0;
     >
       <form class="p-6" novalidate (submit)="confirmar($event)">
         <h2 [id]="ids.titulo" class="text-lg font-extrabold tracking-tight">
-          Aplicar strike a {{ nombre() }}
+          {{ 'admin.strike.titulo' | t: { nombre: nombre() } }}
         </h2>
         <p [id]="ids.descripcion" class="mt-2 text-sm leading-6 text-ink-500">
-          Va a ser el strike {{ proximo() }} de {{ limite }}. Le vamos a enviar un email de aviso
-          con el motivo.
+          {{ 'admin.strike.texto' | t: { n: proximo(), limite } }}
         </p>
         @if (proximo() >= limite) {
           <p
             class="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-800 ring-1 ring-red-100"
             data-testid="aviso-limite"
           >
-            Con este strike llega al límite: el panel va a sugerir darlo de baja.
+            {{ 'admin.strike.limite' | t }}
           </p>
         }
 
         <label [for]="ids.motivo" class="mt-5 block text-sm font-semibold text-ink-700">
-          Motivo
+          {{ 'admin.strike.motivo' | t }}
         </label>
         <textarea
           [id]="ids.motivo"
@@ -51,14 +53,14 @@ let siguienteId = 0;
           [attr.maxlength]="maximo"
           [attr.aria-invalid]="mostrarError()"
           [attr.aria-describedby]="(mostrarError() ? ids.error + ' ' : '') + ids.contador"
-          placeholder="Ej.: lenguaje ofensivo en una reseña"
+          [placeholder]="'admin.strike.placeholder' | t"
           [value]="motivo()"
           (input)="motivo.set($any($event.target).value)"
         ></textarea>
         <div class="mt-1.5 flex items-start justify-between gap-3 text-xs">
           <p [id]="ids.error" class="font-medium text-red-800">
             @if (mostrarError()) {
-              El motivo debe tener al menos {{ minimo }} caracteres.
+              {{ 'admin.strike.minimo' | t: { n: minimo } }}
             }
           </p>
           <p [id]="ids.contador" class="shrink-0 tabular-nums text-ink-500" data-testid="contador">
@@ -71,7 +73,7 @@ let siguienteId = 0;
             class="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-800"
             role="alert"
           >
-            {{ mensaje }}
+            {{ mensaje | t }}
           </p>
         }
 
@@ -82,14 +84,14 @@ let siguienteId = 0;
             [disabled]="enviando()"
             (click)="cerrarDialogo(false)"
           >
-            Cancelar
+            {{ 'comun.cancelar' | t }}
           </button>
           <button
             type="submit"
             class="rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-progress disabled:opacity-60"
             [disabled]="enviando()"
           >
-            {{ enviando() ? 'Aplicando…' : 'Aplicar strike' }}
+            {{ (enviando() ? 'admin.strike.aplicando' : 'admin.strike.aplicar') | t }}
           </button>
         </div>
       </form>
@@ -101,7 +103,7 @@ export class StrikeModal {
   readonly strikesActuales = input.required<number>();
   readonly enviando = input(false);
   /** Error from the API call, shown inside the dialog. */
-  readonly error = input<string | null>(null);
+  readonly error = input<Mensaje | null>(null);
 
   readonly enviar = output<string>();
   readonly cancelar = output<void>();

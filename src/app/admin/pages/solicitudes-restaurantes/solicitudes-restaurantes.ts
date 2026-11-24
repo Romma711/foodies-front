@@ -3,25 +3,27 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Foto } from '../../../restaurantes/utils/fotos';
 import { AdminSolicitudesService } from '../../services/admin-solicitudes.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /** Restaurantes pendientes de aprobación. Se aceptan o rechazan desde su detalle, después de revisarlos. */
 @Component({
   selector: 'app-solicitudes-restaurantes',
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   template: `
     <section aria-labelledby="titulo-solicitudes">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Panel</p>
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">
+            {{ 'admin.panel' | t }}
+          </p>
           <h1
             id="titulo-solicitudes"
             class="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl"
           >
-            Aceptar restaurantes
+            {{ 'admin.solicitudes.titulo' | t }}
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-6 text-ink-500">
-            Estos restaurantes se registraron y esperan tu aprobación. Entrá al detalle de cada uno
-            para revisarlo y aceptarlo o rechazarlo.
+            {{ 'admin.solicitudes.subtitulo' | t }}
           </p>
         </div>
         @if (solicitudes().length > 0) {
@@ -31,7 +33,7 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
             [disabled]="cargando()"
             (click)="recargar()"
           >
-            {{ cargando() ? 'Actualizando…' : 'Actualizar' }}
+            {{ (cargando() ? 'admin.actualizando' : 'admin.actualizar') | t }}
           </button>
         }
       </div>
@@ -41,13 +43,13 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
           class="mt-6 flex flex-col gap-3 rounded-2xl border border-red-100 bg-red-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
           role="alert"
         >
-          <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
+          <p class="text-sm font-medium text-red-800">{{ mensaje | t }}</p>
           <button
             type="button"
             class="inline-flex shrink-0 items-center justify-center rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700"
             (click)="recargar()"
           >
-            Reintentar
+            {{ 'comun.reintentar' | t }}
           </button>
         </div>
       }
@@ -77,9 +79,11 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
               <a
                 class="inline-flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 ring-1 ring-line transition hover:bg-cream-100"
                 [routerLink]="['/admin/aceptar', solicitud.restaurantId]"
-                [attr.aria-label]="'Ver detalles de ' + solicitud.nombre"
+                [attr.aria-label]="
+                  'admin.solicitudes.verDetallesDe' | t: { nombre: solicitud.nombre }
+                "
               >
-                Ver detalles
+                {{ 'admin.solicitudes.verDetalles' | t }}
                 <svg
                   class="size-4"
                   viewBox="0 0 24 24"
@@ -97,14 +101,16 @@ import { AdminSolicitudesService } from '../../services/admin-solicitudes.servic
           }
         </ul>
       } @else if (cargando()) {
-        <p class="mt-8 text-sm font-medium text-ink-500" role="status">Cargando solicitudes…</p>
+        <p class="mt-8 text-sm font-medium text-ink-500" role="status">
+          {{ 'admin.solicitudes.cargando' | t }}
+        </p>
       } @else if (!error()) {
         <div
           class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white px-6 py-16 text-center shadow-sm"
         >
-          <h2 class="text-lg font-bold text-ink-900">No hay restaurantes por aceptar</h2>
+          <h2 class="text-lg font-bold text-ink-900">{{ 'admin.solicitudes.vacioTitulo' | t }}</h2>
           <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-            Cuando un restaurante se registre, va a aparecer acá para que lo revises.
+            {{ 'admin.solicitudes.vacioTexto' | t }}
           </p>
         </div>
       }

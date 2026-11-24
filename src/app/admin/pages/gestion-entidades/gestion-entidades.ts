@@ -37,14 +37,25 @@ import {
   hayFiltrosRestaurantes,
 } from '../../utils/filtros-entidades';
 import { TPipe } from '@core/i18n/t.pipe';
-import { Clave } from '@core/i18n/traducir';
+import { Clave, Mensaje } from '@core/i18n/traducir';
+import { mensajeDeErrorAdmin } from '../../services/mensaje-error-admin';
+import { I18n } from '@core/i18n/i18n.service';
 
 type Pestana = 'clientes' | 'restaurantes';
 
-const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
-  PENDIENTE: { texto: 'Pendiente', clases: 'bg-amber-50 text-amber-800 ring-amber-200' },
-  APROBADO: { texto: 'Aprobado', clases: 'bg-emerald-50 text-emerald-800 ring-emerald-200' },
-  RECHAZADO: { texto: 'Rechazado', clases: 'bg-red-50 text-red-800 ring-red-200' },
+const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
+  PENDIENTE: {
+    texto: 'admin.entidades.estado.PENDIENTE',
+    clases: 'bg-amber-50 text-amber-800 ring-amber-200',
+  },
+  APROBADO: {
+    texto: 'admin.entidades.estado.APROBADO',
+    clases: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  },
+  RECHAZADO: {
+    texto: 'admin.entidades.estado.RECHAZADO',
+    clases: 'bg-red-50 text-red-800 ring-red-200',
+  },
 };
 
 /**
@@ -59,16 +70,17 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
     <section aria-labelledby="titulo-entidades">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Panel</p>
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">
+            {{ 'admin.panel' | t }}
+          </p>
           <h1
             id="titulo-entidades"
             class="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl"
           >
-            Gestión de entidades
+            {{ 'admin.entidades.titulo' | t }}
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-6 text-ink-500">
-            Dar de baja no borra nada: la cuenta o el restaurante quedan ocultos y se pueden
-            reactivar.
+            {{ 'admin.entidades.subtitulo' | t }}
           </p>
         </div>
         <button
@@ -77,7 +89,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
           [disabled]="cargando()"
           (click)="recargar()"
         >
-          {{ cargando() ? 'Actualizando…' : 'Actualizar' }}
+          {{ (cargando() ? 'admin.actualizando' : 'admin.actualizar') | t }}
         </button>
       </div>
 
@@ -85,13 +97,13 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         <div
           class="mt-6 flex flex-col gap-3 rounded-2xl border border-red-100 bg-red-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
+          <p class="text-sm font-medium text-red-800">{{ mensaje | t }}</p>
           <button
             type="button"
             class="inline-flex shrink-0 items-center justify-center rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700"
             (click)="recargar()"
           >
-            Reintentar
+            {{ 'comun.reintentar' | t }}
           </button>
         </div>
       }
@@ -99,7 +111,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
       <div
         class="mt-8 inline-flex rounded-full bg-white p-1 ring-1 ring-line"
         role="tablist"
-        aria-label="Tipo de entidad"
+        [attr.aria-label]="'admin.entidades.tipo' | t"
       >
         @for (tab of pestanas; track tab.id) {
           <button
@@ -116,7 +128,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
             (click)="pestana.set(tab.id)"
             (keydown)="moverPestana($event)"
           >
-            {{ tab.texto }}
+            {{ tab.texto | t }}
             <span class="ml-1 tabular-nums opacity-70">{{ tab.cantidad() }}</span>
           </button>
         }
@@ -131,31 +143,31 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         @if (pestana() === 'clientes') {
           <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
             <div class="min-w-56 flex-1">
-              <label for="filtro-clientes-texto" class="text-xs font-bold text-ink-700"
-                >Buscar</label
-              >
+              <label for="filtro-clientes-texto" class="text-xs font-bold text-ink-700">{{
+                'admin.entidades.buscar' | t
+              }}</label>
               <input
                 id="filtro-clientes-texto"
                 type="search"
-                placeholder="Nombre, email o teléfono"
+                [placeholder]="'admin.entidades.placeholderClientes' | t"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
                 [value]="filtroClientes().texto"
                 (input)="filtrarClientes({ texto: valor($event) })"
               />
             </div>
             <div>
-              <label for="filtro-clientes-estado" class="text-xs font-bold text-ink-700"
-                >Estado</label
-              >
+              <label for="filtro-clientes-estado" class="text-xs font-bold text-ink-700">{{
+                'admin.entidades.estado' | t
+              }}</label>
               <select
                 id="filtro-clientes-estado"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
                 [value]="filtroClientes().estado"
                 (change)="filtrarClientes({ estado: activoDe(valor($event)) })"
               >
-                <option value="todos">Todos</option>
-                <option value="activos">Activos</option>
-                <option value="inactivos">Dados de baja</option>
+                <option value="todos">{{ 'admin.entidades.todos' | t }}</option>
+                <option value="activos">{{ 'admin.entidades.activos' | t }}</option>
+                <option value="inactivos">{{ 'admin.entidades.dadosDeBaja' | t }}</option>
               </select>
             </div>
             <label
@@ -169,7 +181,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 [checked]="filtroClientes().conStrikes"
                 (change)="filtrarClientes({ conStrikes: marcado($event) })"
               />
-              Con strikes
+              {{ 'admin.entidades.conStrikes' | t }}
             </label>
             @if (hayFiltrosClientes()) {
               <button
@@ -177,26 +189,33 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
                 (click)="limpiarFiltrosClientes()"
               >
-                Limpiar filtros
+                {{ 'admin.entidades.limpiar' | t }}
               </button>
             }
           </div>
           <p class="px-4 pt-3 text-xs text-ink-500" role="status" data-testid="resultado-filtros">
-            Mostrando {{ clientesFiltrados().length }} de {{ clientes().length }} clientes
+            {{
+              'admin.entidades.mostrandoClientes'
+                | t: { n: clientesFiltrados().length, total: clientes().length }
+            }}
           </p>
           <div class="overflow-x-auto">
             <table class="w-full min-w-[46rem] text-left text-sm">
               <caption class="sr-only">
-                Clientes registrados
+                {{
+                  'admin.entidades.clientesRegistrados' | t
+                }}
               </caption>
               <thead
                 class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
               >
                 <tr>
-                  <th scope="col" class="px-4 py-3">Cliente</th>
-                  <th scope="col" class="px-4 py-3">Teléfono</th>
-                  <th scope="col" class="px-4 py-3">Strikes</th>
-                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.cliente' | t }}</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.telefono' | t }}</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.strikes' | t }}</th>
+                  <th scope="col" class="px-4 py-3 text-right">
+                    {{ 'admin.entidades.activo' | t }}
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-line/60">
@@ -244,9 +263,10 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                   <tr>
                     <td colspan="4" class="px-4 py-10 text-center text-ink-500">
                       {{
-                        hayFiltrosClientes()
-                          ? 'Ningún cliente coincide con los filtros.'
-                          : 'Todavía no hay clientes.'
+                        (hayFiltrosClientes()
+                          ? 'admin.entidades.sinClientesFiltro'
+                          : 'admin.entidades.sinClientes'
+                        ) | t
                       }}
                     </td>
                   </tr>
@@ -257,37 +277,39 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         } @else {
           <div class="flex flex-wrap items-end gap-3 border-b border-line/60 p-4">
             <div class="min-w-56 flex-1">
-              <label for="filtro-restaurantes-texto" class="text-xs font-bold text-ink-700"
-                >Buscar</label
-              >
+              <label for="filtro-restaurantes-texto" class="text-xs font-bold text-ink-700">{{
+                'admin.entidades.buscar' | t
+              }}</label>
               <input
                 id="filtro-restaurantes-texto"
                 type="search"
-                placeholder="Nombre, dirección o email del encargado"
+                [placeholder]="'admin.entidades.placeholderRestaurantes' | t"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
                 [value]="filtroRestaurantes().texto"
                 (input)="filtrarRestaurantes({ texto: valor($event) })"
               />
             </div>
             <div>
-              <label for="filtro-restaurantes-estado" class="text-xs font-bold text-ink-700"
-                >Estado</label
-              >
+              <label for="filtro-restaurantes-estado" class="text-xs font-bold text-ink-700">{{
+                'admin.entidades.estado' | t
+              }}</label>
               <select
                 id="filtro-restaurantes-estado"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
                 [value]="filtroRestaurantes().estado"
                 (change)="filtrarRestaurantes({ estado: estadoDe(valor($event)) })"
               >
-                <option value="">Todos</option>
+                <option value="">{{ 'admin.entidades.todos' | t }}</option>
                 @for (estado of estadosLista; track estado) {
-                  <option [value]="estado">{{ estados[estado].texto }}</option>
+                  <option [value]="estado">{{ estados[estado].texto | t }}</option>
                 }
               </select>
             </div>
             <div>
-              <label for="filtro-restaurantes-especialidad" class="text-xs font-bold text-ink-700"
-                >Especialidad</label
+              <label
+                for="filtro-restaurantes-especialidad"
+                class="text-xs font-bold text-ink-700"
+                >{{ 'admin.entidades.especialidad' | t }}</label
               >
               <select
                 id="filtro-restaurantes-especialidad"
@@ -295,25 +317,25 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 [value]="filtroRestaurantes().especialidad"
                 (change)="filtrarRestaurantes({ especialidad: especialidadDe(valor($event)) })"
               >
-                <option value="">Todas</option>
+                <option value="">{{ 'admin.entidades.todas' | t }}</option>
                 @for (especialidad of especialidades; track especialidad) {
                   <option [value]="especialidad">{{ especialidadLabels[especialidad] | t }}</option>
                 }
               </select>
             </div>
             <div>
-              <label for="filtro-restaurantes-activo" class="text-xs font-bold text-ink-700"
-                >Activo</label
-              >
+              <label for="filtro-restaurantes-activo" class="text-xs font-bold text-ink-700">{{
+                'admin.entidades.activo' | t
+              }}</label>
               <select
                 id="filtro-restaurantes-activo"
                 class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
                 [value]="filtroRestaurantes().activo"
                 (change)="filtrarRestaurantes({ activo: activoDe(valor($event)) })"
               >
-                <option value="todos">Todos</option>
-                <option value="activos">Activos</option>
-                <option value="inactivos">Dados de baja</option>
+                <option value="todos">{{ 'admin.entidades.todos' | t }}</option>
+                <option value="activos">{{ 'admin.entidades.activos' | t }}</option>
+                <option value="inactivos">{{ 'admin.entidades.dadosDeBaja' | t }}</option>
               </select>
             </div>
             @if (hayFiltrosRestaurantes()) {
@@ -322,28 +344,34 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                 class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
                 (click)="limpiarFiltrosRestaurantes()"
               >
-                Limpiar filtros
+                {{ 'admin.entidades.limpiar' | t }}
               </button>
             }
           </div>
           <p class="px-4 pt-3 text-xs text-ink-500" role="status" data-testid="resultado-filtros">
-            Mostrando {{ restaurantesFiltrados().length }} de
-            {{ restaurantes().length }} restaurantes
+            {{
+              'admin.entidades.mostrandoRestaurantes'
+                | t: { n: restaurantesFiltrados().length, total: restaurantes().length }
+            }}
           </p>
           <div class="overflow-x-auto">
             <table class="w-full min-w-[52rem] text-left text-sm">
               <caption class="sr-only">
-                Restaurantes registrados
+                {{
+                  'admin.entidades.restaurantesRegistrados' | t
+                }}
               </caption>
               <thead
                 class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
               >
                 <tr>
-                  <th scope="col" class="px-4 py-3">Restaurante</th>
-                  <th scope="col" class="px-4 py-3">Estado</th>
-                  <th scope="col" class="px-4 py-3">Encargado</th>
-                  <th scope="col" class="px-4 py-3">Strikes</th>
-                  <th scope="col" class="px-4 py-3 text-right">Activo</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.restaurante' | t }}</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.estado' | t }}</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.encargado' | t }}</th>
+                  <th scope="col" class="px-4 py-3">{{ 'admin.entidades.strikes' | t }}</th>
+                  <th scope="col" class="px-4 py-3 text-right">
+                    {{ 'admin.entidades.activo' | t }}
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-line/60">
@@ -360,7 +388,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                         class="rounded-full px-2.5 py-1 text-xs font-semibold ring-1"
                         [class]="estados[restaurante.estado].clases"
                       >
-                        {{ estados[restaurante.estado].texto }}
+                        {{ estados[restaurante.estado].texto | t }}
                       </span>
                     </td>
                     <td class="px-4 py-3 text-ink-700">{{ restaurante.email }}</td>
@@ -401,9 +429,10 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
                   <tr>
                     <td colspan="5" class="px-4 py-10 text-center text-ink-500">
                       {{
-                        hayFiltrosRestaurantes()
-                          ? 'Ningún restaurante coincide con los filtros.'
-                          : 'Todavía no hay restaurantes.'
+                        (hayFiltrosRestaurantes()
+                          ? 'admin.entidades.sinRestaurantesFiltro'
+                          : 'admin.entidades.sinRestaurantes'
+                        ) | t
                       }}
                     </td>
                   </tr>
@@ -429,12 +458,17 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
         [class]="activo ? 'text-emerald-800' : 'text-ink-500'"
         [attr.aria-checked]="activo"
         [attr.aria-label]="
-          (pestana() === 'clientes' ? 'Cuenta activa de ' : 'Restaurante activo: ') + nombre
+          (pestana() === 'clientes'
+            ? 'admin.entidades.cuentaActivaDe'
+            : 'admin.entidades.restauranteActivo'
+          ) | t: { nombre }
         "
         [disabled]="procesando().has(clave)"
         (click)="cambiar()"
       >
-        <span aria-hidden="true">{{ activo ? 'Activo' : 'De baja' }}</span>
+        <span aria-hidden="true">{{
+          (activo ? 'admin.entidades.activo' : 'admin.entidades.deBaja') | t
+        }}</span>
         <span
           class="relative h-6 w-10 rounded-full transition"
           [class]="activo ? 'bg-emerald-600' : 'bg-ink-400'"
@@ -458,11 +492,11 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
             type="button"
             class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-ink-700 disabled:hover:ring-line"
             data-testid="aplicar-strike"
-            [attr.aria-label]="'Aplicar strike a ' + nombre"
+            [attr.aria-label]="'admin.entidades.aplicarStrikeA' | t: { nombre }"
             [disabled]="strikes >= limiteStrikes"
             (click)="abrir()"
           >
-            + Strike
+            {{ 'admin.entidades.masStrike' | t }}
           </button>
         </div>
         @if (strikes >= limiteStrikes) {
@@ -470,7 +504,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
             class="whitespace-nowrap rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-800 ring-1 ring-red-200"
             data-testid="sugerir-baja"
           >
-            Sugerir penalización / dar de baja
+            {{ 'admin.entidades.sugerirBaja' | t }}
           </span>
         }
       </div>
@@ -489,6 +523,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: string; clases: string }> = {
   `,
 })
 export class GestionEntidades {
+  private readonly i18n = inject(I18n);
   private readonly servicio = inject(AdminEntidadesService);
   private readonly toasts = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -530,13 +565,17 @@ export class GestionEntidades {
     strikes: number;
   } | null>(null);
   protected readonly enviandoStrike = signal(false);
-  protected readonly errorStrike = signal<string | null>(null);
+  protected readonly errorStrike = signal<Mensaje | null>(null);
   private readonly modalStrike = viewChild.required(StrikeModal);
   protected readonly pestanas = [
-    { id: 'clientes' as const, texto: 'Clientes', cantidad: () => this.clientes().length },
+    {
+      id: 'clientes' as const,
+      texto: 'admin.entidades.tab.clientes' as Clave,
+      cantidad: () => this.clientes().length,
+    },
     {
       id: 'restaurantes' as const,
-      texto: 'Restaurantes',
+      texto: 'admin.entidades.tab.restaurantes' as Clave,
       cantidad: () => this.restaurantes().length,
     },
   ];
@@ -647,16 +686,22 @@ export class GestionEntidades {
           this.enviandoStrike.set(false);
           this.objetivoStrike.set(null);
           this.modalStrike().cerrar();
-          const base = `Strike aplicado a ${objetivo.nombre} (${resultado.strikes} de ${LIMITE_STRIKES})`;
+          const base = this.i18n.t('admin.entidades.strikeAplicado', {
+            nombre: objetivo.nombre,
+            n: resultado.strikes,
+            limite: LIMITE_STRIKES,
+          });
           if (resultado.emailEnviado) {
-            this.toasts.exito(`${base}. Le enviamos el aviso a ${resultado.email}.`);
+            this.toasts.exito(
+              this.i18n.t('admin.entidades.avisoEnviado', { base, email: resultado.email }),
+            );
           } else {
-            this.toasts.error(`${base}, pero no se pudo enviar el email de aviso.`);
+            this.toasts.error(this.i18n.t('admin.entidades.avisoNoEnviado', { base }));
           }
         },
         error: (error: Error) => {
           this.enviandoStrike.set(false);
-          this.errorStrike.set(error.message);
+          this.errorStrike.set(mensajeDeErrorAdmin(error, 'admin.error.strike'));
         },
       });
   }
@@ -693,11 +738,19 @@ export class GestionEntidades {
     peticion.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         liberar();
-        this.toasts.exito(activo ? `${nombre} fue reactivado.` : `${nombre} fue dado de baja.`);
+        this.toasts.exito(
+          this.i18n.t(activo ? 'admin.entidades.reactivado' : 'admin.entidades.dadoDeBaja', {
+            nombre,
+          }),
+        );
       },
       error: (error: Error) => {
         liberar();
-        this.toasts.error(error.message);
+        this.toasts.error(
+          this.i18n.mensaje(
+            mensajeDeErrorAdmin(error, activo ? 'admin.error.reactivar' : 'admin.error.baja'),
+          ),
+        );
       },
     });
   }

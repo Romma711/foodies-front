@@ -19,25 +19,30 @@ import {
   FiltroResenas,
   RestauranteFiltro,
 } from '../../services/admin-moderacion.service';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { mensajeDeErrorAdmin } from '../../services/mensaje-error-admin';
 
 /** Recent reviews from every restaurant, with server-side filters, "load more" and a confirmed quick delete per row. */
 @Component({
   selector: 'app-moderacion-resenas',
-  imports: [RouterLink, StarRating, ToastOutlet],
+  imports: [TPipe, RouterLink, StarRating, ToastOutlet],
   providers: [ToastService],
   template: `
     <section aria-labelledby="titulo-moderacion">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">Panel</p>
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-700">
+            {{ 'admin.panel' | t }}
+          </p>
           <h1
             id="titulo-moderacion"
             class="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl"
           >
-            Moderación
+            {{ 'admin.moderacion.titulo' | t }}
           </h1>
           <p class="mt-3 max-w-xl text-sm leading-6 text-ink-500">
-            Revisá las reseñas recientes y eliminá las que no cumplan las normas de la comunidad.
+            {{ 'admin.moderacion.subtitulo' | t }}
           </p>
         </div>
         @if (resenas().length > 0) {
@@ -47,7 +52,7 @@ import {
             [disabled]="cargando()"
             (click)="recargar()"
           >
-            {{ cargando() ? 'Actualizando…' : 'Actualizar' }}
+            {{ (cargando() ? 'admin.actualizando' : 'admin.actualizar') | t }}
           </button>
         }
       </div>
@@ -57,63 +62,68 @@ import {
           class="mt-6 flex flex-col gap-3 rounded-2xl border border-red-100 bg-red-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
           data-testid="moderacion-error"
         >
-          <p class="text-sm font-medium text-red-800">{{ mensaje }}</p>
+          <p class="text-sm font-medium text-red-800">{{ mensaje | t }}</p>
           <button
             type="button"
             class="inline-flex shrink-0 items-center justify-center rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700"
             (click)="recargar()"
           >
-            Reintentar
+            {{ 'comun.reintentar' | t }}
           </button>
         </div>
       }
 
       <form
         role="search"
-        aria-label="Filtrar reseñas"
+        [attr.aria-label]="'admin.moderacion.filtrar' | t"
         class="mt-8 flex flex-wrap items-end gap-3 rounded-2xl border border-line/60 bg-white p-4 shadow-sm"
         (submit)="buscar($event)"
       >
         <div class="min-w-56 flex-1">
-          <label for="filtro-resenas-texto" class="text-xs font-bold text-ink-700">Buscar</label>
+          <label for="filtro-resenas-texto" class="text-xs font-bold text-ink-700">{{
+            'admin.moderacion.buscar' | t
+          }}</label>
           <input
             id="filtro-resenas-texto"
             type="search"
-            placeholder="Comentario, autor o restaurante"
+            [placeholder]="'admin.moderacion.placeholder' | t"
             class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
             [value]="textoBuscado()"
             (input)="textoBuscado.set(valor($event))"
           />
         </div>
         <div>
-          <label for="filtro-resenas-calificacion" class="text-xs font-bold text-ink-700"
-            >Calificación</label
-          >
+          <label for="filtro-resenas-calificacion" class="text-xs font-bold text-ink-700">{{
+            'admin.moderacion.calificacion' | t
+          }}</label>
           <select
             id="filtro-resenas-calificacion"
             class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
             [value]="filtro().calificacion ?? ''"
             (change)="aplicar({ calificacion: numero(valor($event)) })"
           >
-            <option value="">Todas</option>
+            <option value="">{{ 'admin.moderacion.todas' | t }}</option>
             @for (estrellas of calificaciones; track estrellas) {
               <option [value]="estrellas">
-                {{ estrellas }} {{ estrellas === 1 ? 'estrella' : 'estrellas' }}
+                {{
+                  (estrellas === 1 ? 'resena.estrellaUna' : 'resena.estrellaVarias')
+                    | t: { n: estrellas }
+                }}
               </option>
             }
           </select>
         </div>
         <div>
-          <label for="filtro-resenas-restaurante" class="text-xs font-bold text-ink-700"
-            >Restaurante</label
-          >
+          <label for="filtro-resenas-restaurante" class="text-xs font-bold text-ink-700">{{
+            'admin.moderacion.restaurante' | t
+          }}</label>
           <select
             id="filtro-resenas-restaurante"
             class="mt-1 block w-full rounded-xl border border-line bg-cream-50/60 px-3 py-2 text-sm text-ink-900 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:outline-none"
             [value]="filtro().restauranteId ?? ''"
             (change)="aplicar({ restauranteId: numero(valor($event)) })"
           >
-            <option value="">Todos</option>
+            <option value="">{{ 'admin.moderacion.todos' | t }}</option>
             @for (restaurante of restaurantesFiltro(); track restaurante.id) {
               <option [value]="restaurante.id">{{ restaurante.nombre }}</option>
             }
@@ -124,7 +134,7 @@ import {
           class="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:opacity-60"
           [disabled]="cargando()"
         >
-          Buscar
+          {{ 'admin.moderacion.buscar' | t }}
         </button>
         @if (hayFiltros()) {
           <button
@@ -132,7 +142,7 @@ import {
             class="rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
             (click)="limpiar()"
           >
-            Limpiar filtros
+            {{ 'admin.moderacion.limpiar' | t }}
           </button>
         }
       </form>
@@ -141,17 +151,21 @@ import {
         <div class="mt-4 overflow-x-auto rounded-2xl border border-line/60 bg-white shadow-sm">
           <table class="w-full min-w-[36rem] text-left text-sm">
             <caption class="sr-only">
-              Reseñas recientes, de la más nueva a la más vieja
+              {{
+                'admin.moderacion.caption' | t
+              }}
             </caption>
             <thead
               class="border-b border-line/60 text-xs font-bold uppercase tracking-wide text-ink-500"
             >
               <tr>
-                <th scope="col" class="px-4 py-3">Reseña</th>
-                <th scope="col" class="px-4 py-3">Calificación</th>
-                <th scope="col" class="px-4 py-3">Autor</th>
-                <th scope="col" class="px-4 py-3">Restaurante</th>
-                <th scope="col" class="px-4 py-3 text-right">Acciones</th>
+                <th scope="col" class="px-4 py-3">{{ 'admin.moderacion.resena' | t }}</th>
+                <th scope="col" class="px-4 py-3">{{ 'admin.moderacion.calificacion' | t }}</th>
+                <th scope="col" class="px-4 py-3">{{ 'admin.moderacion.autor' | t }}</th>
+                <th scope="col" class="px-4 py-3">{{ 'admin.moderacion.restaurante' | t }}</th>
+                <th scope="col" class="px-4 py-3 text-right">
+                  {{ 'admin.moderacion.acciones' | t }}
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-line/60">
@@ -170,7 +184,7 @@ import {
                     />
                   </td>
                   <td class="px-4 py-4 font-semibold text-ink-900">
-                    {{ resena.nombreUsuario || 'Anónimo' }}
+                    {{ resena.nombreUsuario || ('resena.anonimo' | t) }}
                   </td>
                   <td class="px-4 py-4">
                     <a
@@ -183,7 +197,9 @@ import {
                   <td class="px-4 py-4">
                     <div class="flex items-center justify-end gap-2">
                       @if (confirmandoId() === resena.id) {
-                        <span class="text-sm font-semibold text-ink-900">¿Eliminar?</span>
+                        <span class="text-sm font-semibold text-ink-900">{{
+                          'admin.moderacion.preguntaEliminar' | t
+                        }}</span>
                         <button
                           type="button"
                           class="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink-700 transition hover:bg-cream-100 disabled:opacity-60"
@@ -191,7 +207,7 @@ import {
                           [disabled]="eliminandoId() === resena.id"
                           (click)="cancelar(resena.id)"
                         >
-                          Cancelar
+                          {{ 'comun.cancelar' | t }}
                         </button>
                         <button
                           type="button"
@@ -199,7 +215,12 @@ import {
                           [disabled]="eliminandoId() === resena.id"
                           (click)="eliminar(resena.id)"
                         >
-                          {{ eliminandoId() === resena.id ? 'Eliminando…' : 'Confirmar' }}
+                          {{
+                            (eliminandoId() === resena.id
+                              ? 'resena.eliminando'
+                              : 'admin.moderacion.confirmar'
+                            ) | t
+                          }}
                         </button>
                       } @else {
                         <button
@@ -207,14 +228,16 @@ import {
                           class="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-500 ring-1 ring-line transition hover:bg-red-50 hover:text-red-700 hover:ring-red-100"
                           [id]="'eliminar-' + resena.id"
                           [attr.aria-label]="
-                            'Eliminar reseña de ' +
-                            (resena.nombreUsuario || 'Anónimo') +
-                            ' en ' +
-                            resena.nombreRestaurante
+                            'admin.moderacion.eliminarAria'
+                              | t
+                                : {
+                                    autor: resena.nombreUsuario || ('resena.anonimo' | t),
+                                    restaurante: resena.nombreRestaurante,
+                                  }
                           "
                           (click)="pedirConfirmacion(resena.id)"
                         >
-                          Eliminar
+                          {{ 'resena.eliminar' | t }}
                         </button>
                       }
                     </div>
@@ -232,13 +255,13 @@ import {
               [disabled]="cargando()"
               (click)="cargarMas()"
             >
-              {{ cargando() ? 'Cargando…' : 'Cargar más' }}
+              {{ (cargando() ? 'admin.moderacion.cargando' : 'admin.moderacion.cargarMas') | t }}
             </button>
           </div>
         }
       } @else if (cargando()) {
         <div class="mt-8" role="status" data-testid="moderacion-cargando">
-          <span class="sr-only">Cargando reseñas…</span>
+          <span class="sr-only">{{ 'resena.lista.cargando' | t }}</span>
           <div
             class="space-y-4 rounded-2xl border border-line/60 bg-white p-6 shadow-sm"
             aria-hidden="true"
@@ -257,21 +280,23 @@ import {
           class="mt-8 flex flex-col items-center justify-center rounded-2xl border border-line/60 bg-white px-6 py-16 text-center shadow-sm"
         >
           @if (hayFiltros()) {
-            <h2 class="text-lg font-bold text-ink-900">Ninguna reseña coincide con los filtros</h2>
+            <h2 class="text-lg font-bold text-ink-900">
+              {{ 'admin.moderacion.sinCoincidencias' | t }}
+            </h2>
             <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-              Probá con otro texto o sacá algún filtro.
+              {{ 'admin.moderacion.sinCoincidenciasTexto' | t }}
             </p>
             <button
               type="button"
               class="mt-4 rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:opacity-60"
               (click)="limpiar()"
             >
-              Limpiar filtros
+              {{ 'admin.moderacion.limpiar' | t }}
             </button>
           } @else {
-            <h2 class="text-lg font-bold text-ink-900">No hay reseñas para moderar</h2>
+            <h2 class="text-lg font-bold text-ink-900">{{ 'admin.moderacion.vacioTitulo' | t }}</h2>
             <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-              Cuando la comunidad publique reseñas nuevas van a aparecer acá.
+              {{ 'admin.moderacion.vacioTexto' | t }}
             </p>
           }
         </div>
@@ -284,6 +309,7 @@ import {
 export class ModeracionResenas {
   private readonly moderacion = inject(AdminModeracionService);
   private readonly toasts = inject(ToastService);
+  private readonly i18n = inject(I18n);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
@@ -374,11 +400,13 @@ export class ModeracionResenas {
         next: () => {
           this.eliminandoId.set(null);
           this.confirmandoId.set(null);
-          this.toasts.exito('Reseña eliminada.');
+          this.toasts.exito(this.i18n.t('admin.moderacion.eliminada'));
         },
         error: (error: Error) => {
           this.eliminandoId.set(null);
-          this.toasts.error(error.message);
+          this.toasts.error(
+            this.i18n.mensaje(mensajeDeErrorAdmin(error, 'admin.error.eliminarResena')),
+          );
         },
       });
   }

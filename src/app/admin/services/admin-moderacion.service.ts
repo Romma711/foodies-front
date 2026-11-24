@@ -4,6 +4,8 @@ import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
 import { ResenaModeracion } from '../models/resena-moderacion';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
+import { ErrorAdmin } from './mensaje-error-admin';
 
 /** Filtros de la moderación de reseñas; los resuelve el servidor sobre todas las reseñas. */
 export interface FiltroResenas {
@@ -35,7 +37,7 @@ export class AdminModeracionService {
 
   private readonly _resenas = signal<ResenaModeracion[]>([]);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
   private readonly _hayMas = signal(false);
   private filtro: FiltroResenas = FILTRO_RESENAS_VACIO;
   private pagina = 0;
@@ -106,7 +108,7 @@ export class AdminModeracionService {
           this._hayMas.set(resenas.length === RESENAS_POR_PAGINA);
         }),
         catchError((error: unknown) => {
-          this._error.set(this.mensajeError(error, 'No se pudieron cargar las reseñas.'));
+          this._error.set(this.mensajeError(error, 'admin.error.resenas'));
           return throwError(() => error);
         }),
         finalize(() => this._cargando.set(false)),
@@ -123,19 +125,19 @@ export class AdminModeracionService {
       .pipe(
         tap(() => this._resenas.update((resenas) => resenas.filter((resena) => resena.id !== id))),
         catchError((error: unknown) =>
-          throwError(() => new Error(this.mensajeError(error, 'No se pudo eliminar la reseña.'))),
+          throwError(() => new ErrorAdmin(this.mensajeError(error, 'admin.error.eliminarResena'))),
         ),
       );
   }
 
-  private mensajeError(error: unknown, porDefecto: string): string {
+  private mensajeError(error: unknown, porDefecto: Clave): Mensaje {
     const status = error instanceof HttpErrorResponse ? error.status : -1;
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      401: 'Tu sesión venció. Iniciá sesión nuevamente.',
-      403: 'Tu sesión no tiene permisos de administrador.',
-      404: 'La reseña ya no existe.',
+    const mensajes: Record<number, Clave> = {
+      0: 'comun.errorConexion',
+      401: 'perfil.error.sesion',
+      403: 'admin.error.sinPermisos',
+      404: 'admin.error.resenaNoExiste',
     };
-    return mensajes[status] ?? porDefecto;
+    return { clave: mensajes[status] ?? porDefecto };
   }
 }
