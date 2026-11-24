@@ -3,7 +3,7 @@ import { inject, Service, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { withRole } from '../../core/auth/auth-context';
-import { backendMessage, isConnectionError } from '../../core/http/api-error';
+import { isConnectionError, mensajeDelBackend } from '../../core/http/api-error';
 import { Clave, Mensaje } from '../../core/i18n/traducir';
 import { EntradaListaEspera, ListaEsperaRequest } from '../models/lista-espera';
 
@@ -67,20 +67,22 @@ export class ListaEsperaService {
     );
   }
 
-  /** Shows the backend message as is (409 "there is room", 403 strikes…), or a generic one. */
+  /**
+   * Shows the backend message (409 "there is room", 403 strikes…), translated when it has a known
+   * code, or a generic one.
+   */
   private fallar(error: unknown, generico: Clave): Observable<never> {
-    const texto = backendMessage(error);
-    let mensaje: Mensaje;
-    if (texto) {
-      mensaje = { texto };
-    } else if (isConnectionError(error)) {
-      mensaje = { clave: 'comun.errorConexion' };
-    } else if (error instanceof HttpErrorResponse && error.status === 401) {
-      mensaje = { clave: 'comun.error.noAutenticado' };
-    } else {
-      mensaje = { clave: generico };
-    }
-    this._error.set(mensaje);
+    this._error.set(mensajeDelBackend(error) ?? this.mensajeGenerico(error, generico));
     return throwError(() => error);
+  }
+
+  private mensajeGenerico(error: unknown, generico: Clave): Mensaje {
+    if (isConnectionError(error)) {
+      return { clave: 'comun.errorConexion' };
+    }
+    if (error instanceof HttpErrorResponse && error.status === 401) {
+      return { clave: 'comun.error.noAutenticado' };
+    }
+    return { clave: generico };
   }
 }

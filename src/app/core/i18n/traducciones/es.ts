@@ -867,6 +867,93 @@ export const ES = {
   'admin.entidades.avisoNoEnviado': '{base}, pero no se pudo enviar el email de aviso.',
   'admin.entidades.reactivado': '{nombre} fue reactivado.',
   'admin.entidades.dadoDeBaja': '{nombre} fue dado de baja.',
+  'errores.RESTAURANTE_CERRADO': 'Ese día el restaurante está cerrado. Elegí otra fecha.',
+  'errores.FUERA_DE_HORARIO':
+    'Ese día el restaurante recibe reservas de {franjas}. Elegí otro horario.',
+  'errores.ULTIMA_LLEGADA':
+    'La última llegada es {minutos} minutos antes del cierre: ese día podés llegar hasta las {hora}.',
+  'errores.TURNO_FUERA_DE_HORARIO':
+    'El turno tiene que empezar y terminar dentro del horario de atención de ese día.',
+  'errores.SOLO_CLIENTES_LISTA_ESPERA': 'Solo los clientes pueden anotarse en una lista de espera.',
+  'errores.CUENTA_CON_STRIKES_LISTA_ESPERA':
+    'Tu cuenta tiene {limite} strikes: no podés anotarte en listas de espera. Escribinos si creés que es un error.',
+  'errores.SIN_DATOS': 'No hay datos para guardar.',
+  'errores.CANTIDAD_INVALIDA': 'La cantidad de personas debe ser mayor a 0.',
+  'errores.RESTAURANTE_OBLIGATORIO': 'El restaurante es obligatorio.',
+  'errores.RESTAURANTE_NO_ENCONTRADO': 'Restaurante no encontrado.',
+  'errores.YA_EN_LISTA_ESPERA': 'Ya estás en la lista de espera de este restaurante ese día.',
+  'errores.LISTA_ESPERA_CON_RESERVA': 'Ya tenés una reserva activa en este restaurante ese día.',
+  'errores.HAY_LUGAR': 'Hay lugar en ese horario: reservá directamente.',
+  'errores.INSCRIPCION_NO_ENCONTRADA': 'Inscripción no encontrada.',
+  'errores.INSCRIPCION_AJENA': 'Solo podés salir de tus propias listas de espera.',
+  'errores.INSCRIPCION_CERRADA': 'Esa inscripción ya está cerrada.',
+  'errores.CUENTA_DADA_DE_BAJA': 'No se puede sancionar una cuenta dada de baja.',
+  'errores.RESENA_DUPLICADA': 'Ya realizaste una reseña para este restaurante.',
+  'errores.CALIFICACION_INVALIDA': 'La calificación debe estar entre {minimo} y {maximo}.',
+  'errores.RESENA_SIN_ASISTENCIA':
+    'Solo podés reseñar un restaurante después de asistir a una reserva en él.',
+  'errores.SOLO_CLIENTES_RESERVAN': 'Solo los clientes pueden hacer reservas.',
+  'errores.RESERVA_A_NOMBRE_AJENO': 'Solo podés crear reservas a tu nombre.',
+  'errores.RESERVA_AJENA': 'Solo podés modificar tus propias reservas.',
+  'errores.RESERVA_CANCELADA': 'La reserva está cancelada y no se puede modificar.',
+  'errores.RESERVA_CERRADA': 'La reserva ya está cerrada ({estado}) y no se puede modificar.',
+  'errores.PLAZO_VENCIDO':
+    'Solo podés cancelar o modificar la reserva hasta {minutos} minutos antes de la llegada. Para cambios de último momento, comunicate con el restaurante.',
+  'errores.SOLO_CANCELAR': 'Solo podés cancelar la reserva: el estado debe ser CANCELADA.',
+  'errores.ESPACIO_OBLIGATORIO': 'Elegí en qué espacio querés reservar.',
+  'errores.RESERVA_NO_SE_BORRA': 'Las reservas no se borran: cancelala para liberar el lugar.',
+  'errores.CUENTA_CON_STRIKES':
+    'Tu cuenta tiene {limite} strikes: no podés hacer reservas nuevas. Escribinos si creés que es un error.',
+  'errores.RESERVA_DUPLICADA':
+    'Ya tenés una reserva activa en este restaurante ese día. Modificala si necesitás cambiarla.',
+  'errores.RESERVA_MUY_CERCA':
+    'Ya tenés otra reserva activa a menos de {horas} horas de este horario.',
+  'errores.SIN_CUPO_TURNO':
+    'No hay lugar para {cantidad} en ese turno. Probá con otro turno o menos personas.',
+  'errores.SIN_CUPO':
+    'No hay lugar para {cantidad} ese día. Probá con otra fecha o menos personas.',
+  'errores.FECHA_OBLIGATORIA': 'La fecha es obligatoria.',
+  'errores.FECHA_ANTERIOR_A_HOY': 'Fecha no válida: no puede ser anterior al día de hoy.',
+  'errores.FECHA_MUY_LEJANA':
+    'No se pueden hacer reservas con más de {meses} meses de anticipación.',
+  'errores.FECHA_FORMATO_INVALIDO':
+    'Formato de fecha inválido. Debe ser yyyy-MM-dd (ejemplo: 2024-12-25).',
+  'errores.FECHA_HORA_PASADA':
+    'La fecha y hora de la reserva no pueden ser anteriores a este momento.',
+  'errores.HORA_OBLIGATORIA': 'La hora es obligatoria.',
+  'errores.HORA_FORMATO_INVALIDO': 'Formato de hora inválido. Debe ser HH:mm (ejemplo: 19:30).',
+  'errores.ESTADO_INVALIDO':
+    'El estado debe ser ACEPTADA, RECHAZADA, CANCELADA, ASISTIO o NO_ASISTIO.',
+  'errores.RESERVA_DE_OTRO_RESTAURANTE': 'La reserva no pertenece a tu restaurante.',
+  'errores.ESTADO_FINAL': 'La reserva ya está cerrada ({estado}) y no se puede cambiar.',
+  'errores.ASISTENCIA_SIN_ACEPTAR': 'Solo podés marcar la asistencia de una reserva aceptada.',
+  'errores.ASISTENCIA_ANTICIPADA': 'La asistencia se marca desde la hora de llegada de la reserva.',
+  'errores.ASISTENCIA_FUERA_DE_PLAZO':
+    'Pasaron más de {horas} horas de la reserva: ya no se puede marcar la asistencia.',
+  'errores.RESERVA_YA_PASO':
+    'La hora de la reserva ya pasó: solo podés marcar si el cliente asistió o no.',
+  'errores.YA_ACEPTADA': 'La reserva ya está aceptada.',
+  'errores.RECHAZO_INVALIDO': 'Solo podés rechazar una reserva pendiente; una aceptada se cancela.',
+  'errores.RESTAURANTE_CON_RESERVAS':
+    'El restaurante tiene reservas activas a futuro: dalo de baja primero, así se cancelan y se avisa a los clientes.',
+  'errores.SIN_TURNOS': 'Este restaurante no trabaja con turnos: elegí solo el horario de llegada.',
+  'errores.DIA_SIN_TURNOS': 'Ese día el restaurante no tiene turnos. Elegí otra fecha.',
+  'errores.TURNO_INVALIDO':
+    'Ese día el restaurante recibe reservas por turnos: {turnos}. Elegí uno.',
+  'errores.TURNO_SIN_DIA': 'Indicá el día del turno.',
+  'errores.TURNO_HORA_INVALIDA':
+    'La hora de inicio tiene que tener el formato HH:mm, por ejemplo 20:30.',
+  'errores.TURNO_DURACION_INVALIDA':
+    'La duración del turno tiene que estar entre {minimo} y {maximo} minutos.',
+  'errores.TURNO_PASA_MEDIANOCHE': 'El turno tiene que terminar a la medianoche como máximo.',
+  'errores.TURNO_DUPLICADO': 'Ya tenés un turno ese día a esa hora.',
+  'errores.TURNO_CON_RESERVAS':
+    'El turno tiene reservas activas a futuro: no se puede cambiar ni borrar. Cancelalas primero.',
+  'errores.TURNO_NO_ENCONTRADO': 'Turno no encontrado.',
+  'errores.CLIENTE_CON_HISTORIAL':
+    'El cliente tiene reservas o reseñas: dalo de baja en lugar de borrarlo.',
+  'errores.RESTAURANTE_DADO_DE_BAJA':
+    'Tu restaurante fue dado de baja: el panel queda en modo lectura. Escribinos si creés que es un error.',
 };
 
 export type Clave = keyof typeof ES;

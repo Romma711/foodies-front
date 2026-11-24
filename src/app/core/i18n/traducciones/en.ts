@@ -868,4 +868,90 @@ export const EN: Traducciones = {
   'admin.entidades.avisoNoEnviado': '{base}, but the notice email could not be sent.',
   'admin.entidades.reactivado': '{nombre} was reactivated.',
   'admin.entidades.dadoDeBaja': '{nombre} was deactivated.',
+  'errores.RESTAURANTE_CERRADO': 'The restaurant is closed that day. Choose another date.',
+  'errores.FUERA_DE_HORARIO':
+    'That day the restaurant takes reservations from {franjas}. Choose another time.',
+  'errores.ULTIMA_LLEGADA':
+    'The last arrival is {minutos} minutes before closing: that day you can arrive until {hora}.',
+  'errores.TURNO_FUERA_DE_HORARIO':
+    "The time slot must start and end within that day's opening hours.",
+  'errores.SOLO_CLIENTES_LISTA_ESPERA': 'Only guests can join a waitlist.',
+  'errores.CUENTA_CON_STRIKES_LISTA_ESPERA':
+    'Your account has {limite} strikes: you cannot join waitlists. Write to us if you think this is a mistake.',
+  'errores.SIN_DATOS': 'There is no data to save.',
+  'errores.CANTIDAD_INVALIDA': 'The party size must be greater than 0.',
+  'errores.RESTAURANTE_OBLIGATORIO': 'The restaurant is required.',
+  'errores.RESTAURANTE_NO_ENCONTRADO': 'Restaurant not found.',
+  'errores.YA_EN_LISTA_ESPERA': "You are already on this restaurant's waitlist for that day.",
+  'errores.LISTA_ESPERA_CON_RESERVA':
+    'You already have an active reservation at this restaurant that day.',
+  'errores.HAY_LUGAR': 'There is room at that time: book directly.',
+  'errores.INSCRIPCION_NO_ENCONTRADA': 'Waitlist entry not found.',
+  'errores.INSCRIPCION_AJENA': 'You can only leave your own waitlists.',
+  'errores.INSCRIPCION_CERRADA': 'That waitlist entry is already closed.',
+  'errores.CUENTA_DADA_DE_BAJA': 'A closed account cannot be penalized.',
+  'errores.RESENA_DUPLICADA': 'You already reviewed this restaurant.',
+  'errores.CALIFICACION_INVALIDA': 'The rating must be between {minimo} and {maximo}.',
+  'errores.RESENA_SIN_ASISTENCIA':
+    'You can only review a restaurant after attending a reservation there.',
+  'errores.SOLO_CLIENTES_RESERVAN': 'Only guests can make reservations.',
+  'errores.RESERVA_A_NOMBRE_AJENO': 'You can only make reservations in your own name.',
+  'errores.RESERVA_AJENA': 'You can only change your own reservations.',
+  'errores.RESERVA_CANCELADA': 'The reservation is cancelled and cannot be changed.',
+  'errores.RESERVA_CERRADA': 'The reservation is already closed ({estado}) and cannot be changed.',
+  'errores.PLAZO_VENCIDO':
+    'You can only cancel or change the reservation up to {minutos} minutes before arrival. For last-minute changes, contact the restaurant.',
+  'errores.SOLO_CANCELAR': 'You can only cancel the reservation: the status must be CANCELADA.',
+  'errores.ESPACIO_OBLIGATORIO': 'Choose the area you want to book.',
+  'errores.RESERVA_NO_SE_BORRA': 'Reservations are not deleted: cancel it to free the spot.',
+  'errores.CUENTA_CON_STRIKES':
+    'Your account has {limite} strikes: you cannot make new reservations. Write to us if you think this is a mistake.',
+  'errores.RESERVA_DUPLICADA':
+    'You already have an active reservation at this restaurant that day. Change it if you need to.',
+  'errores.RESERVA_MUY_CERCA':
+    'You already have another active reservation less than {horas} hours from this time.',
+  'errores.SIN_CUPO_TURNO':
+    'There is no room for {cantidad} in that time slot. Try another slot or a smaller party.',
+  'errores.SIN_CUPO':
+    'There is no room for {cantidad} that day. Try another date or a smaller party.',
+  'errores.FECHA_OBLIGATORIA': 'The date is required.',
+  'errores.FECHA_ANTERIOR_A_HOY': 'Invalid date: it cannot be earlier than today.',
+  'errores.FECHA_MUY_LEJANA': 'Reservations cannot be made more than {meses} months in advance.',
+  'errores.FECHA_FORMATO_INVALIDO':
+    'Invalid date format. It must be yyyy-MM-dd (example: 2024-12-25).',
+  'errores.FECHA_HORA_PASADA': 'The reservation date and time cannot be in the past.',
+  'errores.HORA_OBLIGATORIA': 'The time is required.',
+  'errores.HORA_FORMATO_INVALIDO': 'Invalid time format. It must be HH:mm (example: 19:30).',
+  'errores.ESTADO_INVALIDO':
+    'The status must be ACEPTADA, RECHAZADA, CANCELADA, ASISTIO or NO_ASISTIO.',
+  'errores.RESERVA_DE_OTRO_RESTAURANTE': 'The reservation does not belong to your restaurant.',
+  'errores.ESTADO_FINAL': 'The reservation is already closed ({estado}) and cannot be changed.',
+  'errores.ASISTENCIA_SIN_ACEPTAR': 'You can only mark attendance on an accepted reservation.',
+  'errores.ASISTENCIA_ANTICIPADA': "Attendance can be marked from the reservation's arrival time.",
+  'errores.ASISTENCIA_FUERA_DE_PLAZO':
+    'More than {horas} hours have passed since the reservation: attendance can no longer be marked.',
+  'errores.RESERVA_YA_PASO':
+    'The reservation time has passed: you can only mark whether the guest attended.',
+  'errores.YA_ACEPTADA': 'The reservation is already accepted.',
+  'errores.RECHAZO_INVALIDO':
+    'You can only decline a pending reservation; an accepted one is cancelled.',
+  'errores.RESTAURANTE_CON_RESERVAS':
+    'The restaurant has upcoming active reservations: deactivate it first so they are cancelled and the guests notified.',
+  'errores.SIN_TURNOS': 'This restaurant does not use time slots: just choose your arrival time.',
+  'errores.DIA_SIN_TURNOS': 'The restaurant has no time slots that day. Choose another date.',
+  'errores.TURNO_INVALIDO':
+    'That day the restaurant takes reservations by time slot: {turnos}. Choose one.',
+  'errores.TURNO_SIN_DIA': 'Enter the day of the time slot.',
+  'errores.TURNO_HORA_INVALIDA': 'The start time must use the HH:mm format, for example 20:30.',
+  'errores.TURNO_DURACION_INVALIDA':
+    'The time slot length must be between {minimo} and {maximo} minutes.',
+  'errores.TURNO_PASA_MEDIANOCHE': 'The time slot must end by midnight at the latest.',
+  'errores.TURNO_DUPLICADO': 'You already have a time slot that day at that time.',
+  'errores.TURNO_CON_RESERVAS':
+    'The time slot has upcoming active reservations: it cannot be changed or removed. Cancel them first.',
+  'errores.TURNO_NO_ENCONTRADO': 'Time slot not found.',
+  'errores.CLIENTE_CON_HISTORIAL':
+    'The guest has reservations or reviews: deactivate the account instead of deleting it.',
+  'errores.RESTAURANTE_DADO_DE_BAJA':
+    'Your restaurant was deactivated: the dashboard is read-only. Write to us if you think this is a mistake.',
 };

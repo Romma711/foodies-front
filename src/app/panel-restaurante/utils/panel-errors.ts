@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { Clave, Mensaje } from '../../core/i18n/traducir';
+import { mensajeConCodigo } from '../../core/http/api-error';
 
 /** Mensaje para el usuario cuando falla un pedido del panel. No se muestran los mensajes del backend tal cual. */
 export function panelErrorMessage(error: unknown, fallback: Clave): Mensaje {
@@ -26,6 +27,10 @@ export function panelErrorMessage(error: unknown, fallback: Clave): Mensaje {
  */
 export function mensajeDeNegocio(error: unknown): Mensaje | null {
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
     return typeof mensaje === 'string' && mensaje.trim() ? { texto: mensaje } : null;
   }
@@ -38,6 +43,10 @@ export function mensajeDeNegocio(error: unknown): Mensaje | null {
  */
 export function mensajeDeConflicto(error: unknown): Mensaje | null {
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
     return typeof mensaje === 'string' && mensaje.trim() ? { texto: mensaje } : null;
   }

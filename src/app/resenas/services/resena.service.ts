@@ -13,6 +13,7 @@ import {
   ResenaUsuarioDTO,
 } from '../models';
 import { Clave, Mensaje } from '../../core/i18n/traducir';
+import { mensajeConCodigo } from '../../core/http/api-error';
 
 interface ApiError {
   error?: string;
@@ -203,6 +204,10 @@ export class ResenaService {
   }
 
   private obtenerMensajeError(error: unknown): Mensaje {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     if (error instanceof HttpErrorResponse) {
       const body = error.error as ApiError | string | null;
       if (typeof body === 'string' && body.trim().length > 0) {

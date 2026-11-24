@@ -2,6 +2,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { Mensaje } from '../../../core/i18n/traducir';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { EntradaListaEspera } from '../../models/lista-espera';
 import { ListaEsperaService } from '../../services/lista-espera.service';
 import { MiListaEspera } from './mi-lista-espera';
@@ -103,6 +104,25 @@ describe('MiListaEspera', () => {
     boton(host, 'Sí, salir')!.click();
     fixture.detectChanges();
     expect(salir).toHaveBeenCalledWith(4);
+  });
+
+  it('muestra en inglés un error del back con código', () => {
+    const i18n = TestBed.inject(I18n);
+    i18n.usar('en');
+    try {
+      error.set({
+        codigo: 'errores.HAY_LUGAR',
+        params: {},
+        texto: 'Hay lugar en ese horario: reservá directamente',
+      });
+      const host = crear().nativeElement as HTMLElement;
+
+      expect(host.querySelector('[role="alert"]')?.textContent).toContain(
+        'There is room at that time: book directly.',
+      );
+    } finally {
+      i18n.usar('es');
+    }
   });
 
   it('muestra el mensaje de error del servidor', () => {

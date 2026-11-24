@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { backendMessage, isConnectionError } from '../../../core/http/api-error';
+import { isConnectionError, mensajeDelBackend } from '../../../core/http/api-error';
 import { Mensaje } from '@core/i18n/traducir';
 import { ClientePerfilService } from '../../services/cliente-perfil.service';
 import { TPipe } from '@core/i18n/t.pipe';
@@ -222,11 +222,10 @@ export class MiPerfil {
         },
         error: (error: unknown) => {
           this.dandoDeBaja.set(false);
-          const texto = backendMessage(error);
           this.errorBaja.set(
-            texto
-              ? { texto }
-              : { clave: isConnectionError(error) ? 'comun.errorConexion' : 'perfil.baja.error' },
+            mensajeDelBackend(error) ?? {
+              clave: isConnectionError(error) ? 'comun.errorConexion' : 'perfil.baja.error',
+            },
           );
         },
       });
