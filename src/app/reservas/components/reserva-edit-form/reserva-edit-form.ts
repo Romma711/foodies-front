@@ -19,7 +19,7 @@ import { horariosDelDia } from '../../../restaurantes/utils/horarios';
 import { EspaciosService } from '../../services/espacios.service';
 import { HorariosService } from '../../services/horarios.service';
 import { ReservaService } from '../../services/reserva.service';
-import { formatearHora } from '../../utils/reserva-formato';
+import { formatearHora, soloFecha } from '../../utils/reserva-formato';
 import {
   diaCerrado,
   espacioSinLugar,
@@ -36,11 +36,6 @@ import { EspacioSelector } from '../espacio-selector/espacio-selector';
 import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
 import { I18n } from '@core/i18n/i18n.service';
 import { Traductor } from '@core/i18n/traducir';
-
-/** `yyyy-MM-dd` part of the date the API returns (ISO date or date-time). */
-function soloFecha(value: string): string {
-  return /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : '';
-}
 
 /** Lets the owner change date, arrival time, party size and espacio of a PENDIENTE or ACEPTADA reservation. */
 @Component({

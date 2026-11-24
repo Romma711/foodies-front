@@ -200,91 +200,94 @@
               } @else {
                 @switch (reserva.estadoReserva) {
                   @case ('PENDIENTE') {
-                    @if (cancelandoId() === reserva.id) {
-                      <div
-                        class="flex flex-col gap-3 rounded-xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
-                        role="group"
-                        [attr.aria-label]="'misReservas.confirmarCancelacion' | t"
-                      >
-                        <p class="text-sm font-medium text-amber-900">
-                          {{ 'misReservas.preguntaCancelar' | t }}
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            [disabled]="saving()"
-                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
-                            (click)="cerrarCancelacion()"
-                          >
-                            {{ 'misReservas.mantener' | t }}
-                          </button>
-                          <button
-                            type="button"
-                            [disabled]="saving()"
-                            class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-progress disabled:opacity-60"
-                            (click)="confirmarCancelacion(reserva.id)"
-                          >
-                            @if (saving()) {
-                              <span
-                                class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                                aria-hidden="true"
-                              ></span>
-                            }
-                            {{ 'misReservas.siCancelar' | t }}
-                          </button>
-                        </div>
-                      </div>
-                    } @else {
-                      <div class="flex flex-wrap items-center justify-between gap-3">
-                        <p class="text-sm leading-6 text-ink-500">
-                          {{ 'misReservas.esperando' | t }}
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                            [attr.aria-label]="'reserva.modificarN' | t: { id: reserva.id }"
-                            [attr.data-modificar]="reserva.id"
-                            (click)="iniciarEdicion(reserva.id)"
-                          >
-                            {{ 'misReservas.modificar' | t }}
-                          </button>
-                          <button
-                            type="button"
-                            class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                            (click)="iniciarCancelacion(reserva.id)"
-                          >
-                            {{ 'misReservas.cancelarReserva' | t }}
-                          </button>
-                        </div>
-                      </div>
-                    }
+                    <p class="text-sm leading-6 text-ink-500">{{ 'misReservas.esperando' | t }}</p>
                   }
                   @case ('ACEPTADA') {
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                      <p
-                        class="rounded-xl bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900 ring-1 ring-emerald-100"
-                      >
-                        {{ 'misReservas.confirmo' | t }}
-                      </p>
-                      <button
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-                        [attr.aria-label]="'reserva.modificarN' | t: { id: reserva.id }"
-                        [attr.data-modificar]="reserva.id"
-                        (click)="iniciarEdicion(reserva.id)"
-                      >
-                        {{ 'misReservas.modificar' | t }}
-                      </button>
-                    </div>
-                  }
-                  @case ('CANCELADA') {
                     <p
-                      class="rounded-xl bg-cream-100/80 px-4 py-3 text-sm font-medium text-ink-600 ring-1 ring-line/60"
+                      class="rounded-xl bg-emerald-50/70 px-4 py-3 text-sm font-medium text-emerald-900 ring-1 ring-emerald-100"
                     >
-                      {{ 'misReservas.cancelada' | t }}
+                      {{ 'misReservas.confirmo' | t }}
                     </p>
                   }
+                  @case ('ASISTIO') {
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                      <p class="text-sm leading-6 text-emerald-900" data-testid="mensaje-estado">
+                        {{ 'misReservas.asistio' | t }}
+                      </p>
+                      <a
+                        [routerLink]="['/restaurantes', reserva.idRestaurant]"
+                        class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                      >
+                        {{ 'misReservas.dejarResena' | t }}
+                      </a>
+                    </div>
+                  }
+                  @default {
+                    <p
+                      class="rounded-xl bg-cream-100/80 px-4 py-3 text-sm font-medium text-ink-600 ring-1 ring-line/60"
+                      data-testid="mensaje-estado"
+                    >
+                      {{ mensajeFinal(reserva.estadoReserva) | t }}
+                    </p>
+                  }
+                }
+                @if (cancelandoId() === reserva.id) {
+                  <div
+                    class="mt-3 flex flex-col gap-3 rounded-xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+                    role="group"
+                    [attr.aria-label]="'misReservas.confirmarCancelacion' | t"
+                  >
+                    <p class="text-sm font-medium text-amber-900">
+                      {{ 'misReservas.preguntaCancelar' | t }}
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        [disabled]="saving()"
+                        class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        (click)="cerrarCancelacion()"
+                      >
+                        {{ 'misReservas.mantener' | t }}
+                      </button>
+                      <button
+                        type="button"
+                        [disabled]="saving()"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-progress disabled:opacity-60"
+                        (click)="confirmarCancelacion(reserva.id)"
+                      >
+                        @if (saving()) {
+                          <span
+                            class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                            aria-hidden="true"
+                          ></span>
+                        }
+                        {{ 'misReservas.siCancelar' | t }}
+                      </button>
+                    </div>
+                  </div>
+                } @else if (puedeCambiar(reserva)) {
+                  <div class="mt-3 flex flex-wrap justify-end gap-2">
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                      [attr.aria-label]="'reserva.modificarN' | t: { id: reserva.id }"
+                      [attr.data-modificar]="reserva.id"
+                      (click)="iniciarEdicion(reserva.id)"
+                    >
+                      {{ 'misReservas.modificar' | t }}
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+                      (click)="iniciarCancelacion(reserva.id)"
+                    >
+                      {{ 'misReservas.cancelarReserva' | t }}
+                    </button>
+                  </div>
+                } @else if (esActiva(reserva.estadoReserva)) {
+                  <p class="mt-3 text-sm leading-6 text-ink-500" data-testid="cambios-cerrados">
+                    {{ 'misReservas.cerrada' | t }}
+                  </p>
                 }
               }
             </div>

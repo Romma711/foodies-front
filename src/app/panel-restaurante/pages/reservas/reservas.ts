@@ -26,6 +26,10 @@ export const ESTADO_LABEL: Record<EstadoReserva, Clave> = {
   PENDIENTE: 'panel.reservas.estado.PENDIENTE',
   ACEPTADA: 'panel.reservas.estado.ACEPTADA',
   CANCELADA: 'panel.reservas.estado.CANCELADA',
+  RECHAZADA: 'panel.reservas.estado.RECHAZADA',
+  ASISTIO: 'panel.reservas.estado.ASISTIO',
+  NO_ASISTIO: 'panel.reservas.estado.NO_ASISTIO',
+  VENCIDA: 'panel.reservas.estado.VENCIDA',
 };
 
 @Component({

@@ -51,6 +51,7 @@ export function reserva(overrides: Partial<ReservaPanel> = {}): ReservaPanel {
     telefonoCliente: '2235550000',
     idEspacio: 3,
     espacioNombre: 'Salón principal',
+    idTurno: null,
     ...overrides,
   };
 }

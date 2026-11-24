@@ -14,24 +14,26 @@ describe('MisReservas', () => {
     {
       id: 6,
       cantidad: 2,
-      fechaReserva: '2026-11-20T15:00:00.000+00:00',
+      fechaReserva: `${fechaLocal(3)}T15:00:00.000+00:00`,
       horariollegada: '20:00:00',
       estadoReserva: 'PENDIENTE',
       nombreResto: 'Ochiwan',
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     },
     {
       id: 7,
       cantidad: 4,
-      fechaReserva: '2026-11-22T15:00:00.000+00:00',
+      fechaReserva: `${fechaLocal(4)}T15:00:00.000+00:00`,
       horariollegada: '21:30:00',
       estadoReserva: 'ACEPTADA',
       nombreResto: 'La Trattoria',
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     },
   ];
 
@@ -45,6 +47,7 @@ describe('MisReservas', () => {
     nombreResto: 'Ochiwan',
     idEspacio: 3,
     espacioNombre: 'Salón principal',
+    idTurno: null,
   };
 
   let reservas: WritableSignal<ReservaListDTO[]>;
@@ -179,6 +182,7 @@ describe('MisReservas', () => {
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     };
 
     function botonesModificar(elemento: HTMLElement): HTMLButtonElement[] {
@@ -256,7 +260,9 @@ describe('MisReservas', () => {
       await fixture.whenStable();
       fixture.detectChanges();
       expect(modificar).not.toHaveBeenCalled();
-      expect(formulario.textContent).toContain('No hay lugar en ese espacio para esa fecha y cantidad.');
+      expect(formulario.textContent).toContain(
+        'No hay lugar en ese espacio para esa fecha y cantidad.',
+      );
 
       radio('5').click();
       fixture.detectChanges();
@@ -379,6 +385,96 @@ describe('MisReservas', () => {
       expect(
         elemento.querySelector('[data-testid="error-modificacion"]')?.textContent?.trim(),
       ).toBe('No hay cupo disponible para esa fecha.');
+    });
+  });
+
+  describe('estados y ventana de cambios', () => {
+    const base: ReservaListDTO = {
+      id: 20,
+      cantidad: 2,
+      fechaReserva: fechaLocal(5),
+      horariollegada: '20:00:00',
+      estadoReserva: 'PENDIENTE',
+      nombreResto: 'Ochiwan',
+      idRestaurant: 5,
+      idEspacio: 3,
+      espacioNombre: 'Salón principal',
+      idTurno: null,
+    };
+
+    function botones(elemento: HTMLElement, texto: string): HTMLButtonElement[] {
+      return [...elemento.querySelectorAll<HTMLButtonElement>('button')].filter(
+        (boton) => boton.textContent?.trim() === texto,
+      );
+    }
+
+    /** Local date and `HH:mm:ss` of `minutos` from now. */
+    function dentroDe(minutos: number): Pick<ReservaListDTO, 'fechaReserva' | 'horariollegada'> {
+      const momento = new Date(Date.now() + minutos * 60_000);
+      const dia = `${momento.getFullYear()}-${String(momento.getMonth() + 1).padStart(2, '0')}-${String(momento.getDate()).padStart(2, '0')}`;
+      const hora = `${String(momento.getHours()).padStart(2, '0')}:${String(momento.getMinutes()).padStart(2, '0')}:00`;
+      return { fechaReserva: dia, horariollegada: hora };
+    }
+
+    it('muestra la etiqueta y el mensaje de cada estado final', () => {
+      reservas.set([
+        { ...base, id: 21, estadoReserva: 'RECHAZADA' },
+        { ...base, id: 22, estadoReserva: 'NO_ASISTIO' },
+        { ...base, id: 23, estadoReserva: 'VENCIDA' },
+        { ...base, id: 24, estadoReserva: 'ASISTIO' },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const tarjetas = [...elemento.querySelectorAll('li')].map((li) => li.textContent ?? '');
+
+      expect(tarjetas[0]).toContain('Rechazada');
+      expect(tarjetas[0]).toContain('El restaurante no pudo aceptar esta reserva.');
+      expect(tarjetas[1]).toContain('No asististe');
+      expect(tarjetas[1]).toContain('Tres ausencias suman un strike.');
+      expect(tarjetas[2]).toContain('Vencida');
+      expect(tarjetas[2]).toContain('no confirmó la reserva antes del horario de llegada');
+      expect(tarjetas[3]).toContain('Asististe');
+      expect(tarjetas[3]).toContain('Dejar mi reseña');
+      expect(botones(elemento, 'Modificar')).toHaveLength(0);
+      expect(botones(elemento, 'Cancelar reserva')).toHaveLength(0);
+    });
+
+    it('lleva a la página del restaurante para reseñar una reserva a la que asistió', () => {
+      reservas.set([{ ...base, estadoReserva: 'ASISTIO' }]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const enlace = [...elemento.querySelectorAll<HTMLAnchorElement>('a')].find(
+        (a) => a.textContent?.trim() === 'Dejar mi reseña',
+      );
+
+      expect(enlace?.getAttribute('href')).toBe('/restaurantes/5');
+    });
+
+    it('permite cancelar también una reserva confirmada', () => {
+      reservas.set([{ ...base, estadoReserva: 'ACEPTADA' }]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botones(elemento, 'Cancelar reserva')[0].click();
+      fixture.detectChanges();
+      botones(elemento, 'Sí, cancelar')[0].click();
+
+      expect(cancelar).toHaveBeenCalledWith(20);
+    });
+
+    it('oculta modificar y cancelar a 30 minutos o menos de la llegada y explica por qué', () => {
+      reservas.set([
+        { ...base, id: 30, estadoReserva: 'ACEPTADA', ...dentroDe(20) },
+        { ...base, id: 31, estadoReserva: 'PENDIENTE', ...dentroDe(90) },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const [cerca, lejos] = [...elemento.querySelectorAll('li')];
+
+      expect(cerca.querySelector('[data-testid="cambios-cerrados"]')?.textContent).toContain(
+        'Faltan menos de 30 minutos',
+      );
+      expect(botones(cerca as HTMLElement, 'Modificar')).toHaveLength(0);
+      expect(botones(cerca as HTMLElement, 'Cancelar reserva')).toHaveLength(0);
+      expect(botones(lejos as HTMLElement, 'Modificar')).toHaveLength(1);
+      expect(botones(lejos as HTMLElement, 'Cancelar reserva')).toHaveLength(1);
     });
   });
 });

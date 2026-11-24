@@ -21,6 +21,7 @@ describe('ReservaForm', () => {
     nombreResto: 'Ochiwan',
     idEspacio: 3,
     espacioNombre: 'Salón principal',
+    idTurno: null,
   };
 
   let saving: WritableSignal<boolean>;

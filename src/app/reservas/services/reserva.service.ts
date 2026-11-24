@@ -73,6 +73,7 @@ export class ReservaService {
                 idRestaurant: reserva.idRestaurant,
                 idEspacio: creada.idEspacio,
                 espacioNombre: creada.espacioNombre,
+                idTurno: creada.idTurno ?? null,
               },
               ...reservas,
             ]);
@@ -103,18 +104,23 @@ export class ReservaService {
     );
   }
 
-  /** Changes date, arrival time, party size and espacio; the server returns it as PENDIENTE again. */
+  /**
+   * Changes date, arrival time, party size, espacio and shift (when the restaurant works with
+   * shifts). The server returns it as PENDIENTE again, or ACEPTADA when auto-accept applies.
+   */
   modificar(
     id: number,
     cambios: Required<
       Pick<ReservaPatchDTO, 'fechaReserva' | 'horarioLlegada' | 'cantidad' | 'idEspacio'>
-    >,
+    > &
+      Pick<ReservaPatchDTO, 'idTurno'>,
   ): Observable<ReservaDetailDTO> {
     const patch: ReservaPatchDTO = {
       fechaReserva: cambios.fechaReserva,
       horarioLlegada: cambios.horarioLlegada,
       cantidad: cambios.cantidad,
       idEspacio: cambios.idEspacio,
+      ...(cambios.idTurno ? { idTurno: cambios.idTurno } : {}),
     };
     return this.ejecutarEscritura(
       this.http
@@ -135,6 +141,7 @@ export class ReservaService {
                       estadoReserva: actualizada.estadoReserva,
                       idEspacio: actualizada.idEspacio,
                       espacioNombre: actualizada.espacioNombre,
+                      idTurno: actualizada.idTurno ?? null,
                     }
                   : reserva,
               ),

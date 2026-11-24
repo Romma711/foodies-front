@@ -46,7 +46,15 @@ export interface EspacioRequest {
 
 export const MAX_NOMBRE_ESPACIO = 60;
 
-export const ESTADOS_RESERVA = ['PENDIENTE', 'ACEPTADA', 'CANCELADA'] as const;
+export const ESTADOS_RESERVA = [
+  'PENDIENTE',
+  'ACEPTADA',
+  'CANCELADA',
+  'RECHAZADA',
+  'ASISTIO',
+  'NO_ASISTIO',
+  'VENCIDA',
+] as const;
 
 export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];
 
@@ -62,6 +70,8 @@ export interface ReservaPanel {
   /** Null solo en reservas anteriores a los espacios que todavía no se migraron. */
   idEspacio: number | null;
   espacioNombre: string | null;
+  /** Null cuando el restaurante no trabaja por turnos. */
+  idTurno: number | null;
 }
 
 /** `CupoEspecialDTO`: capacidad reducida de un espacio un día. `fecha` es `yyyy-MM-dd`. */

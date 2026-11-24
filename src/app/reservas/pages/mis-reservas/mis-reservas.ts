@@ -13,9 +13,23 @@ import { Mensaje } from '@core/i18n/traducir';
 import { AuthService } from '../../../core/auth/auth.service';
 import { enfocarTrasRender } from '../../../shared/a11y/enfocar';
 import { ReservaEditForm } from '../../components/reserva-edit-form/reserva-edit-form';
-import { EstadoReserva } from '../../models';
+import { ESTADOS_ACTIVOS, EstadoReserva, ReservaListDTO } from '../../models';
 import { ReservaService } from '../../services/reserva.service';
-import { estadoLabel, formatearFechaReserva, formatearHora } from '../../utils/reserva-formato';
+import {
+  estadoLabel,
+  formatearFechaReserva,
+  formatearHora,
+  puedeCambiarReserva,
+} from '../../utils/reserva-formato';
+import { Clave } from '@core/i18n/traducir';
+
+/** Text shown on a reservation that can no longer change. */
+const MENSAJE_FINAL: Partial<Record<EstadoReserva, Clave>> = {
+  CANCELADA: 'misReservas.cancelada',
+  RECHAZADA: 'misReservas.rechazada',
+  NO_ASISTIO: 'misReservas.noAsistio',
+  VENCIDA: 'misReservas.vencida',
+};
 import { TPipe } from '@core/i18n/t.pipe';
 import { I18n } from '@core/i18n/i18n.service';
 
@@ -114,6 +128,19 @@ export class MisReservas {
       });
   }
 
+  /** Modify and cancel are offered only while the server would accept them (rule D3). */
+  protected puedeCambiar(reserva: ReservaListDTO): boolean {
+    return puedeCambiarReserva(reserva);
+  }
+
+  protected esActiva(estado: EstadoReserva): boolean {
+    return ESTADOS_ACTIVOS.includes(estado);
+  }
+
+  protected mensajeFinal(estado: EstadoReserva): Clave {
+    return MENSAJE_FINAL[estado] ?? 'misReservas.cancelada';
+  }
+
   protected estadoClases(estado: EstadoReserva): string {
     const base =
       'inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset';
@@ -121,8 +148,13 @@ export class MisReservas {
       case 'PENDIENTE':
         return `${base} bg-amber-50 text-amber-800 ring-amber-200`;
       case 'ACEPTADA':
+      case 'ASISTIO':
         return `${base} bg-emerald-50 text-emerald-800 ring-emerald-200`;
+      case 'RECHAZADA':
+      case 'NO_ASISTIO':
+        return `${base} bg-red-50 text-red-800 ring-red-200`;
       case 'CANCELADA':
+      case 'VENCIDA':
         return `${base} bg-cream-100 text-ink-600 ring-line`;
     }
   }

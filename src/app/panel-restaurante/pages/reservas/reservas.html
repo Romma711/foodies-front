@@ -71,13 +71,9 @@
                   }
                 </p>
               </div>
-              <span
-                class="badge"
-                [class.badge-pendiente]="reserva.estado === 'PENDIENTE'"
-                [class.badge-aceptada]="reserva.estado === 'ACEPTADA'"
-                [class.badge-cancelada]="reserva.estado === 'CANCELADA'"
-                >{{ estadoLabel[reserva.estado] | t }}</span
-              >
+              <span [class]="'badge badge-' + reserva.estado.toLowerCase()">{{
+                estadoLabel[reserva.estado] | t
+              }}</span>
               @if (reserva.estado !== 'CANCELADA') {
                 <div class="actions">
                   @if (reserva.estado === 'PENDIENTE') {
