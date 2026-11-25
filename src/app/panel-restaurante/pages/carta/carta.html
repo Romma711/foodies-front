@@ -1,51 +1,56 @@
 <header class="page-header">
-  <h1>Carta</h1>
+  <h1>{{ 'panel.carta.titulo' | t }}</h1>
   <p class="subtitle">
-    Subí tu carta en PDF (hasta 10 MB). Los clientes ven siempre la última versión.
+    {{ 'panel.carta.subtitulo' | t }}
   </p>
 </header>
 
 @if (loading()) {
-  <p role="status">Cargando tu carta…</p>
+  <p role="status">{{ 'panel.carta.cargando' | t }}</p>
 } @else if (loadError(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else {
   <div class="stack">
     @if (error(); as message) {
-      <p class="alert alert-error" role="alert">{{ message }}</p>
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
     }
-    <p class="visually-hidden" role="status">{{ status() }}</p>
+    <p class="visually-hidden" role="status">{{ status() | t }}</p>
     @if (status(); as message) {
-      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+      <p class="alert alert-success" aria-hidden="true">{{ message | t }}</p>
     }
 
     @if (carta(); as current) {
       <section class="card stack" aria-labelledby="carta-actual">
-        <h2 id="carta-actual">Carta actual</h2>
+        <h2 id="carta-actual">{{ 'panel.carta.actual' | t }}</h2>
         <dl class="details">
           <div>
-            <dt>Archivo</dt>
+            <dt>{{ 'panel.carta.archivo' | t }}</dt>
             <dd>{{ current.nombreArchivo }}</dd>
           </div>
           @if (current.tamanioBytes !== null) {
             <div>
-              <dt>Tamaño</dt>
+              <dt>{{ 'panel.carta.tamanio' | t }}</dt>
               <dd>{{ formatSize(current.tamanioBytes) }}</dd>
             </div>
           }
           @if (current.actualizadaEn) {
             <div>
-              <dt>Actualizada</dt>
+              <dt>{{ 'panel.carta.actualizada' | t }}</dt>
               <dd>{{ formatearFechaHora(current.actualizadaEn) }}</dd>
             </div>
           }
         </dl>
         <div class="actions">
           <a class="btn btn-secondary" [href]="current.url" target="_blank" rel="noopener">
-            Abrir PDF<span class="visually-hidden"> (se abre en una pestaña nueva)</span>
+            {{ 'panel.carta.abrir' | t
+            }}<span class="visually-hidden">{{ 'comun.pestanaNueva' | t }}</span>
           </a>
           <button
             type="button"
@@ -53,20 +58,20 @@
             [disabled]="busy()"
             (click)="chooseFile()"
           >
-            Reemplazar
+            {{ 'panel.reemplazar' | t }}
           </button>
           <button type="button" class="btn btn-danger" [disabled]="busy()" (click)="remove()">
-            Eliminar
+            {{ 'panel.eliminar' | t }}
           </button>
         </div>
         @if (previewUrl(); as url) {
-          <iframe class="preview" [src]="url" title="Vista previa de la carta actual"></iframe>
+          <iframe class="preview" [src]="url" [title]="'panel.carta.vistaPrevia' | t"></iframe>
         }
       </section>
     }
 
     <section class="stack" aria-labelledby="carta-subir">
-      <h2 id="carta-subir">{{ carta() ? 'Subir una nueva versión' : 'Subí tu carta' }}</h2>
+      <h2 id="carta-subir">{{ (carta() ? 'panel.carta.subirNueva' : 'panel.carta.subi') | t }}</h2>
       <div
         class="dropzone"
         [class.active]="dragActive()"
@@ -74,9 +79,9 @@
         (dragleave)="dragActive.set(false)"
         (drop)="onDrop($event)"
       >
-        <p>Arrastrá un PDF acá, o</p>
+        <p>{{ 'panel.carta.arrastra' | t }}</p>
         <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="chooseFile()">
-          Elegir PDF
+          {{ 'panel.carta.elegir' | t }}
         </button>
         <input
           #fileInput
@@ -90,7 +95,7 @@
       </div>
       @if (progress() !== null) {
         <div class="field">
-          <label for="carta-progress">Subiendo…</label>
+          <label for="carta-progress">{{ 'panel.carta.subiendo' | t }}</label>
           <progress id="carta-progress" max="100" [value]="progress()">{{ progress() }}%</progress>
         </div>
       }

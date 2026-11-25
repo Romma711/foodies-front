@@ -12,13 +12,13 @@ export const ADMIN_ROUTES: Routes = [
     children: [
       {
         path: '',
-        title: 'Dashboard | Admin Foodies',
+        title: 'titulo.admin.dashboard',
         loadComponent: () =>
           import('./pages/dashboard-admin/dashboard-admin').then((m) => m.DashboardAdmin),
       },
       {
         path: 'aceptar',
-        title: 'Aceptar restaurantes | Admin Foodies',
+        title: 'titulo.admin.aceptar',
         loadComponent: () =>
           import('./pages/solicitudes-restaurantes/solicitudes-restaurantes').then(
             (m) => m.SolicitudesRestaurantes,
@@ -26,20 +26,20 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'aceptar/:restaurantId',
-        title: 'Solicitud de restaurante | Admin Foodies',
+        title: 'titulo.admin.solicitud',
         loadComponent: () =>
           import('./pages/detalle-solicitud/detalle-solicitud').then((m) => m.DetalleSolicitud),
       },
       {
         path: 'moderacion',
-        title: 'Moderación | Admin Foodies',
+        title: 'titulo.admin.moderacion',
         loadComponent: () =>
           import('./pages/moderacion-resenas/moderacion-resenas').then((m) => m.ModeracionResenas),
       },
       { path: 'solicitudes', redirectTo: 'aceptar', pathMatch: 'full' },
       {
         path: 'entidades',
-        title: 'Entidades | Admin Foodies',
+        title: 'titulo.admin.entidades',
         loadComponent: () =>
           import('./pages/gestion-entidades/gestion-entidades').then((m) => m.GestionEntidades),
       },

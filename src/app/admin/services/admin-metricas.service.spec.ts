@@ -52,7 +52,7 @@ describe('AdminMetricasService', () => {
       .expectOne('/api/admin/metricas')
       .flush({ error: 'No tenés permisos' }, { status: 403, statusText: 'Forbidden' });
 
-    expect(service.error()).toBe('Tu sesión no tiene permisos de administrador.');
+    expect(service.error()).toEqual({ clave: 'admin.error.sinPermisos' });
     expect(service.metricas()).toEqual(metricas);
     expect(service.cargando()).toBe(false);
   });
@@ -63,6 +63,6 @@ describe('AdminMetricasService', () => {
       .expectOne('/api/admin/metricas')
       .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
 
-    expect(service.error()).toBe('No se pudo conectar con el servidor.');
+    expect(service.error()).toEqual({ clave: 'comun.errorConexion' });
   });
 });

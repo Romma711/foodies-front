@@ -22,6 +22,8 @@ import { RestauranteListDTO } from '../../../restaurantes/models/restaurante.mod
 import { CalificacionService } from '../../services/calificacion.service';
 import { iconoEspecialidad } from '../../utils/marcador-especialidad';
 import { crearPopupRestaurante } from '../../utils/popup-restaurante';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
 
 /** Mar del Plata city center, the map's starting point. */
 export const CENTRO_MAR_DEL_PLATA: [number, number] = [-38.0055, -57.5426];
@@ -38,6 +40,7 @@ function tieneUbicacion(restaurante: RestauranteListDTO): restaurante is ConUbic
  * specialty; its popup loads the average rating when it opens and links to the restaurant page.
  */
 @Component({
+  imports: [TPipe],
   selector: 'app-mapa-restaurantes',
   template: `
     <section class="overflow-hidden rounded-2xl border border-line/70 bg-white/90 shadow-card">
@@ -45,18 +48,16 @@ function tieneUbicacion(restaurante: RestauranteListDTO): restaurante is ConUbic
         #mapa
         class="z-0 h-[26rem] w-full sm:h-[32rem]"
         role="region"
-        aria-label="Mapa de restaurantes de Mar del Plata"
+        [attr.aria-label]="'mapa.aria' | t"
       ></div>
       @if (sinUbicacion() > 0) {
         <p
           class="border-t border-line/70 px-5 py-3 text-sm text-ink-500"
           data-testid="sin-ubicacion"
         >
-          {{ sinUbicacion() }}
           {{
-            sinUbicacion() === 1
-              ? 'restaurante todavía no tiene ubicación en el mapa.'
-              : 'restaurantes todavía no tienen ubicación en el mapa.'
+            (sinUbicacion() === 1 ? 'mapa.sinUbicacionUno' : 'mapa.sinUbicacionVarios')
+              | t: { n: sinUbicacion() }
           }}
         </p>
       }
@@ -73,6 +74,7 @@ export class MapaRestaurantes {
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLElement>>('mapa');
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
   private readonly calificaciones = inject(CalificacionService);
   private mapa: MapaLeaflet | null = null;
   private marcadores: LayerGroup | null = null;
@@ -124,7 +126,11 @@ export class MapaRestaurantes {
   }
 
   private agregarMarcador(grupo: LayerGroup, restaurante: ConUbicacion): void {
-    const popup = crearPopupRestaurante(restaurante, (url) => void this.router.navigateByUrl(url));
+    const popup = crearPopupRestaurante(
+      restaurante,
+      (url) => void this.router.navigateByUrl(url),
+      (clave, parametros) => this.i18n.t(clave, parametros),
+    );
     const pin = marker([restaurante.latitud, restaurante.longitud], {
       icon: iconoEspecialidad(restaurante.especialidad),
       title: restaurante.nombre,

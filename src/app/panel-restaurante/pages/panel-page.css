@@ -90,12 +90,20 @@ select {
   background: var(--color-warning-bg);
 }
 
-.badge-aceptada {
+.badge-aceptada,
+.badge-asistio {
   color: var(--color-success-fg);
   background: var(--color-success-bg);
 }
 
-.badge-cancelada {
+.badge-cancelada,
+.badge-vencida {
   color: var(--color-neutral-fg);
   background: var(--color-neutral-bg);
+}
+
+.badge-rechazada,
+.badge-no_asistio {
+  color: var(--color-danger-fg);
+  background: var(--color-danger-bg);
 }

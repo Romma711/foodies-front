@@ -1,14 +1,15 @@
-const FORMATO = new Intl.DateTimeFormat('es-AR', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
+const OPCIONES: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
-/** Formats a review's creation date in Spanish (es-AR); null when it is missing or invalid. */
-export function formatearFechaResena(value: string | null | undefined): string | null {
+/** Formats a review's creation date (Spanish, es-AR, by default); null when missing or invalid. */
+export function formatearFechaResena(
+  value: string | null | undefined,
+  locale = 'es-AR',
+): string | null {
   if (!value) {
     return null;
   }
   const fecha = new Date(value);
-  return Number.isNaN(fecha.getTime()) ? null : FORMATO.format(fecha);
+  return Number.isNaN(fecha.getTime())
+    ? null
+    : new Intl.DateTimeFormat(locale, OPCIONES).format(fecha);
 }

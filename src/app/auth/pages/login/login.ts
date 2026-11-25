@@ -13,11 +13,14 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { PORTALS } from '../../../core/auth/portals';
 import { VolverAlInicio } from '../../../shared/ui/volver-al-inicio/volver-al-inicio';
 import { PortalNavigation } from '../../../core/auth/portal-navigation';
+import { SelectorIdioma } from '../../../core/i18n/selector-idioma/selector-idioma';
 import { safeReturnUrl } from '../../../core/auth/return-url';
-import { CONNECTION_ERROR_MESSAGE, isConnectionError } from '../../../core/http/api-error';
+import { isConnectionError } from '../../../core/http/api-error';
+import { clave, Mensaje } from '@core/i18n/traducir';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [FormField, RouterLink, VolverAlInicio],
+  imports: [TClavePipe, TPipe, FormField, RouterLink, VolverAlInicio, SelectorIdioma],
   selector: 'app-login',
   templateUrl: './login.html',
 })
@@ -25,6 +28,8 @@ export class Login {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly portals = inject(PortalNavigation);
+  /** The dashboard host has no header, so the login shows the language selector itself. */
+  protected readonly esDashboard = this.portals.esDashboard();
 
   /** Bound from the route `data.role`. */
   readonly role = input.required<Role>();
@@ -37,13 +42,13 @@ export class Login {
   private readonly destination = computed(
     () => safeReturnUrl(this.returnUrl()) ?? this.portal().homePath,
   );
-  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly errorMessage = signal<Mensaje | null>(null);
 
   private readonly model = signal<LoginRequest>({ email: '', password: '' });
   protected readonly loginForm = form(this.model, (path) => {
-    required(path.email, { message: 'El email es obligatorio.' });
-    emailValidator(path.email, { message: 'Ingresá un email válido.' });
-    required(path.password, { message: 'La contraseña es obligatoria.' });
+    required(path.email, { message: clave('auth.validacion.emailObligatorio') });
+    emailValidator(path.email, { message: clave('auth.validacion.emailInvalido') });
+    required(path.password, { message: clave('auth.validacion.contrasenaObligatoria') });
   });
 
   constructor() {
@@ -83,12 +88,12 @@ export class Login {
   }
 }
 
-function toMessage(error: unknown): string {
+function toMessage(error: unknown): Mensaje {
   if (error instanceof PendingApprovalError) {
-    return 'Tu restaurante está pendiente de aprobación. Podrás ingresar cuando un administrador lo apruebe.';
+    return { clave: 'auth.error.pendiente' };
   }
   if (error instanceof RoleMismatchError) {
-    return 'Esta cuenta no pertenece a este portal.';
+    return { clave: 'auth.error.otroPortal' };
   }
   // An admin deactivated the account; only sent when the password was right (Phase 3).
   if (
@@ -97,7 +102,7 @@ function toMessage(error: unknown): string {
     error.error?.error === 'cuenta dada de baja' &&
     typeof error.error?.mensaje === 'string'
   ) {
-    return error.error.mensaje;
+    return { texto: error.error.mensaje };
   }
   // The backend answers 400 for a wrong password.
   if (
@@ -106,10 +111,10 @@ function toMessage(error: unknown): string {
       error.status === HttpStatusCode.Unauthorized ||
       error.status === HttpStatusCode.Forbidden)
   ) {
-    return 'Email o contraseña incorrectos.';
+    return { clave: 'auth.error.credenciales' };
   }
   if (isConnectionError(error)) {
-    return CONNECTION_ERROR_MESSAGE;
+    return { clave: 'comun.errorConexion' };
   }
-  return 'Algo salió mal. Intentá de nuevo.';
+  return { clave: 'comun.errorGenerico' };
 }

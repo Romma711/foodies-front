@@ -3,8 +3,10 @@ import { Service, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, forkJoin, map, tap, throwError } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
-import { EntidadCliente, EntidadRestaurante } from '../models/entidades-admin';
-import { mensajeErrorAdmin } from './mensaje-error-admin';
+import { EntidadCliente, EntidadRestaurante, MovimientoStrike } from '../models/entidades-admin';
+import { mensajeConCodigo } from '../../core/http/api-error';
+import { ErrorAdmin, mensajeErrorAdmin } from './mensaje-error-admin';
+import { Mensaje } from '../../core/i18n/traducir';
 
 /** `StrikeResultadoDTO` */
 export interface StrikeResultado {
@@ -35,7 +37,7 @@ export class AdminEntidadesService {
   private readonly _clientes = signal<EntidadCliente[]>([]);
   private readonly _restaurantes = signal<EntidadRestaurante[]>([]);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   readonly clientes = this._clientes.asReadonly();
   readonly restaurantes = this._restaurantes.asReadonly();
@@ -62,7 +64,7 @@ export class AdminEntidadesService {
       }),
       map(() => undefined),
       catchError((error: unknown) => {
-        this._error.set(mensajeErrorAdmin(error, 'No se pudieron cargar las entidades.'));
+        this._error.set(mensajeErrorAdmin(error, 'admin.error.entidades'));
         return throwError(() => error);
       }),
       finalize(() => this._cargando.set(false)),
@@ -97,37 +99,78 @@ export class AdminEntidadesService {
 
   /**
    * Adds a strike and makes the backend email the warning (to the client, or to the restaurant's
-   * manager). Errors come back as an `Error` whose message is ready to show to the admin.
+   * manager). Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin.
    */
   aplicarStrike(tipo: TipoEntidad, id: number, motivo: string): Observable<StrikeResultado> {
-    const ruta = tipo === 'cliente' ? 'usuarios' : 'restaurantes';
     return this.http
       .post<StrikeResultado>(
-        `${this.apiUrl}/${ruta}/${id}/strikes`,
+        `${this.apiUrl}/${rutaDe(tipo)}/${id}/strikes`,
         { motivo },
         { context: withRole('ADMIN') },
       )
       .pipe(
-        tap(({ strikes }) => {
-          if (tipo === 'cliente') {
-            this._clientes.update((clientes) =>
-              clientes.map((cliente) => (cliente.id === id ? { ...cliente, strikes } : cliente)),
-            );
-          } else {
-            this._restaurantes.update((restaurantes) =>
-              restaurantes.map((restaurante) =>
-                restaurante.id === id ? { ...restaurante, strikes } : restaurante,
-              ),
-            );
-          }
-        }),
+        tap(({ strikes }) => this.actualizarStrikes(tipo, id, strikes)),
         catchError((error: unknown) =>
-          throwError(() => new Error(mensajeErrorAdmin(error, 'No se pudo aplicar el strike.'))),
+          throwError(() => new ErrorAdmin(mensajeErrorAdmin(error, 'admin.error.strike'))),
         ),
       );
   }
 
-  /** Errors come back as an `Error` whose message is ready to show to the admin. */
+  /** Strikes added and removed, newest first, with their origin and reason. Only for the admin. */
+  historialStrikes(tipo: TipoEntidad, id: number): Observable<MovimientoStrike[]> {
+    return this.http
+      .get<MovimientoStrike[] | null>(`${this.apiUrl}/${rutaDe(tipo)}/${id}/strikes`, {
+        context: withRole('ADMIN'),
+      })
+      .pipe(
+        map((movimientos) => movimientos ?? []),
+        catchError((error: unknown) =>
+          throwError(
+            () => new ErrorAdmin(mensajeErrorAdmin(error, 'admin.error.historialStrikes')),
+          ),
+        ),
+      );
+  }
+
+  /**
+   * Removes one strike with its reason and updates the row. Coded rule errors (`SIN_STRIKES`,
+   * `MOTIVO_OBLIGATORIO`) come back translated in the `ErrorAdmin`.
+   */
+  quitarStrike(tipo: TipoEntidad, id: number, motivo: string): Observable<{ strikes: number }> {
+    return this.http
+      .post<{ strikes: number }>(
+        `${this.apiUrl}/${rutaDe(tipo)}/${id}/strikes/quitar`,
+        { motivo },
+        { context: withRole('ADMIN') },
+      )
+      .pipe(
+        tap(({ strikes }) => this.actualizarStrikes(tipo, id, strikes)),
+        catchError((error: unknown) =>
+          throwError(
+            () =>
+              new ErrorAdmin(
+                mensajeConCodigo(error) ?? mensajeErrorAdmin(error, 'admin.error.quitarStrike'),
+              ),
+          ),
+        ),
+      );
+  }
+
+  private actualizarStrikes(tipo: TipoEntidad, id: number, strikes: number): void {
+    if (tipo === 'cliente') {
+      this._clientes.update((clientes) =>
+        clientes.map((cliente) => (cliente.id === id ? { ...cliente, strikes } : cliente)),
+      );
+    } else {
+      this._restaurantes.update((restaurantes) =>
+        restaurantes.map((restaurante) =>
+          restaurante.id === id ? { ...restaurante, strikes } : restaurante,
+        ),
+      );
+    }
+  }
+
+  /** Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin. */
   private cambiarActivo(ruta: string, activo: boolean): Observable<EstadoActivo> {
     return this.http
       .patch<EstadoActivo>(`${this.apiUrl}/${ruta}`, { activo }, { context: withRole('ADMIN') })
@@ -135,14 +178,16 @@ export class AdminEntidadesService {
         catchError((error: unknown) =>
           throwError(
             () =>
-              new Error(
-                mensajeErrorAdmin(
-                  error,
-                  activo ? 'No se pudo reactivar.' : 'No se pudo dar de baja.',
-                ),
+              new ErrorAdmin(
+                mensajeErrorAdmin(error, activo ? 'admin.error.reactivar' : 'admin.error.baja'),
               ),
           ),
         ),
       );
   }
+}
+
+/** Admin API path segment of each entity type. */
+function rutaDe(tipo: TipoEntidad): string {
+  return tipo === 'cliente' ? 'usuarios' : 'restaurantes';
 }

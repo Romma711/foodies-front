@@ -124,4 +124,145 @@ describe('Reservas', () => {
 
     expect(element.textContent).toContain('No hay reservas esperando tu respuesta.');
   });
+
+  describe('rechazo y asistencia (reglas D4 y D21)', () => {
+    /** Local `yyyy-MM-dd` and `HH:mm:ss` of `minutos` from now. */
+    const dentroDe = (minutos: number) => {
+      const m = new Date(Date.now() + minutos * 60_000);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return {
+        fecha: `${m.getFullYear()}-${pad(m.getMonth() + 1)}-${pad(m.getDate())}`,
+        horarioLlegada: `${pad(m.getHours())}:${pad(m.getMinutes())}:00`,
+      };
+    };
+    const acciones = (id: number) =>
+      [...element.querySelectorAll<HTMLButtonElement>(`li [data-accion]`)]
+        .filter((b) => b.closest('li')?.querySelector('.name')?.textContent?.includes(`#${id}`))
+        .map((b) => b.textContent?.trim());
+
+    it('ofrece aceptar, rechazar y cancelar una pendiente; solo cancelar una aceptada', async () => {
+      await render([
+        reserva({ id: 1, nombreCliente: '#1', ...dentroDe(120) }),
+        reserva({ id: 2, nombreCliente: '#2', estado: 'ACEPTADA', ...dentroDe(120) }),
+      ]);
+      filter('Todas').click();
+      await fixture.whenStable();
+
+      expect(acciones(1)).toEqual(['Aceptar', 'Rechazar', 'Cancelar']);
+      expect(acciones(2)).toEqual(['Cancelar']);
+    });
+
+    it('desde la llegada y hasta 48 h ofrece asistió / no asistió, aunque sea de ayer', async () => {
+      await render([
+        reserva({ id: 3, nombreCliente: '#3', estado: 'ACEPTADA', ...dentroDe(-30) }),
+        reserva({ id: 4, nombreCliente: '#4', estado: 'ACEPTADA', ...dentroDe(-26 * 60) }),
+        reserva({ id: 5, nombreCliente: '#5', estado: 'ACEPTADA', ...dentroDe(-49 * 60) }),
+      ]);
+      filter('Todas').click();
+      await fixture.whenStable();
+
+      expect(acciones(3)).toEqual(['Asistió', 'No asistió']);
+      expect(acciones(4)).toEqual(['Asistió', 'No asistió']);
+      expect(names()).not.toContain('#5');
+    });
+
+    it('el filtro "Asistencia pendiente" muestra solo las que falta marcar (S7f)', async () => {
+      await render([
+        reserva({ id: 1, nombreCliente: '#1', ...dentroDe(120) }),
+        reserva({ id: 2, nombreCliente: '#2', estado: 'ACEPTADA', ...dentroDe(120) }),
+        reserva({ id: 3, nombreCliente: '#3', estado: 'ACEPTADA', ...dentroDe(-30) }),
+        reserva({ id: 4, nombreCliente: '#4', estado: 'ACEPTADA', ...dentroDe(-26 * 60) }),
+        reserva({ id: 5, nombreCliente: '#5', estado: 'ACEPTADA', ...dentroDe(-49 * 60) }),
+        reserva({ id: 6, nombreCliente: '#6', ...dentroDe(-30) }),
+        reserva({ id: 7, nombreCliente: '#7', estado: 'ASISTIO', ...dentroDe(-30) }),
+      ]);
+
+      expect(filter('Asistencia pendiente').textContent).toContain('2');
+      filter('Asistencia pendiente').click();
+      await fixture.whenStable();
+
+      expect(filter('Asistencia pendiente').getAttribute('aria-pressed')).toBe('true');
+      expect(names()).toEqual(['#4', '#3']);
+      expect(acciones(3)).toEqual(['Asistió', 'No asistió']);
+    });
+
+    it('al marcar la asistencia la reserva sale del filtro y queda el texto vacío', async () => {
+      vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(true);
+      await render([
+        reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ACEPTADA', ...dentroDe(-60) }),
+      ]);
+      filter('Asistencia pendiente').click();
+      await fixture.whenStable();
+
+      element
+        .querySelector<HTMLButtonElement>('[aria-label^="Marcar que Ana Pérez asistió"]')!
+        .click();
+      await settle(fixture);
+      http
+        .expectOne({ method: 'PATCH', url: '/api/reservas/9/estado' })
+        .flush(reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ASISTIO', ...dentroDe(-60) }));
+      await settle(fixture);
+
+      expect(names()).toEqual([]);
+      expect(element.querySelector('.empty')?.textContent).toContain(
+        'No falta marcar la asistencia de ninguna reserva.',
+      );
+    });
+
+    it('no ofrece acciones en los estados finales y los muestra con su etiqueta', async () => {
+      await render([
+        reserva({ id: 6, nombreCliente: '#6', estado: 'RECHAZADA', ...dentroDe(120) }),
+        reserva({ id: 7, nombreCliente: '#7', estado: 'VENCIDA', ...dentroDe(120) }),
+      ]);
+      filter('Todas').click();
+      await fixture.whenStable();
+
+      expect(element.querySelectorAll('[data-accion]')).toHaveLength(0);
+      const badges = [...element.querySelectorAll('.badge')].map((b) => b.textContent?.trim());
+      expect(badges).toEqual(['Rechazada', 'Vencida']);
+    });
+
+    it('rechaza una pendiente tras confirmar y muestra el aviso', async () => {
+      vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(true);
+      await render([reserva({ id: 9, nombreCliente: 'Ana Pérez', ...dentroDe(120) })]);
+
+      element
+        .querySelector<HTMLButtonElement>('[aria-label^="Rechazar la reserva de Ana Pérez"]')!
+        .click();
+      await settle(fixture);
+      const req = http.expectOne({ method: 'PATCH', url: '/api/reservas/9/estado' });
+      expect(req.request.body).toEqual({ estado: 'RECHAZADA' });
+      req.flush(reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'RECHAZADA' }));
+      await settle(fixture);
+
+      expect(element.querySelector('[role="status"]')?.textContent).toContain(
+        'Reserva de Ana Pérez rechazada.',
+      );
+    });
+
+    it('marca que no asistió y muestra el mensaje del servidor si la rechaza', async () => {
+      vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(true);
+      await render([
+        reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ACEPTADA', ...dentroDe(-60) }),
+      ]);
+      filter('Todas').click();
+      await fixture.whenStable();
+
+      element
+        .querySelector<HTMLButtonElement>('[aria-label^="Marcar que Ana Pérez no asistió"]')!
+        .click();
+      await settle(fixture);
+      const req = http.expectOne({ method: 'PATCH', url: '/api/reservas/9/estado' });
+      expect(req.request.body).toEqual({ estado: 'NO_ASISTIO' });
+      req.flush(
+        { error: 'BUSINESS', mensaje: 'La reserva ya está cerrada' },
+        { status: 400, statusText: 'Bad Request' },
+      );
+      await settle(fixture);
+
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+        'La reserva ya está cerrada',
+      );
+    });
+  });
 });

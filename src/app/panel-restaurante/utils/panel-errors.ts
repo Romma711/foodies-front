@@ -1,21 +1,23 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
+import { mensajeConCodigo } from '../../core/http/api-error';
 
 /** Mensaje para el usuario cuando falla un pedido del panel. No se muestran los mensajes del backend tal cual. */
-export function panelErrorMessage(error: unknown, fallback: string): string {
+export function panelErrorMessage(error: unknown, fallback: Clave): Mensaje {
   if (!(error instanceof HttpErrorResponse)) {
-    return fallback;
+    return { clave: fallback };
   }
   switch (error.status) {
     case 0:
-      return 'No pudimos conectarnos con el servidor. Revisá tu conexión e intentá de nuevo.';
+      return { clave: 'panel.error.conexion' };
     case HttpStatusCode.Unauthorized:
-      return 'Tu sesión expiró. Iniciá sesión de nuevo.';
+      return { clave: 'panel.error.sesion' };
     case HttpStatusCode.Forbidden:
-      return 'No tenés permiso para modificar esto.';
+      return { clave: 'panel.error.permiso' };
     case HttpStatusCode.PayloadTooLarge:
-      return 'El archivo pesa más de 10 MB.';
+      return { clave: 'panel.error.archivoGrande' };
     default:
-      return fallback;
+      return { clave: fallback };
   }
 }
 
@@ -23,10 +25,30 @@ export function panelErrorMessage(error: unknown, fallback: string): string {
  * Mensaje de un 400 de reglas de negocio, pensado para el encargado (por ejemplo, cuántas personas ya reservaron
  * o cuántas fotos faltan). Null si el error es de otro tipo.
  */
-export function mensajeDeNegocio(error: unknown): string | null {
+export function mensajeDeNegocio(error: unknown): Mensaje | null {
   if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
-    return typeof mensaje === 'string' && mensaje.trim() ? mensaje : null;
+    return typeof mensaje === 'string' && mensaje.trim() ? { texto: mensaje } : null;
+  }
+  return null;
+}
+
+/**
+ * Mensaje de un 409 (por ejemplo, un turno repetido o con reservas futuras), tal como lo escribe el
+ * backend. Null si el error es de otro tipo.
+ */
+export function mensajeDeConflicto(error: unknown): Mensaje | null {
+  if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
+    const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
+    return typeof mensaje === 'string' && mensaje.trim() ? { texto: mensaje } : null;
   }
   return null;
 }
@@ -42,19 +64,17 @@ export function toIsoDate(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** Fecha larga en español, por ejemplo "Jueves, 29 de octubre de 2026". */
-export function formatearDia(dia: Date): string {
-  const texto = new Intl.DateTimeFormat('es-AR', { dateStyle: 'full' }).format(dia);
+/** Fecha larga (en español por defecto), por ejemplo "Jueves, 29 de octubre de 2026". */
+export function formatearDia(dia: Date, locale = 'es-AR'): string {
+  const texto = new Intl.DateTimeFormat(locale, { dateStyle: 'full' }).format(dia);
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-/** Fecha y hora en español, por ejemplo "29 oct 2026, 19:45". */
-export function formatearFechaHora(valor: string): string {
+/** Fecha y hora (en español por defecto), por ejemplo "29 oct 2026, 19:45". */
+export function formatearFechaHora(valor: string, locale = 'es-AR'): string {
   const fecha = new Date(valor);
   if (Number.isNaN(fecha.getTime())) {
     return valor;
   }
-  return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(
-    fecha,
-  );
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(fecha);
 }

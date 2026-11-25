@@ -5,7 +5,9 @@ import { firstValueFrom } from 'rxjs';
 import { EspecialidadDeComida, ESPECIALIDADES } from '../../../core/auth/auth.models';
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { panelErrorMessage } from '../../utils/panel-errors';
+import { clave, Mensaje } from '@core/i18n/traducir';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
 
 interface PerfilModel {
   nombre: string;
@@ -19,7 +21,7 @@ interface PerfilModel {
 const PORCENTAJE_SUGERIDO = 60;
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [TClavePipe, TPipe, FormField, RouterLink],
   selector: 'app-perfil',
   styleUrl: './perfil.css',
   templateUrl: './perfil.html',
@@ -30,8 +32,8 @@ export class Perfil implements OnInit {
   protected readonly especialidades = ESPECIALIDADES;
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
-  protected readonly saveError = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
+  protected readonly saveError = signal<Mensaje | null>(null);
   protected readonly saved = signal(false);
   /** Capacidad total por día (suma de los espacios activos). Se edita desde Espacios. */
   protected readonly capacidadTotal = signal(0);
@@ -44,13 +46,15 @@ export class Perfil implements OnInit {
     porcentajeAutoAceptacion: PORCENTAJE_SUGERIDO,
   });
   protected readonly perfilForm = form(this.model, (path) => {
-    required(path.nombre, { message: 'El nombre es obligatorio.' });
-    required(path.ubicacion, { message: 'La dirección es obligatoria.' });
-    required(path.especialidad, { message: 'Elegí una especialidad.' });
+    required(path.nombre, { message: clave('panel.perfil.validacion.nombre') });
+    required(path.ubicacion, { message: clave('auth.validacion.direccionObligatoria') });
+    required(path.especialidad, { message: clave('auth.validacion.especialidadObligatoria') });
     // Con la opción apagada el porcentaje se oculta y no se valida.
     hidden(path.porcentajeAutoAceptacion, { when: ({ valueOf }) => !valueOf(path.autoAceptar) });
-    min(path.porcentajeAutoAceptacion, 1, { message: 'El porcentaje debe estar entre 1 y 100.' });
-    max(path.porcentajeAutoAceptacion, 100, { message: 'El porcentaje debe estar entre 1 y 100.' });
+    min(path.porcentajeAutoAceptacion, 1, { message: clave('panel.perfil.validacion.porcentaje') });
+    max(path.porcentajeAutoAceptacion, 100, {
+      message: clave('panel.perfil.validacion.porcentaje'),
+    });
   });
 
   /**
@@ -80,7 +84,7 @@ export class Perfil implements OnInit {
           resto.porcentajeAutoAceptacion > 0 ? resto.porcentajeAutoAceptacion : PORCENTAJE_SUGERIDO,
       });
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tu restaurante.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.error.cargarRestaurante'));
     } finally {
       this.loading.set(false);
     }
@@ -91,7 +95,8 @@ export class Perfil implements OnInit {
     this.saved.set(false);
     this.saveError.set(null);
     await submit(this.perfilForm, async () => {
-      const { nombre, ubicacion, especialidad, autoAceptar, porcentajeAutoAceptacion } = this.model();
+      const { nombre, ubicacion, especialidad, autoAceptar, porcentajeAutoAceptacion } =
+        this.model();
       if (especialidad === '') {
         return undefined;
       }
@@ -106,9 +111,7 @@ export class Perfil implements OnInit {
         );
         this.saved.set(true);
       } catch (error) {
-        this.saveError.set(
-          panelErrorMessage(error, 'No pudimos guardar los cambios. Intentá de nuevo.'),
-        );
+        this.saveError.set(panelErrorMessage(error, 'panel.perfil.error.guardar'));
       }
       return undefined;
     });

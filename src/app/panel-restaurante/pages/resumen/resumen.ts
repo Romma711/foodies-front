@@ -3,11 +3,13 @@ import { RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { panelErrorMessage, toIsoDate } from '../../utils/panel-errors';
+import { Mensaje } from '@core/i18n/traducir';
 import { MiRestaurante, ReservaPanel } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   selector: 'app-resumen',
   styleUrl: './resumen.css',
   templateUrl: './resumen.html',
@@ -17,7 +19,7 @@ export class Resumen implements OnInit {
 
   protected readonly especialidadLabels = ESPECIALIDAD_LABELS;
   protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
   protected readonly restaurante = signal<MiRestaurante | null>(null);
   private readonly reservas = signal<ReservaPanel[]>([]);
   private readonly today = toIsoDate(new Date());
@@ -49,7 +51,7 @@ export class Resumen implements OnInit {
       this.restaurante.set(restaurante);
       this.reservas.set(reservas);
     } catch (error) {
-      this.error.set(panelErrorMessage(error, 'No pudimos cargar tu restaurante.'));
+      this.error.set(panelErrorMessage(error, 'panel.error.cargarRestaurante'));
     } finally {
       this.loading.set(false);
     }

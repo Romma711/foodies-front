@@ -1,9 +1,11 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
 import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
 import { ReservaDetailDTO, ReservaListDTO, ReservaPatchDTO, ReservaRequestDTO } from '../models';
+import { mensajeConCodigo } from '../../core/http/api-error';
 
 interface ApiError {
   error?: string;
@@ -20,8 +22,8 @@ export class ReservaService {
   private readonly _reserva = signal<ReservaDetailDTO | null>(null);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
-  private readonly _error = signal<string | null>(null);
-  private readonly _mutationError = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
+  private readonly _mutationError = signal<Mensaje | null>(null);
 
   readonly reservas = this._reservas.asReadonly();
   readonly reserva = this._reserva.asReadonly();
@@ -72,6 +74,7 @@ export class ReservaService {
                 idRestaurant: reserva.idRestaurant,
                 idEspacio: creada.idEspacio,
                 espacioNombre: creada.espacioNombre,
+                idTurno: creada.idTurno ?? null,
               },
               ...reservas,
             ]);
@@ -102,18 +105,23 @@ export class ReservaService {
     );
   }
 
-  /** Changes date, arrival time, party size and espacio; the server returns it as PENDIENTE again. */
+  /**
+   * Changes date, arrival time, party size, espacio and shift (when the restaurant works with
+   * shifts). The server returns it as PENDIENTE again, or ACEPTADA when auto-accept applies.
+   */
   modificar(
     id: number,
     cambios: Required<
       Pick<ReservaPatchDTO, 'fechaReserva' | 'horarioLlegada' | 'cantidad' | 'idEspacio'>
-    >,
+    > &
+      Pick<ReservaPatchDTO, 'idTurno'>,
   ): Observable<ReservaDetailDTO> {
     const patch: ReservaPatchDTO = {
       fechaReserva: cambios.fechaReserva,
       horarioLlegada: cambios.horarioLlegada,
       cantidad: cambios.cantidad,
       idEspacio: cambios.idEspacio,
+      ...(cambios.idTurno ? { idTurno: cambios.idTurno } : {}),
     };
     return this.ejecutarEscritura(
       this.http
@@ -134,6 +142,7 @@ export class ReservaService {
                       estadoReserva: actualizada.estadoReserva,
                       idEspacio: actualizada.idEspacio,
                       espacioNombre: actualizada.espacioNombre,
+                      idTurno: actualizada.idTurno ?? null,
                     }
                   : reserva,
               ),
@@ -167,40 +176,44 @@ export class ReservaService {
     );
   }
 
-  private obtenerMensajeError(error: unknown): string {
+  private obtenerMensajeError(error: unknown): Mensaje {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     if (error instanceof HttpErrorResponse) {
       const body = error.error as ApiError | string | null;
       if (typeof body === 'string' && body.trim().length > 0) {
-        return body;
+        return { texto: body };
       }
       if (body !== null && typeof body === 'object') {
         if (typeof body.mensaje === 'string' && body.mensaje.trim().length > 0) {
-          return body.mensaje;
+          return { texto: body.mensaje };
         }
         if (typeof body.error === 'string' && body.error.trim().length > 0) {
-          return body.error;
+          return { texto: body.error };
         }
         const mensajes = Object.values(body).filter(
           (valor): valor is string => typeof valor === 'string' && valor.trim().length > 0,
         );
         if (mensajes.length > 0) {
-          return mensajes.join(' ');
+          return { texto: mensajes.join(' ') };
         }
       }
       return this.mensajePorEstado(error.status);
     }
-    return 'Ocurrió un error inesperado.';
+    return { clave: 'comun.errorInesperado' };
   }
 
-  private mensajePorEstado(status: number): string {
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      400: 'Revisá los datos de la reserva e intentá nuevamente.',
-      401: 'No estás autenticado. Iniciá sesión para continuar.',
-      403: 'No tenés permisos para realizar esta acción.',
-      404: 'La reserva no existe.',
-      500: 'Error interno del servidor.',
+  private mensajePorEstado(status: number): Mensaje {
+    const mensajes: Record<number, Clave> = {
+      0: 'comun.errorConexion',
+      400: 'reserva.error.datos',
+      401: 'comun.error.noAutenticado',
+      403: 'comun.error.sinPermisos',
+      404: 'reserva.error.noExiste',
+      500: 'comun.error.servidor',
     };
-    return mensajes[status] ?? 'No se pudo completar la operación.';
+    return { clave: mensajes[status] ?? 'comun.error.operacion' };
   }
 }

@@ -1,16 +1,18 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { Clave } from '@core/i18n/traducir';
 import { ESPECIALIDADES } from '../../../core/auth/auth.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ESPECIALIDAD_LABELS } from '../../../restaurantes/models/especialidades';
 import { RestauranteService } from '../../../restaurantes/services/restaurante.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /** Cuántos restaurantes se destacan en el home; el resto está en `/restaurantes`. */
 const DESTACADOS = 3;
 
 @Component({
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   selector: 'app-home',
   templateUrl: './home.html',
 })
@@ -32,18 +34,18 @@ export class Home {
     this.restauranteService.restaurantes().slice(0, DESTACADOS),
   );
 
-  protected readonly pasos = [
+  protected readonly pasos: readonly { titulo: Clave; texto: Clave }[] = [
     {
-      titulo: 'Elegí el lugar',
-      texto: 'Recorré los restaurantes por especialidad, mirá sus fotos y su carta.',
+      titulo: 'home.paso1.titulo',
+      texto: 'home.paso1.texto',
     },
     {
-      titulo: 'Reservá tu mesa',
-      texto: 'Elegí día, horario y cantidad de personas en un par de clics.',
+      titulo: 'home.paso2.titulo',
+      texto: 'home.paso2.texto',
     },
     {
-      titulo: 'Contá cómo te fue',
-      texto: 'Dejá tu reseña y ayudá a otros a encontrar su próxima mesa.',
+      titulo: 'home.paso3.titulo',
+      texto: 'home.paso3.texto',
     },
   ];
 

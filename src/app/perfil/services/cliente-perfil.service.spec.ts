@@ -66,7 +66,7 @@ describe('ClientePerfilService', () => {
 
     http.expectOne('/api/clientes/3').flush(null, { status: 0, statusText: 'Unknown Error' });
 
-    expect(service.error()).toBe('No se pudo conectar con el servidor.');
+    expect(service.error()).toEqual({ clave: 'comun.errorConexion' });
     expect(service.cargando()).toBe(false);
   });
 

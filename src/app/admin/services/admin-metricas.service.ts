@@ -4,6 +4,7 @@ import { Observable, catchError, finalize, tap, throwError } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
 import { MetricasAdmin } from '../models/metricas-admin';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
 
 @Service()
 export class AdminMetricasService {
@@ -12,7 +13,7 @@ export class AdminMetricasService {
 
   private readonly _metricas = signal<MetricasAdmin | null>(null);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   /** Last successful response; kept on a failed refresh so the dashboard does not go blank. */
   readonly metricas = this._metricas.asReadonly();
@@ -32,13 +33,13 @@ export class AdminMetricasService {
     );
   }
 
-  private mensajeError(error: unknown): string {
+  private mensajeError(error: unknown): Mensaje {
     const status = error instanceof HttpErrorResponse ? error.status : -1;
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      401: 'Tu sesión venció. Iniciá sesión nuevamente.',
-      403: 'Tu sesión no tiene permisos de administrador.',
+    const mensajes: Record<number, Clave> = {
+      0: 'comun.errorConexion',
+      401: 'perfil.error.sesion',
+      403: 'admin.error.sinPermisos',
     };
-    return mensajes[status] ?? 'No se pudieron cargar las métricas.';
+    return { clave: mensajes[status] ?? 'admin.error.metricas' };
   }
 }

@@ -10,12 +10,14 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /**
  * Pie de la barra lateral de los dashboards: el nombre de la cuenta y, al tocarlo, un popup con
  * "Cerrar sesión". Se cierra con Escape (devolviendo el foco al nombre) o con un clic afuera.
  */
 @Component({
+  imports: [TPipe],
   selector: 'app-cuenta-menu',
   styleUrl: './cuenta-menu.css',
   templateUrl: './cuenta-menu.html',

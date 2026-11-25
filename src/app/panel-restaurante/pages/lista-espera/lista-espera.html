@@ -1,0 +1,75 @@
+<header class="page-header">
+  <h1>{{ 'panel.listaEspera.titulo' | t }}</h1>
+  <p class="subtitle">{{ 'panel.listaEspera.subtitulo' | t }}</p>
+</header>
+
+<div class="stack">
+  <div class="toolbar">
+    <div class="field">
+      <label for="lista-espera-fecha">{{ 'panel.listaEspera.fecha' | t }}</label>
+      <input
+        id="lista-espera-fecha"
+        type="date"
+        aria-describedby="lista-espera-fecha-ayuda"
+        [value]="fecha()"
+        (change)="filtrarPorFecha($event)"
+      />
+      <p id="lista-espera-fecha-ayuda" class="muted">{{ 'panel.listaEspera.fechaAyuda' | t }}</p>
+    </div>
+    @if (fecha()) {
+      <button type="button" class="btn btn-secondary" (click)="verProximas()">
+        {{ 'panel.listaEspera.verProximas' | t }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p role="status">{{ 'panel.listaEspera.cargando' | t }}</p>
+  } @else if (loadError(); as message) {
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
+  } @else {
+    @for (grupo of grupos(); track grupo.fecha) {
+      <section class="day" [attr.aria-labelledby]="'espera-dia-' + grupo.fecha">
+        <h2 [id]="'espera-dia-' + grupo.fecha">
+          {{ formatearDia(grupo.dia) }}
+          @if (isToday(grupo.fecha)) {
+            <span class="today">{{ 'panel.reservas.hoy' | t }}</span>
+          }
+        </h2>
+        <ul class="list">
+          @for (entrada of grupo.entradas; track entrada.id) {
+            <li class="card entrada" data-testid="entrada">
+              <div class="time">{{ hora(entrada) }}</div>
+              <div class="who">
+                <p class="name">{{ entrada.cliente || ('panel.reservas.cliente' | t) }}</p>
+                <p class="muted">
+                  {{
+                    (entrada.cantidad === 1 ? 'reserva.persona' : 'reserva.personas')
+                      | t: { n: entrada.cantidad }
+                  }}
+                  ·
+                  {{ 'panel.listaEspera.anotado' | t: { fecha: formatearCreada(entrada.creada) } }}
+                </p>
+              </div>
+              <span
+                class="badge"
+                [class.badge-pendiente]="entrada.estado === 'ESPERANDO'"
+                [class.badge-aceptada]="entrada.estado === 'NOTIFICADA'"
+                >{{ estadoLabel[entrada.estado] | t }}</span
+              >
+            </li>
+          }
+        </ul>
+      </section>
+    } @empty {
+      <p class="card empty" data-testid="vacio">
+        {{ (fecha() ? 'panel.listaEspera.vacioDia' : 'panel.listaEspera.vacio') | t }}
+      </p>
+    }
+  }
+</div>

@@ -5,9 +5,11 @@ import { AuthService } from '../../auth/auth.service';
 import { PORTALS } from '../../auth/portals';
 import { ClientePerfilService } from '../../../perfil/services/cliente-perfil.service';
 import { ClienteMenu } from './cliente-menu/cliente-menu';
+import { SelectorIdioma } from '../../i18n/selector-idioma/selector-idioma';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [ClienteMenu, RouterLink, RouterLinkActive],
+  imports: [TPipe, ClienteMenu, RouterLink, RouterLinkActive, SelectorIdioma],
   selector: 'app-header',
   templateUrl: './header.html',
   host: {
@@ -25,9 +27,9 @@ export class Header {
 
   /** Accesos de la cuenta del cliente en el menú móvil (en desktop están en su popup). */
   protected readonly opcionesCliente = [
-    { path: '/perfil', label: 'Mi perfil' },
-    { path: '/mis-resenas', label: 'Mis reseñas' },
-    { path: '/mis-reservas', label: 'Mis reservas' },
+    { path: '/perfil', label: 'nav.miPerfil' as const },
+    { path: '/mis-resenas', label: 'nav.misResenas' as const },
+    { path: '/mis-reservas', label: 'nav.misReservas' as const },
   ];
 
   /** Each role keeps its own session, so several can be active at once. */

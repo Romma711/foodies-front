@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { fakeJwt, futureExp } from '../../../core/auth/testing';
+import { HOSTNAME } from '../../../core/config/host.config';
 import { Login } from './login';
 
 describe('Login', () => {
@@ -182,5 +183,33 @@ describe('Login', () => {
 
       expect(navigate).toHaveBeenCalledExactlyOnceWith('/admin');
     });
+  });
+
+  it('no muestra un selector propio en la app, donde ya está en el header', () => {
+    expect(element.querySelector('app-selector-idioma')).toBeNull();
+  });
+});
+
+describe('Login en el dashboard', () => {
+  it('muestra el selector de idioma, porque el dashboard no tiene header', async () => {
+    localStorage.clear();
+    await TestBed.configureTestingModule({
+      imports: [Login],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: HOSTNAME, useValue: 'dashboard.localhost' },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(Login);
+    fixture.componentRef.setInput('role', 'RESTAURANTE');
+    await fixture.whenStable();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector(
+        'app-selector-idioma select, app-selector-idioma',
+      ),
+    ).not.toBeNull();
   });
 });

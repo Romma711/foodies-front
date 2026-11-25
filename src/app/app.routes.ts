@@ -17,12 +17,12 @@ export const APP_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    title: 'Foodies',
+    title: 'titulo.inicio',
     loadComponent: () => import('@home/pages/home/home').then((module) => module.Home),
   },
   {
     path: 'restaurantes',
-    title: 'Restaurantes | Foodies',
+    title: 'titulo.restaurantes',
     loadComponent: () =>
       import('@restaurantes/pages/restaurante-list/restaurante-list').then(
         (module) => module.RestauranteList,
@@ -30,7 +30,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'restaurantes/:restauranteId',
-    title: 'Restaurante | Foodies',
+    title: 'titulo.restaurante',
     loadComponent: () =>
       import('@restaurantes/pages/restaurante-detail/restaurante-detail').then(
         (module) => module.RestauranteDetail,
@@ -38,21 +38,21 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'mis-reservas',
-    title: 'Mis reservas | Foodies',
+    title: 'titulo.misReservas',
     loadComponent: () =>
       import('@reservas/pages/mis-reservas/mis-reservas').then((module) => module.MisReservas),
     canMatch: [roleGuard('CLIENTE')],
   },
   {
     path: 'perfil',
-    title: 'Mi perfil | Foodies',
+    title: 'titulo.miPerfil',
     loadComponent: () =>
       import('@perfil/pages/mi-perfil/mi-perfil').then((module) => module.MiPerfil),
     canMatch: [roleGuard('CLIENTE')],
   },
   {
     path: 'mis-resenas',
-    title: 'Mis reseñas | Foodies',
+    title: 'titulo.misResenas',
     loadComponent: () =>
       import('@resenas/pages/mis-resenas/mis-resenas').then((module) => module.MisResenas),
     canMatch: [roleGuard('CLIENTE')],

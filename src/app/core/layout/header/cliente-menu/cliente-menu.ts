@@ -12,6 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
 import { ClientePerfilService } from '../../../../perfil/services/cliente-perfil.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /**
  * Cuenta del cliente en el header: su nombre y, al tocarlo, un popup con su perfil, sus reseñas,
@@ -19,7 +20,7 @@ import { ClientePerfilService } from '../../../../perfil/services/cliente-perfil
  */
 @Component({
   selector: 'app-cliente-menu',
-  imports: [RouterLink],
+  imports: [TPipe, RouterLink],
   host: {
     class: 'relative',
     '(document:click)': 'cerrarSiEsAfuera($event)',
@@ -88,7 +89,7 @@ import { ClientePerfilService } from '../../../../perfil/services/cliente-perfil
               >
                 <path [attr.d]="opcion.icono" />
               </svg>
-              {{ opcion.label }}
+              {{ opcion.label | t }}
             </a>
           </li>
         }
@@ -110,7 +111,7 @@ import { ClientePerfilService } from '../../../../perfil/services/cliente-perfil
         >
           <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" />
         </svg>
-        Cerrar sesión
+        {{ 'nav.cerrarSesion' | t }}
       </button>
     </div>
   `,
@@ -134,17 +135,17 @@ export class ClienteMenu {
   protected readonly opciones = [
     {
       path: '/perfil',
-      label: 'Mi perfil',
+      label: 'nav.miPerfil' as const,
       icono: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 9a7 7 0 0 1 14 0',
     },
     {
       path: '/mis-resenas',
-      label: 'Mis reseñas',
+      label: 'nav.misResenas' as const,
       icono: 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z',
     },
     {
       path: '/mis-reservas',
-      label: 'Mis reservas',
+      label: 'nav.misReservas' as const,
       icono: 'M5 5h14v15H5V5Zm0 5h14M9 3v4m6-4v4',
     },
   ];

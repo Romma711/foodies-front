@@ -12,6 +12,8 @@ import {
   ResenaRequestDTO,
   ResenaUsuarioDTO,
 } from '../models';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
+import { mensajeConCodigo } from '../../core/http/api-error';
 
 interface ApiError {
   error?: string;
@@ -29,9 +31,10 @@ export class ResenaService {
   private readonly _resena = signal<ResenaDetailDTO | null>(null);
   private readonly _loading = signal(false);
   private readonly _saving = signal(false);
-  private readonly _error = signal<string | null>(null);
-  private readonly _mutationError = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
+  private readonly _mutationError = signal<Mensaje | null>(null);
   private readonly _misResenaIds = signal<ReadonlySet<number>>(new Set());
+  private readonly _restaurantesResenados = signal<ReadonlySet<number>>(new Set());
 
   readonly resenas = this._resenas.asReadonly();
   /** Reviews written by the signed-in client, each with the restaurant it is about. */
@@ -43,6 +46,8 @@ export class ResenaService {
   readonly mutationError = this._mutationError.asReadonly();
   /** Ids of the reviews written by the signed-in client; the list DTO has no owner field. */
   readonly misResenaIds = this._misResenaIds.asReadonly();
+  /** Restaurants the logged-in client already reviewed (one review per restaurant). */
+  readonly restaurantesResenados = this._restaurantesResenados.asReadonly();
 
   readonly totalResenas = computed(() => this._resenas().length);
 
@@ -96,6 +101,11 @@ export class ResenaService {
         context: withRole('CLIENTE'),
       })
       .pipe(
+        tap((resenas) =>
+          this._restaurantesResenados.set(
+            new Set((resenas ?? []).map((resena) => resena.restauranteId)),
+          ),
+        ),
         map((resenas) => new Set((resenas ?? []).map((resena) => resena.id))),
         catchError(() => of(new Set<number>())),
         tap((ids) => this._misResenaIds.set(ids)),
@@ -201,41 +211,45 @@ export class ResenaService {
     );
   }
 
-  private obtenerMensajeError(error: unknown): string {
+  private obtenerMensajeError(error: unknown): Mensaje {
+    const conCodigo = mensajeConCodigo(error);
+    if (conCodigo) {
+      return conCodigo;
+    }
     if (error instanceof HttpErrorResponse) {
       const body = error.error as ApiError | string | null;
       if (typeof body === 'string' && body.trim().length > 0) {
-        return body;
+        return { texto: body };
       }
       if (body !== null && typeof body === 'object') {
         if (typeof body.mensaje === 'string' && body.mensaje.trim().length > 0) {
-          return body.mensaje;
+          return { texto: body.mensaje };
         }
         if (typeof body.error === 'string' && body.error.trim().length > 0) {
-          return body.error;
+          return { texto: body.error };
         }
         const mensajes = Object.values(body).filter(
           (valor): valor is string => typeof valor === 'string' && valor.trim().length > 0,
         );
         if (mensajes.length > 0) {
-          return mensajes.join(' ');
+          return { texto: mensajes.join(' ') };
         }
       }
       return this.mensajePorEstado(error.status);
     }
-    return 'Ocurrió un error inesperado.';
+    return { clave: 'comun.errorInesperado' };
   }
 
-  private mensajePorEstado(status: number): string {
-    const mensajes: Record<number, string> = {
-      0: 'No se pudo conectar con el servidor.',
-      400: 'Revisá los datos ingresados e intentá nuevamente.',
-      401: 'No estás autenticado. Iniciá sesión para continuar.',
-      403: 'No tenés permisos para realizar esta acción.',
-      404: 'La reseña no existe.',
-      409: 'Ya existe una reseña con esos datos.',
-      500: 'Error interno del servidor.',
+  private mensajePorEstado(status: number): Mensaje {
+    const mensajes: Record<number, Clave> = {
+      0: 'comun.errorConexion',
+      400: 'resena.error.datos',
+      401: 'comun.error.noAutenticado',
+      403: 'comun.error.sinPermisos',
+      404: 'resena.error.noExiste',
+      409: 'resena.error.duplicada',
+      500: 'comun.error.servidor',
     };
-    return mensajes[status] ?? 'No se pudo completar la operación.';
+    return { clave: mensajes[status] ?? 'comun.error.operacion' };
   }
 }

@@ -14,13 +14,14 @@ import { ESPECIALIDADES, EspecialidadDeComida } from '../../../core/auth/auth.mo
 import { coincideNombre } from '../../utils/busqueda';
 import { ESPECIALIDAD_LABELS } from '../../models/especialidades';
 import { RestauranteService } from '../../services/restaurante.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 function esEspecialidad(value: string | null | undefined): value is EspecialidadDeComida {
   return (ESPECIALIDADES as readonly string[]).includes(value ?? '');
 }
 
 @Component({
-  imports: [RouterLink, MapaRestaurantes],
+  imports: [TPipe, RouterLink, MapaRestaurantes],
   selector: 'app-restaurante-list',
   templateUrl: './restaurante-list.html',
 })

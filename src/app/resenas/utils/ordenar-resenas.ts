@@ -1,11 +1,12 @@
+import { Clave } from '../../core/i18n/traducir';
 import { ResenaListDTO } from '../models';
 
 export type OrdenResenas = 'recientes' | 'mejores' | 'peores';
 
-export const OPCIONES_ORDEN: readonly { valor: OrdenResenas; etiqueta: string }[] = [
-  { valor: 'recientes', etiqueta: 'Más recientes' },
-  { valor: 'mejores', etiqueta: 'Mejor puntuación' },
-  { valor: 'peores', etiqueta: 'Peor puntuación' },
+export const OPCIONES_ORDEN: readonly { valor: OrdenResenas; etiqueta: Clave }[] = [
+  { valor: 'recientes', etiqueta: 'resena.orden.recientes' },
+  { valor: 'mejores', etiqueta: 'resena.orden.mejores' },
+  { valor: 'peores', etiqueta: 'resena.orden.peores' },
 ];
 
 /** Milliseconds of the review's creation date, or null when it has none or it does not parse. */

@@ -7,6 +7,10 @@ import { ReservaDetailDTO, ReservaListDTO } from '../../models';
 import { EspaciosService } from '../../services/espacios.service';
 import { ReservaService } from '../../services/reserva.service';
 import { fechaLocal } from '../../utils/reserva-reglas';
+import { DisponibilidadService } from '../../services/disponibilidad.service';
+import { Disponibilidad } from '../../models/disponibilidad';
+import { ListaEsperaService } from '../../../lista-espera/services/lista-espera.service';
+import { ResenaService } from '../../../resenas/services/resena.service';
 import { MisReservas } from './mis-reservas';
 
 describe('MisReservas', () => {
@@ -14,24 +18,26 @@ describe('MisReservas', () => {
     {
       id: 6,
       cantidad: 2,
-      fechaReserva: '2026-11-20T15:00:00.000+00:00',
+      fechaReserva: `${fechaLocal(3)}T15:00:00.000+00:00`,
       horariollegada: '20:00:00',
       estadoReserva: 'PENDIENTE',
       nombreResto: 'Ochiwan',
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     },
     {
       id: 7,
       cantidad: 4,
-      fechaReserva: '2026-11-22T15:00:00.000+00:00',
+      fechaReserva: `${fechaLocal(4)}T15:00:00.000+00:00`,
       horariollegada: '21:30:00',
       estadoReserva: 'ACEPTADA',
       nombreResto: 'La Trattoria',
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     },
   ];
 
@@ -45,6 +51,7 @@ describe('MisReservas', () => {
     nombreResto: 'Ochiwan',
     idEspacio: 3,
     espacioNombre: 'Salón principal',
+    idTurno: null,
   };
 
   let reservas: WritableSignal<ReservaListDTO[]>;
@@ -56,6 +63,8 @@ describe('MisReservas', () => {
   let cancelar: ReturnType<typeof vi.fn>;
   let limpiarErrorMutacion: ReturnType<typeof vi.fn>;
   let modificar: ReturnType<typeof vi.fn>;
+  let disponibilidad: Disponibilidad;
+  let restaurantesResenados: WritableSignal<ReadonlySet<number>>;
 
   beforeEach(async () => {
     reservas = signal(reservasMock);
@@ -67,11 +76,34 @@ describe('MisReservas', () => {
     cancelar = vi.fn(() => of(cancelada));
     limpiarErrorMutacion = vi.fn();
     modificar = vi.fn();
+    disponibilidad = { fecha: fechaLocal(5), porTurnos: false, turnos: [] };
+    restaurantesResenados = signal<ReadonlySet<number>>(new Set());
 
     await TestBed.configureTestingModule({
       imports: [MisReservas],
       providers: [
         provideRouter([]),
+        {
+          provide: ResenaService,
+          useValue: {
+            restaurantesResenados: restaurantesResenados.asReadonly(),
+            cargarMisResenas: vi.fn(() => of(new Set<number>())),
+          },
+        },
+        {
+          provide: ListaEsperaService,
+          useValue: {
+            entradas: signal([]),
+            loading: signal(false),
+            saving: signal(false),
+            error: signal(null),
+            listarMias: vi.fn(() => of([])),
+          },
+        },
+        {
+          provide: DisponibilidadService,
+          useValue: { consultar: vi.fn(() => of(disponibilidad)) },
+        },
         {
           provide: AuthService,
           useValue: { userId: vi.fn(() => 29) },
@@ -179,6 +211,7 @@ describe('MisReservas', () => {
       idRestaurant: 5,
       idEspacio: 3,
       espacioNombre: 'Salón principal',
+      idTurno: null,
     };
 
     function botonesModificar(elemento: HTMLElement): HTMLButtonElement[] {
@@ -235,6 +268,56 @@ describe('MisReservas', () => {
       expect(elemento.querySelector('form[aria-label="Modificar la reserva #6"]')).toBeNull();
     });
 
+    it('con turnos, deja mantener el propio turno aunque esté completo y envía el turno', async () => {
+      disponibilidad = {
+        fecha,
+        porTurnos: true,
+        turnos: [
+          {
+            idTurno: 11,
+            inicio: '20:00',
+            fin: '21:30',
+            espacios: [{ idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 0 }],
+          },
+          {
+            idTurno: 12,
+            inicio: '21:30',
+            fin: '23:00',
+            espacios: [{ idEspacio: 3, nombre: 'Salón principal', tipo: 'SALON', libres: 0 }],
+          },
+        ],
+      };
+      reservas.set([{ ...pendiente, idTurno: 11 }]);
+      modificar.mockReturnValue(of({ ...cancelada, fecha, estadoReserva: 'PENDIENTE' }));
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botonesModificar(elemento)[0].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const formulario = elemento.querySelector('form[aria-label="Modificar la reserva #6"]')!;
+      const propio = formulario.querySelector<HTMLInputElement>('[data-turno="11"] input')!;
+      const otro = formulario.querySelector<HTMLInputElement>('[data-turno="12"] input')!;
+      expect(formulario.querySelector('select')).toBeNull();
+      expect(propio.disabled).toBe(false);
+      expect(propio.checked).toBe(true);
+      expect(otro.disabled).toBe(true);
+      expect(formulario.textContent).not.toContain('Sumarme a la lista de espera');
+
+      formulario.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+      await fixture.whenStable();
+
+      expect(modificar).toHaveBeenCalledWith(6, {
+        fechaReserva: fecha,
+        horarioLlegada: '20:00',
+        cantidad: 2,
+        idEspacio: 3,
+        idTurno: 11,
+      });
+    });
+
     it('permite cambiar a otro espacio con lugar y no a uno sin lugar', async () => {
       reservas.set([pendiente]);
       modificar.mockReturnValue(of({ ...cancelada, fecha, estadoReserva: 'PENDIENTE' }));
@@ -256,7 +339,9 @@ describe('MisReservas', () => {
       await fixture.whenStable();
       fixture.detectChanges();
       expect(modificar).not.toHaveBeenCalled();
-      expect(formulario.textContent).toContain('No hay lugar en ese espacio para esa fecha y cantidad.');
+      expect(formulario.textContent).toContain(
+        'No hay lugar en ese espacio para esa fecha y cantidad.',
+      );
 
       radio('5').click();
       fixture.detectChanges();
@@ -379,6 +464,110 @@ describe('MisReservas', () => {
       expect(
         elemento.querySelector('[data-testid="error-modificacion"]')?.textContent?.trim(),
       ).toBe('No hay cupo disponible para esa fecha.');
+    });
+  });
+
+  describe('estados y ventana de cambios', () => {
+    const base: ReservaListDTO = {
+      id: 20,
+      cantidad: 2,
+      fechaReserva: fechaLocal(5),
+      horariollegada: '20:00:00',
+      estadoReserva: 'PENDIENTE',
+      nombreResto: 'Ochiwan',
+      idRestaurant: 5,
+      idEspacio: 3,
+      espacioNombre: 'Salón principal',
+      idTurno: null,
+    };
+
+    function botones(elemento: HTMLElement, texto: string): HTMLButtonElement[] {
+      return [...elemento.querySelectorAll<HTMLButtonElement>('button')].filter(
+        (boton) => boton.textContent?.trim() === texto,
+      );
+    }
+
+    /** Local date and `HH:mm:ss` of `minutos` from now. */
+    function dentroDe(minutos: number): Pick<ReservaListDTO, 'fechaReserva' | 'horariollegada'> {
+      const momento = new Date(Date.now() + minutos * 60_000);
+      const dia = `${momento.getFullYear()}-${String(momento.getMonth() + 1).padStart(2, '0')}-${String(momento.getDate()).padStart(2, '0')}`;
+      const hora = `${String(momento.getHours()).padStart(2, '0')}:${String(momento.getMinutes()).padStart(2, '0')}:00`;
+      return { fechaReserva: dia, horariollegada: hora };
+    }
+
+    it('muestra la etiqueta y el mensaje de cada estado final', () => {
+      reservas.set([
+        { ...base, id: 21, estadoReserva: 'RECHAZADA' },
+        { ...base, id: 22, estadoReserva: 'NO_ASISTIO' },
+        { ...base, id: 23, estadoReserva: 'VENCIDA' },
+        { ...base, id: 24, estadoReserva: 'ASISTIO' },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const tarjetas = [...elemento.querySelectorAll('li')].map((li) => li.textContent ?? '');
+
+      expect(tarjetas[0]).toContain('Rechazada');
+      expect(tarjetas[0]).toContain('El restaurante no pudo aceptar esta reserva.');
+      expect(tarjetas[1]).toContain('No asististe');
+      expect(tarjetas[1]).toContain('Tres ausencias suman un strike.');
+      expect(tarjetas[2]).toContain('Vencida');
+      expect(tarjetas[2]).toContain('no confirmó la reserva antes del horario de llegada');
+      expect(tarjetas[3]).toContain('Asististe');
+      expect(tarjetas[3]).toContain('Dejar mi reseña');
+      expect(botones(elemento, 'Modificar')).toHaveLength(0);
+      expect(botones(elemento, 'Cancelar reserva')).toHaveLength(0);
+    });
+
+    it('lleva a la página del restaurante para reseñar una reserva a la que asistió', () => {
+      reservas.set([{ ...base, estadoReserva: 'ASISTIO' }]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const enlace = [...elemento.querySelectorAll<HTMLAnchorElement>('a')].find(
+        (a) => a.textContent?.trim() === 'Dejar mi reseña',
+      );
+
+      expect(enlace?.getAttribute('href')).toBe('/restaurantes/5');
+    });
+
+    it('no invita a reseñar un restaurante que el cliente ya reseñó', () => {
+      restaurantesResenados.set(new Set([5]));
+      reservas.set([
+        { ...base, estadoReserva: 'ASISTIO' },
+        { ...base, id: 25, idRestaurant: 9, estadoReserva: 'ASISTIO' },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const [resenado, pendiente] = [...elemento.querySelectorAll('li')];
+
+      expect(resenado.textContent).toContain('Gracias por tu visita y por dejar tu reseña.');
+      expect(resenado.textContent).not.toContain('Dejar mi reseña');
+      expect(pendiente.textContent).toContain('Dejar mi reseña');
+    });
+
+    it('permite cancelar también una reserva confirmada', () => {
+      reservas.set([{ ...base, estadoReserva: 'ACEPTADA' }]);
+      const fixture = crearComponente();
+      const elemento = fixture.nativeElement as HTMLElement;
+
+      botones(elemento, 'Cancelar reserva')[0].click();
+      fixture.detectChanges();
+      botones(elemento, 'Sí, cancelar')[0].click();
+
+      expect(cancelar).toHaveBeenCalledWith(20);
+    });
+
+    it('oculta modificar y cancelar a 30 minutos o menos de la llegada y explica por qué', () => {
+      reservas.set([
+        { ...base, id: 30, estadoReserva: 'ACEPTADA', ...dentroDe(20) },
+        { ...base, id: 31, estadoReserva: 'PENDIENTE', ...dentroDe(90) },
+      ]);
+      const elemento = crearComponente().nativeElement as HTMLElement;
+      const [cerca, lejos] = [...elemento.querySelectorAll('li')];
+
+      expect(cerca.querySelector('[data-testid="cambios-cerrados"]')?.textContent).toContain(
+        'Faltan menos de 30 minutos',
+      );
+      expect(botones(cerca as HTMLElement, 'Modificar')).toHaveLength(0);
+      expect(botones(cerca as HTMLElement, 'Cancelar reserva')).toHaveLength(0);
+      expect(botones(lejos as HTMLElement, 'Modificar')).toHaveLength(1);
+      expect(botones(lejos as HTMLElement, 'Cancelar reserva')).toHaveLength(1);
     });
   });
 });

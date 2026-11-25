@@ -5,6 +5,8 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { EntidadCliente, EntidadRestaurante } from '../models/entidades-admin';
 import { AdminEntidadesService } from './admin-entidades.service';
+import { ErrorAdmin } from './mensaje-error-admin';
+import { textoDeMensaje } from '../../core/i18n/traducir';
 
 const API = environment.apiUrl;
 
@@ -146,5 +148,78 @@ describe('AdminEntidadesService', () => {
 
     await expect(strike).rejects.toThrow('No se puede sancionar a un administrador');
     expect(service.clientes()[0].strikes).toBe(1);
+  });
+  describe('historial y quita de strikes (S7c, S7d)', () => {
+    const MOVIMIENTOS = [
+      {
+        id: 2,
+        fecha: '2026-11-25T10:30:00',
+        tipo: 'SUMA',
+        origen: 'AUSENCIAS',
+        motivo: '3 ausencias sin aviso',
+        totalDespues: 1,
+      },
+    ];
+
+    it('pide el historial de un cliente con GET en su endpoint', async () => {
+      const historial = firstValueFrom(service.historialStrikes('cliente', 4));
+      const req = http.expectOne(`${API}/admin/usuarios/4/strikes`);
+      expect(req.request.method).toBe('GET');
+      req.flush(MOVIMIENTOS);
+
+      expect(await historial).toEqual(MOVIMIENTOS);
+    });
+
+    it('pide el historial de un restaurante en su propio endpoint', async () => {
+      const historial = firstValueFrom(service.historialStrikes('restaurante', 2));
+      http.expectOne(`${API}/admin/restaurantes/2/strikes`).flush(null);
+
+      expect(await historial).toEqual([]);
+    });
+
+    it('quita un strike con POST, manda el motivo y actualiza la fila', async () => {
+      await cargarTodo();
+
+      const quita = firstValueFrom(service.quitarStrike('cliente', 4, 'Fue un error'));
+      const req = http.expectOne(`${API}/admin/usuarios/4/strikes/quitar`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ motivo: 'Fue un error' });
+      req.flush({ strikes: 0 });
+
+      expect((await quita).strikes).toBe(0);
+      expect(service.clientes()[0].strikes).toBe(0);
+    });
+
+    it('quita un strike a un restaurante en su propio endpoint', async () => {
+      await cargarTodo();
+
+      const quita = firstValueFrom(service.quitarStrike('restaurante', 2, 'Revisado'));
+      http.expectOne(`${API}/admin/restaurantes/2/strikes/quitar`).flush({ strikes: 0 });
+      await quita;
+
+      expect(service.restaurantes()[0].strikes).toBe(0);
+    });
+
+    it('si no tiene strikes devuelve el error traducido por su código', async () => {
+      await cargarTodo();
+
+      const quita = firstValueFrom(service.quitarStrike('cliente', 4, 'Motivo'));
+      http.expectOne(`${API}/admin/usuarios/4/strikes/quitar`).flush(
+        {
+          error: 'conflicto',
+          mensaje: 'No tiene strikes para quitar.',
+          codigo: 'SIN_STRIKES',
+          params: {},
+        },
+        { status: 409, statusText: 'Conflict' },
+      );
+
+      const error = await quita.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ErrorAdmin);
+      expect(textoDeMensaje('en', (error as ErrorAdmin).mensaje)).toBe(
+        'This account has no strikes to remove.',
+      );
+      expect(service.clientes()[0].strikes).toBe(1);
+    });
   });
 });

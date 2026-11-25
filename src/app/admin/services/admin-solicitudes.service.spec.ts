@@ -93,6 +93,6 @@ describe('AdminSolicitudesService', () => {
     });
 
     await expect(carga).rejects.toBeTruthy();
-    expect(service.error()).toBe('Tu sesión no tiene permisos de administrador.');
+    expect(service.error()).toEqual({ clave: 'admin.error.sinPermisos' });
   });
 });

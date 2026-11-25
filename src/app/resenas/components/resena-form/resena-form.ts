@@ -23,6 +23,8 @@ import { firstValueFrom } from 'rxjs';
 import { ResenaDetailDTO, ResenaListDTO } from '../../models';
 import { ResenaService } from '../../services/resena.service';
 import { StarRating } from '../star-rating/star-rating';
+import { TClavePipe, TPipe } from '@core/i18n/t.pipe';
+import { clave } from '@core/i18n/traducir';
 
 interface ResenaFormModel {
   calificacion: number;
@@ -31,7 +33,7 @@ interface ResenaFormModel {
 
 @Component({
   selector: 'app-resena-form',
-  imports: [FormField, StarRating],
+  imports: [TClavePipe, TPipe, FormField, StarRating],
   templateUrl: './resena-form.html',
 })
 export class ResenaForm {
@@ -64,11 +66,11 @@ export class ResenaForm {
   }));
 
   protected readonly formulario = form(this.modelo, (path) => {
-    min(path.calificacion, 1, { message: 'Elegí de 1 a 5 estrellas.' });
-    max(path.calificacion, 5, { message: 'La calificación máxima es 5.' });
-    required(path.comentario, { message: 'Contanos tu experiencia.' });
-    minLength(path.comentario, 10, { message: 'Escribí al menos 10 caracteres.' });
-    maxLength(path.comentario, 255, { message: 'Máximo 255 caracteres.' });
+    min(path.calificacion, 1, { message: clave('resena.validacion.minimo') });
+    max(path.calificacion, 5, { message: clave('resena.validacion.maximo') });
+    required(path.comentario, { message: clave('resena.validacion.comentario') });
+    minLength(path.comentario, 10, { message: clave('resena.validacion.minLargo') });
+    maxLength(path.comentario, 255, { message: clave('resena.validacion.maxLargo') });
   });
 
   protected readonly restantes = computed(() =>

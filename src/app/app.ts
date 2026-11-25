@@ -3,9 +3,10 @@ import { RouterOutlet } from '@angular/router';
 import { Footer } from './core/layout/footer/footer';
 import { Header } from './core/layout/header/header';
 import { PortalNavigation } from './core/auth/portal-navigation';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
-  imports: [Header, Footer, RouterOutlet],
+  imports: [TPipe, Header, Footer, RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

@@ -1,4 +1,5 @@
 import { Component, ElementRef, signal, viewChild } from '@angular/core';
+import { TPipe } from '@core/i18n/t.pipe';
 
 export interface ConfirmOptions {
   heading: string;
@@ -14,7 +15,7 @@ let nextId = 0;
  * Usage: `if (await dialog.open({...})) { ... }`.
  */
 @Component({
-  imports: [],
+  imports: [TPipe],
   selector: 'app-confirm-dialog',
   styleUrl: './confirm-dialog.css',
   templateUrl: './confirm-dialog.html',

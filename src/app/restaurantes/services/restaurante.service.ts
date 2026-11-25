@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Service, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Mensaje } from '../../core/i18n/traducir';
 import {
   CartaPublicaDTO,
   FotoPublicaDTO,
@@ -17,7 +18,7 @@ export class RestauranteService {
   private readonly _restaurantes = signal<RestauranteListDTO[]>([]);
   private readonly _restaurante = signal<RestauranteDetailDTO | null>(null);
   private readonly _loading = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   readonly restaurantes = this._restaurantes.asReadonly();
   readonly restaurante = this._restaurante.asReadonly();
@@ -55,12 +56,10 @@ export class RestauranteService {
 
   /** Las fotos son opcionales en el detalle: si falla el pedido, se muestra sin galería. */
   obtenerFotos(id: number): Observable<FotoPublicaDTO[]> {
-    return this.http
-      .get<FotoPublicaDTO[] | null>(`${this.apiUrl}/${id}/fotos`)
-      .pipe(
-        map((fotos) => fotos ?? []),
-        catchError(() => of([])),
-      );
+    return this.http.get<FotoPublicaDTO[] | null>(`${this.apiUrl}/${id}/fotos`).pipe(
+      map((fotos) => fotos ?? []),
+      catchError(() => of([])),
+    );
   }
 
   private ejecutarLectura<T>(request: Observable<T>): Observable<T> {
@@ -75,20 +74,20 @@ export class RestauranteService {
     );
   }
 
-  private obtenerMensajeError(error: unknown): string {
+  private obtenerMensajeError(error: unknown): Mensaje {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) {
-        return 'No se pudo conectar con el servidor.';
+        return { clave: 'comun.errorConexion' };
       }
       if (error.status === 404) {
-        return 'El restaurante no existe.';
+        return { clave: 'restaurante.error.noExiste' };
       }
       const body = error.error as { mensaje?: unknown } | null;
       if (body && typeof body.mensaje === 'string' && body.mensaje.trim().length > 0) {
-        return body.mensaje;
+        return { texto: body.mensaje };
       }
-      return 'No pudimos cargar el restaurante.';
+      return { clave: 'restaurante.error.cargar' };
     }
-    return 'Ocurrió un error inesperado.';
+    return { clave: 'comun.errorInesperado' };
   }
 }

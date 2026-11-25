@@ -14,16 +14,16 @@
         class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line"
       >
         <span class="size-1.5 rounded-full bg-brand-500"></span>
-        Descubrí tu próxima mesa
+        {{ 'catalogo.etiqueta' | t }}
       </span>
 
       <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
-        Restaurantes que saben a
+        {{ 'catalogo.titulo1' | t }}
         <span class="text-brand-600">Foodies</span>
       </h1>
 
       <p class="mt-4 max-w-xl text-base leading-7 text-ink-500 sm:text-lg">
-        Elegí por especialidad, reservá tu mesa y compartí tu experiencia con la comunidad.
+        {{ 'catalogo.bajada' | t }}
       </p>
     </header>
 
@@ -37,21 +37,21 @@
           class="size-10 animate-spin rounded-full border-2 border-brand-100 border-t-brand-500"
           aria-hidden="true"
         ></span>
-        <p class="mt-4 text-sm font-medium text-ink-500">Cargando restaurantes…</p>
+        <p class="mt-4 text-sm font-medium text-ink-500">{{ 'catalogo.cargando' | t }}</p>
       </div>
     } @else if (error()) {
       <div
         class="mt-10 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
         role="alert"
       >
-        <h2 class="text-lg font-bold text-ink-900">No pudimos cargar los restaurantes</h2>
-        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error() }}</p>
+        <h2 class="text-lg font-bold text-ink-900">{{ 'catalogo.errorTitulo' | t }}</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error()! | t }}</p>
         <button
           type="button"
           class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
           (click)="recargar()"
         >
-          Reintentar
+          {{ 'comun.reintentar' | t }}
         </button>
       </div>
     } @else if (restaurantes().length === 0) {
@@ -75,16 +75,16 @@
             <path d="M15 3c-1.8 2-2.5 4.2-2.5 6.5S13.2 14 15 16v5" />
           </svg>
         </span>
-        <h2 class="mt-5 text-lg font-bold text-ink-900">Todavía no hay restaurantes</h2>
+        <h2 class="mt-5 text-lg font-bold text-ink-900">{{ 'catalogo.vacioTitulo' | t }}</h2>
         <p class="mt-2 max-w-sm text-sm leading-6 text-ink-500">
-          Cuando se sumen los primeros restaurantes, vas a poder reservar tu mesa desde acá.
+          {{ 'catalogo.vacioTexto' | t }}
         </p>
       </div>
     } @else {
       <div
         class="mt-10 inline-flex rounded-full bg-white/80 p-1 ring-1 ring-line"
         role="group"
-        aria-label="Cómo ver los restaurantes"
+        [attr.aria-label]="'catalogo.vistas' | t"
       >
         <button
           type="button"
@@ -96,7 +96,7 @@
           data-testid="vista-lista"
           (click)="vista.set('lista')"
         >
-          Lista
+          {{ 'catalogo.lista' | t }}
         </button>
         <button
           type="button"
@@ -106,12 +106,12 @@
           data-testid="vista-mapa"
           (click)="vista.set('mapa')"
         >
-          Mapa
+          {{ 'catalogo.mapa' | t }}
         </button>
       </div>
 
       <div class="mt-6 max-w-xl" role="search">
-        <label for="buscar-restaurante" class="sr-only">Buscar restaurante por nombre</label>
+        <label for="buscar-restaurante" class="sr-only">{{ 'catalogo.buscarEtiqueta' | t }}</label>
         <div class="relative">
           <svg
             class="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-ink-500"
@@ -131,7 +131,7 @@
             id="buscar-restaurante"
             type="search"
             autocomplete="off"
-            placeholder="Buscá un restaurante por nombre"
+            [placeholder]="'catalogo.buscarPlaceholder' | t"
             class="w-full rounded-full border border-line bg-white/90 py-3 pr-4 pl-12 text-sm text-ink-900 shadow-card placeholder:text-ink-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
             aria-describedby="resultados-busqueda"
             [value]="busqueda()"
@@ -144,8 +144,10 @@
           aria-live="polite"
         >
           @if (buscando()) {
-            {{ filtrados().length }}
-            {{ filtrados().length === 1 ? 'restaurante encontrado' : 'restaurantes encontrados' }}
+            {{
+              (filtrados().length === 1 ? 'catalogo.encontrado' : 'catalogo.encontrados')
+                | t: { n: filtrados().length }
+            }}
           }
         </p>
       </div>
@@ -153,7 +155,7 @@
       <div
         class="mt-4 flex flex-wrap gap-2"
         role="group"
-        aria-label="Filtrar por especialidad"
+        [attr.aria-label]="'catalogo.filtrar' | t"
         data-testid="filtro-especialidad"
       >
         <button
@@ -167,7 +169,7 @@
           [attr.aria-pressed]="filtro() === null"
           (click)="filtrar(null)"
         >
-          Todas
+          {{ 'catalogo.todas' | t }}
         </button>
         @for (opcion of opcionesEspecialidad; track opcion.valor) {
           <button
@@ -181,7 +183,7 @@
             [attr.aria-pressed]="filtro() === opcion.valor"
             (click)="filtrar(opcion.valor)"
           >
-            {{ opcion.etiqueta }}
+            {{ opcion.etiqueta | t }}
           </button>
         }
       </div>
@@ -194,12 +196,18 @@
         >
           <h2 class="text-lg font-bold text-ink-900">
             @if (buscando()) {
-              No encontramos restaurantes que coincidan con “{{ busqueda().trim() }}”
+              {{ 'catalogo.sinCoincidencias' | t: { busqueda: busqueda().trim() } }}
               @if (filtro(); as especialidad) {
-                en {{ especialidadLabels[especialidad] }}
+                {{
+                  'catalogo.sinCoincidenciasEn'
+                    | t: { especialidad: (especialidadLabels[especialidad] | t) }
+                }}
               }
             } @else {
-              Todavía no hay restaurantes de {{ especialidadLabels[filtro()!] }}
+              {{
+                'catalogo.sinDeEspecialidad'
+                  | t: { especialidad: (especialidadLabels[filtro()!] | t) }
+              }}
             }
           </h2>
           <button
@@ -207,7 +215,7 @@
             class="mt-4 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
             (click)="limpiarFiltros()"
           >
-            Ver todos
+            {{ 'catalogo.verTodos' | t }}
           </button>
         </div>
       } @else if (vista() === 'mapa') {
@@ -237,7 +245,7 @@
                   <span
                     class="absolute top-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-100"
                   >
-                    {{ especialidadLabels[restaurante.especialidad] }}
+                    {{ especialidadLabels[restaurante.especialidad] | t }}
                   </span>
                   <span
                     class="absolute bottom-4 left-4 grid size-12 place-items-center rounded-2xl bg-white/95 text-lg font-extrabold text-brand-700 shadow-card"
@@ -269,7 +277,7 @@
                   <span
                     class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700"
                   >
-                    Ver restaurante
+                    {{ 'catalogo.verRestaurante' | t }}
                     <svg
                       class="size-4 transition group-hover:translate-x-0.5"
                       viewBox="0 0 24 24"
@@ -294,16 +302,16 @@
         class="mt-10 flex flex-col gap-3 rounded-2xl border border-line/70 bg-white/80 p-6 shadow-card sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h2 class="text-base font-bold text-ink-900">¿Tenés un restaurante?</h2>
+          <h2 class="text-base font-bold text-ink-900">{{ 'catalogo.tenesRestaurante' | t }}</h2>
           <p class="mt-1 text-sm leading-6 text-ink-500">
-            Sumalo a Foodies y empezá a recibir reservas.
+            {{ 'catalogo.sumalo' | t }}
           </p>
         </div>
         <a
           routerLink="/restaurante/register"
           class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
         >
-          Quiero sumarme
+          {{ 'catalogo.quieroSumarme' | t }}
         </a>
       </div>
     }

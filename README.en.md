@@ -4,7 +4,7 @@
 
 Front end of **Foodies**, a restaurant booking and review platform for Mar del Plata, Argentina. Clients, restaurants and administrators use the same application, each in their own portal and with their own session.
 
-Built with **Angular 22** without zone.js, **signals**, **Signal Forms** and **Tailwind CSS v4**, and tested with **494 tests** in Vitest. The UI is in Spanish.
+Built with **Angular 22** without zone.js, **signals**, **Signal Forms** and **Tailwind CSS v4**, and tested with **520 tests** in Vitest. The UI speaks Spanish, English and Brazilian Portuguese.
 
 [![CI](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml/badge.svg)](https://github.com/Romma711/foodies-front/actions/workflows/ci.yml)
 
@@ -110,7 +110,30 @@ On startup the app reads the hostname. If it starts with `dashboard.` it loads t
 
 ### Routes
 
-All 37 routes are lazy loaded (`loadComponent` or `loadChildren`) and has its own `title`. The initial bundle has a budget: the build warns at 500 kB and fails at 1 MB.
+All 37 routes are lazy loaded (`loadComponent` or `loadChildren`) and has its own `title`. The initial bundle has a budget: the build warns at 550 kB and fails at 1 MB.
+
+## Languages
+
+The public app and both dashboards can be used in Spanish (the default and the source of every text), English and Brazilian Portuguese. The selector sits in the app header and in each dashboard sidebar. Switching is instant, with no reload: the choice is stored in `localStorage` (`foodies.idioma`) and updates `<html lang>`. Dates and numbers use the language's format (`es-AR`, `en-US`, `pt-BR`).
+
+Everything lives in `src/app/core/i18n/`:
+
+| Piece | What for |
+|---|---|
+| `traducciones/es.ts`, `en.ts`, `pt.ts` | One dictionary per language, with flat keys `<area>.<screen>.<text>` |
+| `I18n` (service) | `idioma()`, `usar(idioma)`, `t(key, params)`, `fecha()`, `numero()` and `locale()` |
+| `t` pipe | `{{ 'nav.restaurantes' \| t }}` or `{{ 'reserva.personas' \| t: { n: 4 } }}` in templates |
+| `Mensaje` | A text to show later: `{ clave }` is translated when shown; `{ texto }` is a backend message shown as is |
+| `tClave` pipe, `clave()` and `claveConParametros()` | Signal Forms validator messages, which only accept a `string` |
+| `TituloTraducido` | Each route `title` is a key; the tab title follows the language |
+
+To add a text:
+
+1. Add the key to `es.ts`, with the Spanish text, in its screen's group. Variable values go in braces: `'Reserva #{id}'`.
+2. Add the same key, in the same place, to `en.ts` and `pt.ts`.
+3. Use it with the `t` pipe in the template, or with `inject(I18n).t('key')` in TypeScript (inside a `computed` it updates itself when the language changes).
+
+The `Clave` type comes from `es.ts`, so a misspelled key does not compile. If `en.ts` or `pt.ts` lacks a key, the app shows the Spanish text and the `traducciones/paridad.spec.ts` test fails listing missing, extra or empty keys and keys whose `{…}` placeholders differ. Restaurant names, people's data and error messages sent by the backend are not translated.
 
 ## Styles
 
@@ -136,7 +159,7 @@ axe-core reports no violations on the client pages, on desktop or mobile.
 | Services (`HttpTestingController`) | 28 | URL, method, body and role of each request |
 | Accessibility (axe-core) | 13 | WCAG violations inside the tests |
 
-There are 494 tests in 74 files, and the whole suite runs in about 25 seconds. Test names are in Spanish and describe the rule they check. Dependencies jsdom cannot run, such as the Chart.js canvas, come in through an `InjectionToken` and are replaced by test doubles.
+There are 520 tests in 79 files, and the whole suite runs in about 25 seconds. Test names are in Spanish and describe the rule they check. Dependencies jsdom cannot run, such as the Chart.js canvas, come in through an `InjectionToken` and are replaced by test doubles.
 
 ## Team
 

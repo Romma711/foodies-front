@@ -5,7 +5,8 @@ import { withRole } from '../../core/auth/auth-context';
 import { environment } from '../../../environments/environment';
 import { EstadoRestaurante } from '../models/entidades-admin';
 import { SolicitudRestaurante } from '../models/solicitud-restaurante';
-import { mensajeErrorAdmin } from './mensaje-error-admin';
+import { ErrorAdmin, mensajeErrorAdmin } from './mensaje-error-admin';
+import { Clave, Mensaje } from '../../core/i18n/traducir';
 
 interface EstadoSolicitud {
   restaurantId: number;
@@ -21,7 +22,7 @@ export class AdminSolicitudesService {
 
   private readonly _solicitudes = signal<SolicitudRestaurante[]>([]);
   private readonly _cargando = signal(false);
-  private readonly _error = signal<string | null>(null);
+  private readonly _error = signal<Mensaje | null>(null);
 
   readonly solicitudes = this._solicitudes.asReadonly();
   readonly cargando = this._cargando.asReadonly();
@@ -38,7 +39,7 @@ export class AdminSolicitudesService {
         map((solicitudes) => solicitudes ?? []),
         tap((solicitudes) => this._solicitudes.set(solicitudes)),
         catchError((error: unknown) => {
-          this._error.set(mensajeErrorAdmin(error, 'No se pudieron cargar las solicitudes.'));
+          this._error.set(mensajeErrorAdmin(error, 'admin.error.solicitudes'));
           return throwError(() => error);
         }),
         finalize(() => this._cargando.set(false)),
@@ -47,18 +48,18 @@ export class AdminSolicitudesService {
 
   /** Publishes the restaurant and gives its manager the restaurant portal. */
   aprobar(restaurantId: number): Observable<EstadoSolicitud> {
-    return this.resolver(restaurantId, 'aprobar', 'No se pudo aprobar la solicitud.');
+    return this.resolver(restaurantId, 'aprobar', 'admin.error.aprobar');
   }
 
   rechazar(restaurantId: number): Observable<EstadoSolicitud> {
-    return this.resolver(restaurantId, 'rechazar', 'No se pudo rechazar la solicitud.');
+    return this.resolver(restaurantId, 'rechazar', 'admin.error.rechazarSolicitud');
   }
 
-  /** Errors come back as an `Error` whose message is ready to show to the admin. */
+  /** Errors come back as an `ErrorAdmin` whose `mensaje` is ready to show to the admin. */
   private resolver(
     restaurantId: number,
     accion: 'aprobar' | 'rechazar',
-    porDefecto: string,
+    porDefecto: Clave,
   ): Observable<EstadoSolicitud> {
     return this.http
       .put<EstadoSolicitud>(`${this.apiUrl}/${restaurantId}/${accion}`, null, {
@@ -71,7 +72,7 @@ export class AdminSolicitudesService {
           ),
         ),
         catchError((error: unknown) =>
-          throwError(() => new Error(mensajeErrorAdmin(error, porDefecto))),
+          throwError(() => new ErrorAdmin(mensajeErrorAdmin(error, porDefecto))),
         ),
       );
   }

@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PortalNavigation } from '../../../core/auth/portal-navigation';
 import { PORTALS } from '../../../core/auth/portals';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /**
  * "Volver al inicio" de las pantallas de login y registro. El inicio es el home de la app pública:
@@ -11,7 +12,7 @@ import { PORTALS } from '../../../core/auth/portals';
  */
 @Component({
   selector: 'app-volver-al-inicio',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [TPipe, NgTemplateOutlet, RouterLink],
   host: { class: 'mb-6 block' },
   template: `
     @if (urlExterna; as url) {
@@ -37,7 +38,7 @@ import { PORTALS } from '../../../core/auth/portals';
       >
         <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
       </svg>
-      Volver al inicio
+      {{ 'comun.volverAlInicio' | t }}
     </ng-template>
   `,
 })

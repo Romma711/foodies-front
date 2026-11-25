@@ -136,6 +136,6 @@ describe('AdminModeracionService', () => {
       .expectOne((req) => req.url === '/api/admin/resenas')
       .flush(null, { status: 403, statusText: 'Forbidden' });
 
-    expect(service.error()).toBe('Tu sesión no tiene permisos de administrador.');
+    expect(service.error()).toEqual({ clave: 'admin.error.sinPermisos' });
   });
 });

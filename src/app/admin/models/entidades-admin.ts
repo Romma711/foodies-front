@@ -26,3 +26,17 @@ export interface EntidadRestaurante {
   usuarioId: number;
   email: string;
 }
+
+export type TipoMovimientoStrike = 'SUMA' | 'QUITA';
+/** `ADMIN`: added or removed by an admin; `AUSENCIAS`: added automatically after 3 no-shows. */
+export type OrigenStrike = 'ADMIN' | 'AUSENCIAS';
+
+/** One entry of a strike history (`MovimientoStrikeDTO`), newest first. `fecha` is local ISO date-time. */
+export interface MovimientoStrike {
+  id: number;
+  fecha: string;
+  tipo: TipoMovimientoStrike;
+  origen: OrigenStrike;
+  motivo: string;
+  totalDespues: number;
+}

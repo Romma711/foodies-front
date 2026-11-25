@@ -1,4 +1,4 @@
-import { HttpClient, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { inject, Service, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
@@ -9,12 +9,15 @@ import {
   Carta,
   CupoEspecial,
   CupoEspecialRequest,
+  EntradaListaEsperaPanel,
   Espacio,
   EspacioRequest,
   EstadoReserva,
   MiRestaurante,
   MiRestaurantePatch,
   ReservaPanel,
+  Turno,
+  TurnoRequest,
 } from '../models/panel.models';
 
 /** API del gestor del restaurante. Cada llamada usa la sesión RESTAURANTE, nunca el token de otro rol. */
@@ -163,5 +166,42 @@ export class RestaurantePanelService {
       { estado },
       { context: withRole('RESTAURANTE') },
     );
+  }
+
+  /** Shifts of the restaurant (rule D2). Without shifts capacity is per day. */
+  getTurnos(): Observable<Turno[]> {
+    return this.http.get<Turno[]>(`${this.meUrl}/turnos`, { context: withRole('RESTAURANTE') });
+  }
+
+  crearTurno(turno: TurnoRequest): Observable<Turno> {
+    return this.http.post<Turno>(`${this.meUrl}/turnos`, turno, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** 409 when the shift has future active reservations (rule D24). */
+  actualizarTurno(id: number, turno: TurnoRequest): Observable<Turno> {
+    return this.http.put<Turno>(`${this.meUrl}/turnos/${id}`, turno, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /** 409 when the shift has future active reservations (rule D24). */
+  eliminarTurno(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.meUrl}/turnos/${id}`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /**
+   * Read-only waitlist of the restaurant, ordered by date, time and sign-up. Without `fecha` the
+   * server returns today and the coming days.
+   */
+  getListaEspera(fecha?: string): Observable<EntradaListaEsperaPanel[]> {
+    const params = fecha ? new HttpParams().set('fecha', fecha) : undefined;
+    return this.http.get<EntradaListaEsperaPanel[]>(`${this.meUrl}/lista-espera`, {
+      params,
+      context: withRole('RESTAURANTE'),
+    });
   }
 }

@@ -10,19 +10,23 @@ import {
 } from '../../../restaurantes/utils/fotos';
 import { mensajeDeNegocio, panelErrorMessage } from '../../utils/panel-errors';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
+import { I18n } from '@core/i18n/i18n.service';
+import { Mensaje } from '@core/i18n/traducir';
+import { TPipe } from '@core/i18n/t.pipe';
 
 /** Foto a reemplazar con el archivo que se elija; null para subir una nueva. */
 type Destino = Foto | null;
 
 /** Fotos del restaurante: la portada es la miniatura del catálogo; las demás, la galería del detalle. */
 @Component({
-  imports: [ConfirmDialog],
+  imports: [TPipe, ConfirmDialog],
   selector: 'app-fotos-panel',
   styleUrl: './fotos.css',
   templateUrl: './fotos.html',
 })
 export class FotosPanel implements OnInit {
   private readonly panel = inject(RestaurantePanelService);
+  private readonly i18n = inject(I18n);
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
   private readonly confirm = viewChild.required(ConfirmDialog);
   private destino: Destino = null;
@@ -31,9 +35,9 @@ export class FotosPanel implements OnInit {
   protected readonly minFotos = MIN_FOTOS;
   protected readonly maxFotos = MAX_FOTOS;
   protected readonly loading = signal(true);
-  protected readonly loadError = signal<string | null>(null);
-  protected readonly error = signal<string | null>(null);
-  protected readonly status = signal<string | null>(null);
+  protected readonly loadError = signal<Mensaje | null>(null);
+  protected readonly error = signal<Mensaje | null>(null);
+  protected readonly status = signal<Mensaje | null>(null);
   protected readonly busy = signal(false);
   protected readonly fotos = signal<Foto[]>([]);
 
@@ -51,7 +55,7 @@ export class FotosPanel implements OnInit {
     try {
       this.fotos.set(await firstValueFrom(this.panel.getFotos()));
     } catch (error) {
-      this.loadError.set(panelErrorMessage(error, 'No pudimos cargar tus fotos.'));
+      this.loadError.set(panelErrorMessage(error, 'panel.fotos.error.cargar'));
     } finally {
       this.loading.set(false);
     }
@@ -87,15 +91,15 @@ export class FotosPanel implements OnInit {
       if (destino === null) {
         const nueva = await firstValueFrom(this.panel.subirFoto(archivo));
         this.fotos.update((fotos) => [...fotos, nueva]);
-        this.status.set('Foto subida.');
+        this.status.set({ clave: 'panel.fotos.subida' });
       } else {
         const nueva = await firstValueFrom(this.panel.reemplazarFoto(destino.id, archivo));
         this.fotos.update((fotos) => fotos.map((f) => (f.id === nueva.id ? nueva : f)));
-        this.status.set('Foto reemplazada.');
+        this.status.set({ clave: 'panel.fotos.reemplazada' });
       }
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'No pudimos subir la foto. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.fotos.error.subir'),
       );
     } finally {
       this.busy.set(false);
@@ -108,11 +112,10 @@ export class FotosPanel implements OnInit {
     this.busy.set(true);
     try {
       this.fotos.set(await firstValueFrom(this.panel.elegirPortada(foto.id)));
-      this.status.set('Portada actualizada.');
+      this.status.set({ clave: 'panel.fotos.portadaActualizada' });
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ??
-          panelErrorMessage(error, 'No pudimos cambiar la portada. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.fotos.error.portada'),
       );
     } finally {
       this.busy.set(false);
@@ -123,9 +126,9 @@ export class FotosPanel implements OnInit {
     this.error.set(null);
     this.status.set(null);
     const confirmado = await this.confirm().open({
-      heading: '¿Eliminar esta foto?',
-      message: 'Los clientes dejan de verla en la página de tu restaurante.',
-      confirmLabel: 'Eliminar foto',
+      heading: this.i18n.t('panel.fotos.eliminarTitulo'),
+      message: this.i18n.t('panel.fotos.eliminarTexto'),
+      confirmLabel: this.i18n.t('panel.fotos.eliminarBoton'),
       tone: 'danger',
     });
     if (!confirmado) {
@@ -135,10 +138,10 @@ export class FotosPanel implements OnInit {
     try {
       await firstValueFrom(this.panel.eliminarFoto(foto.id));
       this.fotos.update((fotos) => fotos.filter((f) => f.id !== foto.id));
-      this.status.set('Foto eliminada.');
+      this.status.set({ clave: 'panel.fotos.eliminada' });
     } catch (error) {
       this.error.set(
-        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'No pudimos eliminar la foto. Intentá de nuevo.'),
+        mensajeDeNegocio(error) ?? panelErrorMessage(error, 'panel.fotos.error.eliminar'),
       );
     } finally {
       this.busy.set(false);

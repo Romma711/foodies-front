@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { ToastService } from './toast.service';
+import { TPipe } from '@core/i18n/t.pipe';
 
 @Component({
   selector: 'app-toast-outlet',
-  imports: [NgTemplateOutlet],
+  imports: [TPipe, NgTemplateOutlet],
   template: `
     <div
       class="pointer-events-none fixed inset-x-4 bottom-4 z-50 flex flex-col items-center gap-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:items-end"
@@ -71,7 +72,7 @@ import { ToastService } from './toast.service';
         <button
           type="button"
           class="-m-1 rounded-full p-1 text-ink-500 transition hover:bg-cream-100 hover:text-ink-900"
-          aria-label="Cerrar notificación"
+          [attr.aria-label]="'comun.cerrarNotificacion' | t"
           (click)="cerrar(toast.id)"
         >
           <svg

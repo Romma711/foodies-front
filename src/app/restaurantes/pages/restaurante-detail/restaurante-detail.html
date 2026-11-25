@@ -23,7 +23,7 @@
       >
         <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
       </svg>
-      Volver a restaurantes
+      {{ 'detalle.volver' | t }}
     </a>
 
     @if (!idValido()) {
@@ -31,15 +31,15 @@
         class="mt-8 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
         role="alert"
       >
-        <h1 class="text-lg font-bold text-ink-900">El restaurante solicitado no es válido</h1>
+        <h1 class="text-lg font-bold text-ink-900">{{ 'detalle.invalidoTitulo' | t }}</h1>
         <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">
-          Revisá el enlace o volvé al listado para elegir un restaurante.
+          {{ 'detalle.invalidoTexto' | t }}
         </p>
         <a
           routerLink="/restaurantes"
           class="mt-5 inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
         >
-          Ver restaurantes
+          {{ 'detalle.verRestaurantes' | t }}
         </a>
       </div>
     } @else if (cargando() && !restaurante()) {
@@ -52,28 +52,28 @@
           class="size-10 animate-spin rounded-full border-2 border-brand-100 border-t-brand-500"
           aria-hidden="true"
         ></span>
-        <p class="mt-4 text-sm font-medium text-ink-500">Cargando restaurante…</p>
+        <p class="mt-4 text-sm font-medium text-ink-500">{{ 'detalle.cargando' | t }}</p>
       </div>
     } @else if (error()) {
       <div
         class="mt-8 rounded-2xl border border-red-100 bg-red-50/60 px-6 py-12 text-center"
         role="alert"
       >
-        <h1 class="text-lg font-bold text-ink-900">No pudimos cargar el restaurante</h1>
-        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error() }}</p>
+        <h1 class="text-lg font-bold text-ink-900">{{ 'detalle.errorTitulo' | t }}</h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-700">{{ error()! | t }}</p>
         <div class="mt-5 flex flex-wrap justify-center gap-3">
           <button
             type="button"
             class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
             (click)="recargar()"
           >
-            Reintentar
+            {{ 'comun.reintentar' | t }}
           </button>
           <a
             routerLink="/restaurantes"
             class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-white"
           >
-            Ver restaurantes
+            {{ 'detalle.verRestaurantes' | t }}
           </a>
         </div>
       </div>
@@ -88,7 +88,7 @@
             @if (portada(); as foto) {
               <img
                 [src]="foto.url"
-                [alt]="'Portada de ' + resto.nombre"
+                [alt]="'detalle.portadaDe' | t: { nombre: resto.nombre }"
                 class="portada absolute inset-0 size-full object-cover"
               />
             }
@@ -97,7 +97,7 @@
             <span
               class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-bold tracking-wide text-brand-700 uppercase ring-1 ring-brand-100"
             >
-              {{ especialidadLabels[resto.especialidad] }}
+              {{ especialidadLabels[resto.especialidad] | t }}
             </span>
 
             <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
@@ -123,9 +123,11 @@
 
             <div class="mt-6 grid gap-4">
               <div class="rounded-2xl bg-cream-50/80 p-4 ring-1 ring-line/60">
-                <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">Especialidad</p>
+                <p class="text-xs font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'detalle.especialidad' | t }}
+                </p>
                 <p class="mt-1 text-lg font-extrabold tracking-tight text-ink-900">
-                  {{ especialidadLabels[resto.especialidad] }}
+                  {{ especialidadLabels[resto.especialidad] | t }}
                 </p>
               </div>
             </div>
@@ -136,7 +138,7 @@
                 class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
                 (click)="verResenas()"
               >
-                Ver reseñas
+                {{ 'detalle.verResenas' | t }}
               </button>
 
               @if (carta(); as cartaActual) {
@@ -146,7 +148,8 @@
                   target="_blank"
                   rel="noopener"
                 >
-                  Ver carta<span class="sr-only"> (se abre en una pestaña nueva)</span>
+                  {{ 'detalle.verCarta' | t
+                  }}<span class="sr-only">{{ 'comun.pestanaNueva' | t }}</span>
                 </a>
               }
 
@@ -159,7 +162,7 @@
                       data-foco="reservar"
                       (click)="abrirFormulario()"
                     >
-                      Reservar mesa
+                      {{ 'detalle.reservarMesa' | t }}
                     </button>
                   }
                 } @else {
@@ -167,7 +170,7 @@
                     routerLink="/login"
                     class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
                   >
-                    Volvé a iniciar sesión para reservar
+                    {{ 'detalle.volveAIniciar' | t }}
                   </a>
                 }
               } @else {
@@ -175,23 +178,24 @@
                   routerLink="/login"
                   class="inline-flex items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
                 >
-                  Iniciá sesión para reservar
+                  {{ 'detalle.iniciaParaReservar' | t }}
                 </a>
               }
             </div>
 
             <p class="mt-6 text-sm leading-6 text-ink-500">
-              Según el restaurante, tu reserva puede confirmarse al instante o quedar pendiente
-              hasta que la revisen.
+              {{ 'detalle.aviso' | t }}
             </p>
 
             @if (horarioSemanal().length) {
               <div class="mt-8" data-testid="horarios">
-                <h2 class="text-sm font-bold tracking-wide text-ink-500 uppercase">Horarios</h2>
+                <h2 class="text-sm font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'detalle.horarios' | t }}
+                </h2>
                 <dl class="mt-3 grid gap-1 text-sm">
                   @for (fila of horarioSemanal(); track fila.dia) {
                     <div class="flex justify-between gap-4 border-b border-line/50 py-1.5">
-                      <dt class="font-semibold text-ink-900">{{ fila.dia }}</dt>
+                      <dt class="font-semibold text-ink-900">{{ fila.dia | t }}</dt>
                       <dd class="text-ink-700">{{ fila.texto }}</dd>
                     </div>
                   }
@@ -201,7 +205,9 @@
 
             @if (galeria().length) {
               <div class="mt-8">
-                <h2 class="text-sm font-bold tracking-wide text-ink-500 uppercase">Fotos</h2>
+                <h2 class="text-sm font-bold tracking-wide text-ink-500 uppercase">
+                  {{ 'detalle.fotos' | t }}
+                </h2>
                 <ul class="galeria mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   @for (foto of galeria(); track foto.id; let i = $index) {
                     <li>
@@ -213,11 +219,11 @@
                       >
                         <img
                           [src]="foto.url"
-                          [alt]="resto.nombre + ', foto ' + (i + 1)"
+                          [alt]="'detalle.fotoN' | t: { nombre: resto.nombre, n: i + 1 }"
                           loading="lazy"
                           class="aspect-[4/3] w-full object-cover transition hover:scale-105"
                         />
-                        <span class="sr-only"> (se abre en una pestaña nueva)</span>
+                        <span class="sr-only">{{ 'comun.pestanaNueva' | t }}</span>
                       </a>
                     </li>
                   }
@@ -255,18 +261,26 @@
                 tabindex="-1"
                 data-foco="reserva-enviada"
               >
-                Reserva enviada
+                {{ 'detalle.reservaEnviada' | t }}
               </h2>
               <p class="mt-2 text-sm leading-6 text-emerald-900">
-                {{ formatearFecha(reserva.fecha) }} a las
-                {{ formatearHora(reserva.horariollegada) }} · {{ reserva.cantidad }}
-                {{ reserva.cantidad === 1 ? 'persona' : 'personas' }}
+                {{
+                  'reserva.resumen'
+                    | t
+                      : {
+                          fecha: formatearFecha(reserva.fecha),
+                          hora: formatearHora(reserva.horariollegada),
+                          cantidad:
+                            (reserva.cantidad === 1 ? 'reserva.persona' : 'reserva.personas')
+                            | t: { n: reserva.cantidad },
+                        }
+                }}
                 @if (reserva.espacioNombre) {
                   · {{ reserva.espacioNombre }}
                 }
               </p>
               <p class="mt-2 text-sm leading-6 text-emerald-800">
-                Queda pendiente de confirmación por el restaurante.
+                {{ 'detalle.pendiente' | t }}
               </p>
 
               <div class="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -274,14 +288,14 @@
                   routerLink="/mis-reservas"
                   class="inline-flex items-center justify-center rounded-full bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
                 >
-                  Ver mis reservas
+                  {{ 'home.verMisReservas' | t }}
                 </a>
                 <button
                   type="button"
                   class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-emerald-900 ring-1 ring-emerald-200 transition hover:bg-emerald-100"
                   (click)="nuevaReserva()"
                 >
-                  Hacer otra reserva
+                  {{ 'detalle.otraReserva' | t }}
                 </button>
               </div>
             </div>
@@ -294,28 +308,30 @@
             />
           } @else {
             <aside class="rounded-3xl border border-line/70 bg-white/90 p-6 shadow-card sm:p-7">
-              <h2 class="text-lg font-extrabold tracking-tight text-ink-900">Reservá en 3 pasos</h2>
+              <h2 class="text-lg font-extrabold tracking-tight text-ink-900">
+                {{ 'detalle.pasosTitulo' | t }}
+              </h2>
               <ol class="mt-4 space-y-3 text-sm leading-6 text-ink-600">
                 <li class="flex gap-3">
                   <span
                     class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
                     >1</span
                   >
-                  Elegí fecha, horario y cantidad de personas.
+                  {{ 'detalle.paso1' | t }}
                 </li>
                 <li class="flex gap-3">
                   <span
                     class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
                     >2</span
                   >
-                  Enviá la solicitud y esperá la confirmación.
+                  {{ 'detalle.paso2' | t }}
                 </li>
                 <li class="flex gap-3">
                   <span
                     class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700"
                     >3</span
                   >
-                  Seguí el estado desde “Mis reservas”.
+                  {{ 'detalle.paso3' | t }}
                 </li>
               </ol>
 
@@ -324,7 +340,7 @@
                   routerLink="/login"
                   class="mt-5 inline-flex w-full items-center justify-center rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700"
                 >
-                  Iniciar sesión
+                  {{ 'nav.iniciarSesion' | t }}
                 </a>
               }
             </aside>

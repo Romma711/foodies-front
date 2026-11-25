@@ -1,0 +1,68 @@
+@import '../panel-page.css';
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+}
+
+.toolbar .field {
+  margin: 0;
+}
+
+.toolbar .muted {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.day h2 {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+.today {
+  padding: 0.125rem var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entrada {
+  display: grid;
+  grid-template-columns: 4rem 1fr auto;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+}
+
+.time {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.who p {
+  margin: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-muted-fg);
+  text-align: center;
+}

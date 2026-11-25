@@ -1,33 +1,48 @@
 @if (loading()) {
-  <p role="status">Cargando tu restaurante…</p>
+  <p role="status">{{ 'panel.cargandoRestaurante' | t }}</p>
 } @else if (error(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else if (restaurante(); as resto) {
   <header class="page-header">
     <h1>{{ resto.nombre }}</h1>
     <p class="subtitle">
-      {{ resto.ubicacion }} · {{ especialidadLabels[resto.especialidad] }} · Capacidad
-      {{ resto.cupoMaximo }}
+      {{
+        'panel.resumen.subtitulo'
+          | t
+            : {
+                ubicacion: resto.ubicacion,
+                especialidad: (especialidadLabels[resto.especialidad] | t),
+                capacidad: resto.cupoMaximo,
+              }
+      }}
     </p>
   </header>
 
   <ul class="stats">
     <li class="card stat">
       <span class="stat-value">{{ pendientes() }}</span>
-      <span class="stat-label">Reservas esperando tu respuesta</span>
-      <a routerLink="/restaurante/reservas">Revisar reservas</a>
+      <span class="stat-label">{{ 'panel.resumen.esperando' | t }}</span>
+      <a routerLink="/restaurante/reservas">{{ 'panel.resumen.revisar' | t }}</a>
     </li>
     <li class="card stat">
       <span class="stat-value">{{ hoy().length }}</span>
-      <span class="stat-label">Reservas de hoy · {{ personasHoy() }} personas</span>
+      <span class="stat-label">{{ 'panel.resumen.hoy' | t: { n: personasHoy() } }}</span>
     </li>
     <li class="card stat">
-      <span class="stat-value">{{ resto.carta ? 'Publicada' : 'Sin cargar' }}</span>
-      <span class="stat-label">Carta en PDF</span>
-      <a routerLink="/restaurante/carta">{{ resto.carta ? 'Gestionar carta' : 'Subí tu carta' }}</a>
+      <span class="stat-value">{{
+        (resto.carta ? 'panel.resumen.publicada' : 'panel.resumen.sinCargar') | t
+      }}</span>
+      <span class="stat-label">{{ 'panel.resumen.cartaPdf' | t }}</span>
+      <a routerLink="/restaurante/carta">{{
+        (resto.carta ? 'panel.resumen.gestionarCarta' : 'panel.resumen.subiCarta') | t
+      }}</a>
     </li>
   </ul>
 }

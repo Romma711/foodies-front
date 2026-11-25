@@ -9,44 +9,55 @@ export const panelRoutes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'Resumen · Foodies',
+        title: 'titulo.panel.resumen',
         loadComponent: () => import('./pages/resumen/resumen').then((m) => m.Resumen),
       },
       {
         path: 'perfil',
-        title: 'Perfil · Foodies',
+        title: 'titulo.panel.perfil',
         loadComponent: () => import('./pages/perfil/perfil').then((m) => m.Perfil),
       },
       {
         path: 'carta',
-        title: 'Carta · Foodies',
+        title: 'titulo.panel.carta',
         loadComponent: () => import('./pages/carta/carta').then((m) => m.CartaPanel),
       },
       {
         path: 'espacios',
-        title: 'Espacios · Foodies',
+        title: 'titulo.panel.espacios',
         loadComponent: () => import('./pages/espacios/espacios').then((m) => m.EspaciosPanel),
       },
       {
         path: 'horarios',
-        title: 'Horarios · Foodies',
+        title: 'titulo.panel.horarios',
         loadComponent: () => import('./pages/horarios/horarios').then((m) => m.HorariosPanel),
       },
       {
+        path: 'turnos',
+        title: 'titulo.panel.turnos',
+        loadComponent: () => import('./pages/turnos/turnos').then((m) => m.TurnosPanel),
+      },
+      {
         path: 'capacidad',
-        title: 'Capacidad · Foodies',
+        title: 'titulo.panel.capacidad',
         loadComponent: () =>
           import('./pages/cupos-especiales/cupos-especiales').then((m) => m.CuposEspeciales),
       },
       {
         path: 'fotos',
-        title: 'Fotos · Foodies',
+        title: 'titulo.panel.fotos',
         loadComponent: () => import('./pages/fotos/fotos').then((m) => m.FotosPanel),
       },
       {
         path: 'reservas',
-        title: 'Reservas · Foodies',
+        title: 'titulo.panel.reservas',
         loadComponent: () => import('./pages/reservas/reservas').then((m) => m.Reservas),
+      },
+      {
+        path: 'lista-espera',
+        title: 'titulo.panel.listaEspera',
+        loadComponent: () =>
+          import('./pages/lista-espera/lista-espera').then((m) => m.ListaEsperaPanel),
       },
     ],
   },

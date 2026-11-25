@@ -1,3 +1,5 @@
+import { Clave, Traductor, traductorEspanol } from '../../core/i18n/traducir';
+
 /** Días de la semana como los nombra el backend (`java.time.DayOfWeek`), de lunes a domingo. */
 export const DIAS_SEMANA = [
   'MONDAY',
@@ -11,14 +13,15 @@ export const DIAS_SEMANA = [
 
 export type DiaSemana = (typeof DIAS_SEMANA)[number];
 
-export const DIA_SEMANA_LABELS: Record<DiaSemana, string> = {
-  MONDAY: 'Lunes',
-  TUESDAY: 'Martes',
-  WEDNESDAY: 'Miércoles',
-  THURSDAY: 'Jueves',
-  FRIDAY: 'Viernes',
-  SATURDAY: 'Sábado',
-  SUNDAY: 'Domingo',
+/** Translation keys. */
+export const DIA_SEMANA_LABELS: Record<DiaSemana, Clave> = {
+  MONDAY: 'dia.MONDAY',
+  TUESDAY: 'dia.TUESDAY',
+  WEDNESDAY: 'dia.WEDNESDAY',
+  THURSDAY: 'dia.THURSDAY',
+  FRIDAY: 'dia.FRIDAY',
+  SATURDAY: 'dia.SATURDAY',
+  SUNDAY: 'dia.SUNDAY',
 };
 
 /** `FranjaHorariaDTO`: horas `HH:mm`; un cierre `00:00` es medianoche. */
@@ -41,8 +44,18 @@ export function franjasDelDia(franjas: readonly FranjaHoraria[], dia: DiaSemana)
   return franjas.filter((f) => f.dia === dia).sort((a, b) => a.apertura.localeCompare(b.apertura));
 }
 
+/** Minutes before closing of the latest arrival the restaurant accepts (rule D11). */
+export const MINUTOS_ULTIMA_LLEGADA = 60;
+
+function aMinutos(hora: string): number {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** True when `hora` is a valid arrival: inside the range and at least 60 minutes before closing. */
 function incluye(franja: FranjaHoraria, hora: string): boolean {
-  return hora >= franja.apertura && (franja.cierre === '00:00' || hora < franja.cierre);
+  const cierre = franja.cierre === '00:00' ? 24 * 60 : aMinutos(franja.cierre);
+  return hora >= franja.apertura && aMinutos(hora) <= cierre - MINUTOS_ULTIMA_LLEGADA;
 }
 
 /**
@@ -61,9 +74,14 @@ export function horariosDelDia(
   return ofrecidos.filter((hora) => delDia.some((franja) => incluye(franja, hora)));
 }
 
-/** "12:00 a 16:00 y 20:00 a 00:00", o "Cerrado". */
-export function textoFranjas(franjas: readonly FranjaHoraria[]): string {
+/** "12:00 a 16:00 y 20:00 a 00:00", o "Cerrado" (in the language of `t`, Spanish by default). */
+export function textoFranjas(
+  franjas: readonly FranjaHoraria[],
+  t: Traductor = traductorEspanol,
+): string {
   return franjas.length === 0
-    ? 'Cerrado'
-    : franjas.map((f) => `${f.apertura} a ${f.cierre}`).join(' y ');
+    ? t('horario.cerrado')
+    : franjas
+        .map((f) => t('horario.franja', { apertura: f.apertura, cierre: f.cierre }))
+        .join(t('horario.separador'));
 }

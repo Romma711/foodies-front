@@ -95,7 +95,9 @@ El seed se puede correr **todas las veces que quieras**: siempre deja el mismo e
 
 Resultado: 7 restaurantes de Mar del Plata (dos parrillas, sushi, pastas, pescados, café y minutas), 9 clientes, 15 reseñas y 12 reservas (pendientes, aceptadas y canceladas) en los próximos días.
 
-Lo único que no se puede deshacer por la API son los **strikes**: se acumulan entre corridas (el límite es 3 por cuenta).
+Después de cada corrida del seed, cargá las reseñas con asistencia verificada. La API solo deja reseñar a quien asistió, y el seed borra esas reservas pasadas. El script es `docs/db/seed-demo-resenas.sql` del back, se corre contra la misma base y se puede repetir sin duplicar nada. Cómo correrlo está explicado en su encabezado.
+
+Los **strikes** se acumulan entre corridas (el límite es 3 por cuenta). Si una cuenta de la demo llega a 3, el admin le puede quitar uno desde **Entidades → Historial**, escribiendo el motivo.
 
 ### Cuentas de la demo
 

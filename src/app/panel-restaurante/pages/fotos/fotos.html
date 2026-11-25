@@ -1,29 +1,32 @@
 <header class="page-header">
-  <h1>Fotos</h1>
+  <h1>{{ 'panel.fotos.titulo' | t }}</h1>
   <p class="subtitle">
-    La portada es la foto que ven los clientes en la lista de restaurantes y arriba de la página de
-    tu restaurante. Tenés que tener entre {{ minFotos }} y {{ maxFotos }} fotos.
+    {{ 'panel.fotos.subtitulo' | t: { min: minFotos, max: maxFotos } }}
   </p>
 </header>
 
 @if (loading()) {
-  <p role="status">Cargando tus fotos…</p>
+  <p role="status">{{ 'panel.fotos.cargando' | t }}</p>
 } @else if (loadError(); as message) {
   <div class="stack">
-    <p class="alert alert-error" role="alert">{{ message }}</p>
-    <div><button type="button" class="btn btn-secondary" (click)="load()">Reintentar</button></div>
+    <p class="alert alert-error" role="alert">{{ message | t }}</p>
+    <div>
+      <button type="button" class="btn btn-secondary" (click)="load()">
+        {{ 'comun.reintentar' | t }}
+      </button>
+    </div>
   </div>
 } @else {
   <div class="stack">
     @if (!completas()) {
-      <p class="alert alert-warning faltan">Te faltan fotos: subí al menos {{ minFotos }}.</p>
+      <p class="alert alert-warning faltan">{{ 'panel.fotos.faltan' | t: { min: minFotos } }}</p>
     }
     @if (error(); as message) {
-      <p class="alert alert-error" role="alert">{{ message }}</p>
+      <p class="alert alert-error" role="alert">{{ message | t }}</p>
     }
-    <p class="visually-hidden" role="status">{{ status() }}</p>
+    <p class="visually-hidden" role="status">{{ status() | t }}</p>
     @if (status(); as message) {
-      <p class="alert alert-success" aria-hidden="true">{{ message }}</p>
+      <p class="alert alert-success" aria-hidden="true">{{ message | t }}</p>
     }
 
     @if (fotos().length) {
@@ -31,9 +34,9 @@
         @for (foto of fotos(); track foto.id; let i = $index) {
           <li class="card foto">
             <div class="marco">
-              <img class="imagen" [src]="foto.url" [alt]="'Foto ' + (i + 1)" />
+              <img class="imagen" [src]="foto.url" [alt]="'panel.fotos.fotoN' | t: { n: i + 1 }" />
               @if (foto.portada) {
-                <span class="badge-portada">Portada</span>
+                <span class="badge-portada">{{ 'fotos.portada' | t }}</span>
               }
             </div>
             <div class="actions">
@@ -42,40 +45,40 @@
                   type="button"
                   class="btn btn-secondary"
                   [disabled]="busy()"
-                  [attr.aria-label]="'Usar la foto ' + (i + 1) + ' como portada'"
+                  [attr.aria-label]="'panel.fotos.usarPortadaN' | t: { n: i + 1 }"
                   (click)="usarComoPortada(foto)"
                 >
-                  Usar como portada
+                  {{ 'panel.fotos.usarPortada' | t }}
                 </button>
               }
               <button
                 type="button"
                 class="btn btn-secondary"
                 [disabled]="busy()"
-                [attr.aria-label]="'Reemplazar la foto ' + (i + 1)"
+                [attr.aria-label]="'panel.fotos.reemplazarN' | t: { n: i + 1 }"
                 (click)="reemplazar(foto)"
               >
-                Reemplazar
+                {{ 'panel.reemplazar' | t }}
               </button>
               <button
                 type="button"
                 class="btn btn-danger"
                 [disabled]="busy() || foto.portada || !puedeBorrar()"
-                [attr.aria-label]="'Eliminar la foto ' + (i + 1)"
+                [attr.aria-label]="'panel.fotos.eliminarN' | t: { n: i + 1 }"
                 (click)="eliminar(foto)"
               >
-                Eliminar
+                {{ 'panel.eliminar' | t }}
               </button>
             </div>
           </li>
         }
       </ul>
-      <p class="muted">La portada no se puede borrar: elegí otra antes.</p>
+      <p class="muted">{{ 'panel.fotos.portadaNoSeBorra' | t }}</p>
       @if (!puedeBorrar()) {
-        <p class="muted">Necesitás al menos {{ minFotos }} fotos: subí otra antes de borrar.</p>
+        <p class="muted">{{ 'panel.fotos.necesitas' | t: { min: minFotos } }}</p>
       }
     } @else {
-      <p class="card empty">Todavía no subiste fotos.</p>
+      <p class="card empty">{{ 'panel.fotos.vacio' | t }}</p>
     }
 
     <div class="actions">
@@ -85,11 +88,11 @@
         [disabled]="busy() || !puedeAgregar()"
         (click)="subir()"
       >
-        Agregar foto
+        {{ 'panel.fotos.agregar' | t }}
       </button>
     </div>
     @if (!puedeAgregar()) {
-      <p class="muted">Llegaste al máximo de {{ maxFotos }} fotos.</p>
+      <p class="muted">{{ 'panel.fotos.maximo' | t: { max: maxFotos } }}</p>
     }
 
     <input

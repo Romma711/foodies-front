@@ -12,6 +12,7 @@ import { ChartConfiguration, Plugin } from 'chart.js';
 import { BAR_CHART_FACTORY } from '../../../shared/charts/bar-chart-factory';
 import { PIE_CHART_FACTORY } from '../../../shared/charts/pie-chart-factory';
 import { ItemRanking } from '../../models/metricas-admin';
+import { TPipe } from '@core/i18n/t.pipe';
 
 // Chart.js paints on a canvas and cannot read Tailwind classes; these mirror the @theme tokens.
 const COLOR_BRAND = '#f26b3a';
@@ -70,6 +71,7 @@ function partirEtiqueta(texto: string, max = MAX_LINEA_VERTICAL): string[] {
  * table with the same data; the pie shows its values in a visible legend instead.
  */
 @Component({
+  imports: [TPipe],
   selector: 'app-ranking-chart',
   template: `
     <section
@@ -116,8 +118,8 @@ function partirEtiqueta(texto: string, max = MAX_LINEA_VERTICAL): string[] {
             </caption>
             <thead>
               <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Valor</th>
+                <th scope="col">{{ 'admin.ranking.nombre' | t }}</th>
+                <th scope="col">{{ 'admin.ranking.valor' | t }}</th>
               </tr>
             </thead>
             <tbody>
@@ -134,7 +136,7 @@ function partirEtiqueta(texto: string, max = MAX_LINEA_VERTICAL): string[] {
         <p
           class="mt-4 flex flex-1 items-center justify-center rounded-xl bg-cream-50 px-4 py-10 text-center text-sm text-ink-500"
         >
-          Todavía no hay datos para este ranking.
+          {{ 'admin.ranking.vacio' | t }}
         </p>
       }
     </section>

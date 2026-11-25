@@ -16,6 +16,7 @@ describe('ReservaService.modificar', () => {
     idRestaurant: 5,
     idEspacio: 3,
     espacioNombre: 'Salón principal',
+    idTurno: null,
   };
   const otra: ReservaListDTO = { ...aceptada, id: 8, nombreResto: 'Ochiwan' };
 
@@ -67,6 +68,7 @@ describe('ReservaService.modificar', () => {
       nombreResto: 'La Trattoria',
       idEspacio: 4,
       espacioNombre: 'Patio',
+      idTurno: null,
     };
     req.flush(actualizada);
 
@@ -82,6 +84,7 @@ describe('ReservaService.modificar', () => {
         idRestaurant: 5,
         idEspacio: 4,
         espacioNombre: 'Patio',
+        idTurno: null,
       },
       otra,
     ]);
@@ -108,7 +111,7 @@ describe('ReservaService.modificar', () => {
       );
 
     await expect(resultado).rejects.toBeTruthy();
-    expect(service.mutationError()).toBe('No hay cupo disponible para esa fecha.');
+    expect(service.mutationError()).toEqual({ texto: 'No hay cupo disponible para esa fecha.' });
     expect(service.reservas()).toEqual([aceptada, otra]);
   });
 });

@@ -2,10 +2,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { PORTALS } from '../../core/auth/portals';
+import { SelectorIdioma } from '../../core/i18n/selector-idioma/selector-idioma';
 import { CuentaMenu } from '../../shared/ui/cuenta-menu/cuenta-menu';
+import { TPipe } from '@core/i18n/t.pipe';
+import { I18n } from '@core/i18n/i18n.service';
+import { Clave } from '@core/i18n/traducir';
 
 interface AdminNavItem {
-  label: string;
+  label: Clave;
   path: string;
   /** Dashboard is the panel root, so it must match exactly or it would stay active everywhere. */
   exacto: boolean;
@@ -15,19 +19,21 @@ interface AdminNavItem {
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [TPipe, CuentaMenu, RouterLink, RouterLinkActive, RouterOutlet, SelectorIdioma],
   template: `
     <div class="min-h-dvh lg:flex">
       <div
         class="sticky top-0 z-20 flex items-center justify-between border-b border-line/60 bg-white px-4 py-2 lg:hidden"
       >
-        <p class="text-sm font-extrabold tracking-tight text-ink-900">Panel de administración</p>
+        <p class="text-sm font-extrabold tracking-tight text-ink-900">
+          {{ 'admin.layout.titulo' | t }}
+        </p>
         <button
           type="button"
           class="inline-flex size-11 items-center justify-center rounded-full text-ink-700 transition hover:bg-cream-100"
           aria-controls="admin-sidebar"
           [attr.aria-expanded]="menuAbierto()"
-          [attr.aria-label]="menuAbierto() ? 'Cerrar menú del panel' : 'Abrir menú del panel'"
+          [attr.aria-label]="(menuAbierto() ? 'panel.cerrarMenu' : 'panel.abrirMenu') | t"
           (click)="alternarMenu()"
         >
           <svg
@@ -72,11 +78,13 @@ interface AdminNavItem {
           </span>
           <div>
             <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Foodies</p>
-            <p class="text-sm font-extrabold tracking-tight text-ink-900">Administración</p>
+            <p class="text-sm font-extrabold tracking-tight text-ink-900">
+              {{ 'admin.layout.administracion' | t }}
+            </p>
           </div>
         </div>
 
-        <nav aria-label="Panel de administración">
+        <nav [attr.aria-label]="'admin.layout.titulo' | t">
           <ul class="space-y-1">
             @for (item of navegacion; track item.path) {
               <li>
@@ -100,12 +108,14 @@ interface AdminNavItem {
                   >
                     <path [attr.d]="item.icono" />
                   </svg>
-                  {{ item.label }}
+                  {{ item.label | t }}
                 </a>
               </li>
             }
           </ul>
         </nav>
+
+        <app-selector-idioma />
 
         <app-cuenta-menu [nombre]="nombre()" (cerrarSesion)="cerrarSesion()" />
       </aside>
@@ -121,28 +131,29 @@ interface AdminNavItem {
 export class AdminLayout {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   protected readonly navegacion: readonly AdminNavItem[] = [
     {
-      label: 'Dashboard',
+      label: 'admin.nav.dashboard',
       path: '/admin',
       exacto: true,
       icono: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
     },
     {
-      label: 'Aceptar',
+      label: 'admin.nav.aceptar',
       path: '/admin/aceptar',
       exacto: false,
       icono: 'M3 21h18M5 21V8l7-5 7 5v13M9 13l2 2 4-4',
     },
     {
-      label: 'Moderación',
+      label: 'admin.nav.moderacion',
       path: '/admin/moderacion',
       exacto: false,
       icono: 'M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3ZM9 12l2 2 4-4',
     },
     {
-      label: 'Entidades',
+      label: 'admin.nav.entidades',
       path: '/admin/entidades',
       exacto: false,
       icono:
@@ -154,7 +165,9 @@ export class AdminLayout {
   protected readonly menuAbierto = signal(false);
 
   /** The admin has no display name: the sidebar shows the account email. */
-  protected readonly nombre = computed(() => this.auth.subject('ADMIN') ?? 'Administrador');
+  protected readonly nombre = computed(
+    () => this.auth.subject('ADMIN') ?? this.i18n.t('admin.layout.administrador'),
+  );
 
   protected alternarMenu(): void {
     this.menuAbierto.update((abierto) => !abierto);
