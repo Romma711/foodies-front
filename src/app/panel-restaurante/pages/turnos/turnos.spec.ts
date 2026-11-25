@@ -126,6 +126,28 @@ describe('TurnosPanel', () => {
     );
   });
 
+  it('explica traducido el 409 de un turno superpuesto con el horario del otro (S7b)', async () => {
+    await render([turno({ id: 2, inicio: '21:30', fin: '23:00' })]);
+
+    escribir('#turno-dia', 'FRIDAY', 'change');
+    escribir('#turno-inicio', '21:00');
+    await enviar();
+    http.expectOne({ method: 'POST', url: '/api/restaurantes/me/turnos' }).flush(
+      {
+        error: 'conflicto',
+        mensaje: 'Se superpone con el turno de 21:30 a 23:00',
+        codigo: 'TURNO_SUPERPUESTO',
+        params: { inicio: '21:30', fin: '23:00' },
+      },
+      { status: 409, statusText: 'Conflict' },
+    );
+    await settle(fixture);
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Se superpone con el turno de 21:30 a 23:00. Elegí otro horario.',
+    );
+  });
+
   it('modifica un turno existente con PUT', async () => {
     await render([turno()]);
 

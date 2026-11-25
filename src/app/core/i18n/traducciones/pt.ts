@@ -996,6 +996,8 @@ export const PT: Traducciones = {
     'A duração do turno deve estar entre {minimo} e {maximo} minutos.',
   'errores.TURNO_PASA_MEDIANOCHE': 'O turno deve terminar no máximo à meia-noite.',
   'errores.TURNO_DUPLICADO': 'Você já tem um turno nesse dia nesse horário.',
+  'errores.TURNO_SUPERPUESTO':
+    'Ele se sobrepõe ao turno das {inicio} às {fin}. Escolha outro horário.',
   'errores.TURNO_CON_RESERVAS':
     'O turno tem reservas ativas futuras: não pode ser alterado nem removido. Cancele-as primeiro.',
   'errores.TURNO_NO_ENCONTRADO': 'Turno não encontrado.',

@@ -991,6 +991,7 @@ export const ES = {
     'La duración del turno tiene que estar entre {minimo} y {maximo} minutos.',
   'errores.TURNO_PASA_MEDIANOCHE': 'El turno tiene que terminar a la medianoche como máximo.',
   'errores.TURNO_DUPLICADO': 'Ya tenés un turno ese día a esa hora.',
+  'errores.TURNO_SUPERPUESTO': 'Se superpone con el turno de {inicio} a {fin}. Elegí otro horario.',
   'errores.TURNO_CON_RESERVAS':
     'El turno tiene reservas activas a futuro: no se puede cambiar ni borrar. Cancelalas primero.',
   'errores.TURNO_NO_ENCONTRADO': 'Turno no encontrado.',

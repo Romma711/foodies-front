@@ -991,6 +991,8 @@ export const EN: Traducciones = {
     'The time slot length must be between {minimo} and {maximo} minutes.',
   'errores.TURNO_PASA_MEDIANOCHE': 'The time slot must end by midnight at the latest.',
   'errores.TURNO_DUPLICADO': 'You already have a time slot that day at that time.',
+  'errores.TURNO_SUPERPUESTO':
+    'It overlaps with the {inicio} to {fin} time slot. Choose another time.',
   'errores.TURNO_CON_RESERVAS':
     'The time slot has upcoming active reservations: it cannot be changed or removed. Cancel them first.',
   'errores.TURNO_NO_ENCONTRADO': 'Time slot not found.',

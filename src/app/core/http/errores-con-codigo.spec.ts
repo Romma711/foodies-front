@@ -45,6 +45,31 @@ describe('errores del back con código (S1)', () => {
     );
   });
 
+  it('traduce el turno superpuesto con el horario del otro turno (S7b)', () => {
+    const error = response(409, {
+      error: 'conflicto',
+      mensaje: 'Se superpone con el turno de 21:30 a 23:00',
+      codigo: 'TURNO_SUPERPUESTO',
+      params: { inicio: '21:30', fin: '23:00' },
+    });
+
+    expect(textos(error)).toEqual({
+      es: 'Se superpone con el turno de 21:30 a 23:00. Elegí otro horario.',
+      en: 'It overlaps with the 21:30 to 23:00 time slot. Choose another time.',
+      pt: 'Ele se sobrepõe ao turno das 21:30 às 23:00. Escolha outro horário.',
+    });
+  });
+
+  it('traduce los errores de la quita de strikes (S7c)', () => {
+    const motivo = response(400, {
+      mensaje: 'El motivo es obligatorio.',
+      codigo: 'MOTIVO_OBLIGATORIO',
+      params: {},
+    });
+
+    expect(textos(motivo).en).toBe('Write the reason.');
+  });
+
   it('une las listas como en cada idioma', () => {
     const error = response(400, {
       mensaje: 'Ese día el restaurante recibe reservas por turnos: 20:00, 21:30, 23:00. Elegí uno.',
