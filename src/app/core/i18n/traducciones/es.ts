@@ -639,6 +639,8 @@ export const ES = {
   'panel.reservas.filtro.PENDIENTE': 'Pendientes',
   'panel.reservas.filtro.ACEPTADA': 'Aceptadas',
   'panel.reservas.filtro.CANCELADA': 'Canceladas',
+  'panel.reservas.filtro.ASISTENCIA': 'Asistencia pendiente',
+  'panel.reservas.sinAsistenciaPendiente': 'No falta marcar la asistencia de ninguna reserva.',
   'panel.reservas.filtro.TODAS': 'Todas',
   'panel.reservas.error.cargar': 'No pudimos cargar tus reservas.',
   'panel.reservas.quien': '{nombre}, {cantidad} a las {hora}',

@@ -166,6 +166,49 @@ describe('Reservas', () => {
       expect(names()).not.toContain('#5');
     });
 
+    it('el filtro "Asistencia pendiente" muestra solo las que falta marcar (S7f)', async () => {
+      await render([
+        reserva({ id: 1, nombreCliente: '#1', ...dentroDe(120) }),
+        reserva({ id: 2, nombreCliente: '#2', estado: 'ACEPTADA', ...dentroDe(120) }),
+        reserva({ id: 3, nombreCliente: '#3', estado: 'ACEPTADA', ...dentroDe(-30) }),
+        reserva({ id: 4, nombreCliente: '#4', estado: 'ACEPTADA', ...dentroDe(-26 * 60) }),
+        reserva({ id: 5, nombreCliente: '#5', estado: 'ACEPTADA', ...dentroDe(-49 * 60) }),
+        reserva({ id: 6, nombreCliente: '#6', ...dentroDe(-30) }),
+        reserva({ id: 7, nombreCliente: '#7', estado: 'ASISTIO', ...dentroDe(-30) }),
+      ]);
+
+      expect(filter('Asistencia pendiente').textContent).toContain('2');
+      filter('Asistencia pendiente').click();
+      await fixture.whenStable();
+
+      expect(filter('Asistencia pendiente').getAttribute('aria-pressed')).toBe('true');
+      expect(names()).toEqual(['#4', '#3']);
+      expect(acciones(3)).toEqual(['Asistió', 'No asistió']);
+    });
+
+    it('al marcar la asistencia la reserva sale del filtro y queda el texto vacío', async () => {
+      vi.spyOn(ConfirmDialog.prototype, 'open').mockResolvedValue(true);
+      await render([
+        reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ACEPTADA', ...dentroDe(-60) }),
+      ]);
+      filter('Asistencia pendiente').click();
+      await fixture.whenStable();
+
+      element
+        .querySelector<HTMLButtonElement>('[aria-label^="Marcar que Ana Pérez asistió"]')!
+        .click();
+      await settle(fixture);
+      http
+        .expectOne({ method: 'PATCH', url: '/api/reservas/9/estado' })
+        .flush(reserva({ id: 9, nombreCliente: 'Ana Pérez', estado: 'ASISTIO', ...dentroDe(-60) }));
+      await settle(fixture);
+
+      expect(names()).toEqual([]);
+      expect(element.querySelector('.empty')?.textContent).toContain(
+        'No falta marcar la asistencia de ninguna reserva.',
+      );
+    });
+
     it('no ofrece acciones en los estados finales y los muestra con su etiqueta', async () => {
       await render([
         reserva({ id: 6, nombreCliente: '#6', estado: 'RECHAZADA', ...dentroDe(120) }),

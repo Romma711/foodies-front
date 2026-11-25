@@ -1,5 +1,5 @@
 import { reserva } from '../testing/panel.testing';
-import { accionesDe } from './reserva-acciones';
+import { accionesDe, faltaMarcarAsistencia } from './reserva-acciones';
 
 describe('accionesDe (reglas D4 y D21 del panel)', () => {
   const base = reserva({ fecha: '2026-12-05', horarioLlegada: '21:00:00' });
@@ -38,5 +38,13 @@ describe('accionesDe (reglas D4 y D21 del panel)', () => {
       expect(accionesDe({ ...base, estado }, antes)).toEqual([]);
       expect(accionesDe({ ...base, estado }, llegada)).toEqual([]);
     }
+  });
+
+  it('falta marcar la asistencia solo cuando se ofrecen asistió / no asistió (S7f)', () => {
+    expect(faltaMarcarAsistencia({ ...base, estado: 'ACEPTADA' }, llegada)).toBe(true);
+    expect(faltaMarcarAsistencia({ ...base, estado: 'ACEPTADA' }, antes)).toBe(false);
+    expect(faltaMarcarAsistencia({ ...base, estado: 'ACEPTADA' }, pasadas48h)).toBe(false);
+    expect(faltaMarcarAsistencia({ ...base, estado: 'PENDIENTE' }, llegada)).toBe(false);
+    expect(faltaMarcarAsistencia({ ...base, estado: 'ASISTIO' }, llegada)).toBe(false);
   });
 });

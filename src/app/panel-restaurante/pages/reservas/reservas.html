@@ -104,6 +104,8 @@
       <p class="card empty">
         @if (filtro() === 'PENDIENTE') {
           {{ 'panel.reservas.sinPendientes' | t }}
+        } @else if (filtro() === 'ASISTENCIA') {
+          {{ 'panel.reservas.sinAsistenciaPendiente' | t }}
         } @else {
           {{ 'panel.reservas.sinReservas' | t }}
         }

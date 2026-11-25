@@ -10,12 +10,13 @@ import {
 } from '../../utils/panel-errors';
 import { EstadoReserva, ReservaPanel } from '../../models/panel.models';
 import { RestaurantePanelService } from '../../services/restaurante-panel.service';
-import { AccionReserva, accionesDe } from '../../utils/reserva-acciones';
+import { AccionReserva, accionesDe, faltaMarcarAsistencia } from '../../utils/reserva-acciones';
 import { TPipe } from '@core/i18n/t.pipe';
 import { I18n } from '@core/i18n/i18n.service';
 import { Clave, Mensaje } from '@core/i18n/traducir';
 
-type Filtro = EstadoReserva | 'TODAS';
+/** A status, every reservation, or the ones whose attendance still has to be marked (S7f). */
+type Filtro = EstadoReserva | 'TODAS' | 'ASISTENCIA';
 
 interface GrupoPorDia {
   fecha: string;
@@ -111,7 +112,7 @@ export class Reservas implements OnInit {
   /** Past reservations stay visible while their attendance can still be marked. */
   private readonly visibles = computed(() =>
     this.reservas().filter(
-      (r) => this.mostrarPasadas() || r.fecha >= this.today || accionesDe(r).includes('ASISTIO'),
+      (r) => this.mostrarPasadas() || r.fecha >= this.today || faltaMarcarAsistencia(r),
     ),
   );
 
@@ -130,6 +131,11 @@ export class Reservas implements OnInit {
         count: count('ACEPTADA'),
       },
       {
+        value: 'ASISTENCIA' as Filtro,
+        label: 'panel.reservas.filtro.ASISTENCIA' as Clave,
+        count: visibles.filter((r) => faltaMarcarAsistencia(r)).length,
+      },
+      {
         value: 'CANCELADA' as Filtro,
         label: 'panel.reservas.filtro.CANCELADA' as Clave,
         count: count('CANCELADA'),
@@ -146,7 +152,11 @@ export class Reservas implements OnInit {
     const filtro = this.filtro();
     const porDia = new Map<string, ReservaPanel[]>();
     for (const reserva of this.visibles()) {
-      if (filtro === 'TODAS' || reserva.estado === filtro) {
+      if (
+        filtro === 'TODAS' ||
+        reserva.estado === filtro ||
+        (filtro === 'ASISTENCIA' && faltaMarcarAsistencia(reserva))
+      ) {
         porDia.set(reserva.fecha, [...(porDia.get(reserva.fecha) ?? []), reserva]);
       }
     }

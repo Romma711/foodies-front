@@ -32,3 +32,11 @@ export function accionesDe(reserva: ReservaPanel, ahora: Date = new Date()): Acc
   const limite = llegada + HORAS_PARA_MARCAR_ASISTENCIA * 60 * 60 * 1000;
   return reserva.estado === 'ACEPTADA' && momento <= limite ? ['ASISTIO', 'NO_ASISTIO'] : [];
 }
+
+/**
+ * True while the restaurant still has to mark whether the client came: the same moment the panel
+ * offers "attended / no-show" (S7f).
+ */
+export function faltaMarcarAsistencia(reserva: ReservaPanel, ahora: Date = new Date()): boolean {
+  return accionesDe(reserva, ahora).includes('ASISTIO');
+}

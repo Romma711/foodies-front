@@ -641,6 +641,8 @@ export const PT: Traducciones = {
   'panel.reservas.filtro.PENDIENTE': 'Pendentes',
   'panel.reservas.filtro.ACEPTADA': 'Aceitas',
   'panel.reservas.filtro.CANCELADA': 'Canceladas',
+  'panel.reservas.filtro.ASISTENCIA': 'Presença pendente',
+  'panel.reservas.sinAsistenciaPendiente': 'Não falta marcar a presença de nenhuma reserva.',
   'panel.reservas.filtro.TODAS': 'Todas',
   'panel.reservas.error.cargar': 'Não conseguimos carregar suas reservas.',
   'panel.reservas.quien': '{nombre}, {cantidad} às {hora}',
