@@ -40,6 +40,7 @@ describe('PanelLayout', () => {
       'Carta',
       'Fotos',
       'Reservas',
+      'Lista de espera',
       'Espacios',
       'Horarios',
       'Turnos',

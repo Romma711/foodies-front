@@ -1,4 +1,4 @@
-import { HttpClient, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { inject, Service, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { withRole } from '../../core/auth/auth-context';
@@ -9,6 +9,7 @@ import {
   Carta,
   CupoEspecial,
   CupoEspecialRequest,
+  EntradaListaEsperaPanel,
   Espacio,
   EspacioRequest,
   EstadoReserva,
@@ -188,6 +189,18 @@ export class RestaurantePanelService {
   /** 409 when the shift has future active reservations (rule D24). */
   eliminarTurno(id: number): Observable<void> {
     return this.http.delete<void>(`${this.meUrl}/turnos/${id}`, {
+      context: withRole('RESTAURANTE'),
+    });
+  }
+
+  /**
+   * Read-only waitlist of the restaurant, ordered by date, time and sign-up. Without `fecha` the
+   * server returns today and the coming days.
+   */
+  getListaEspera(fecha?: string): Observable<EntradaListaEsperaPanel[]> {
+    const params = fecha ? new HttpParams().set('fecha', fecha) : undefined;
+    return this.http.get<EntradaListaEsperaPanel[]>(`${this.meUrl}/lista-espera`, {
+      params,
       context: withRole('RESTAURANTE'),
     });
   }

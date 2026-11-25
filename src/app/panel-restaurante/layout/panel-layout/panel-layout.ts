@@ -53,6 +53,12 @@ export class PanelLayout {
       icono: 'M5 5h14v15H5V5Zm0 5h14M9 3v4m6-4v4',
     },
     {
+      path: 'lista-espera',
+      label: 'panel.seccion.listaEspera' as const,
+      exact: false,
+      icono: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+    },
+    {
       path: 'espacios',
       label: 'panel.seccion.espacios' as const,
       exact: false,

@@ -53,6 +53,12 @@ export const panelRoutes: Routes = [
         title: 'titulo.panel.reservas',
         loadComponent: () => import('./pages/reservas/reservas').then((m) => m.Reservas),
       },
+      {
+        path: 'lista-espera',
+        title: 'titulo.panel.listaEspera',
+        loadComponent: () =>
+          import('./pages/lista-espera/lista-espera').then((m) => m.ListaEsperaPanel),
+      },
     ],
   },
 ];

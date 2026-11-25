@@ -115,3 +115,22 @@ export interface TurnoRequest {
 export const DURACION_TURNO_POR_DEFECTO = 90;
 export const DURACION_TURNO_MINIMA = 15;
 export const DURACION_TURNO_MAXIMA = 360;
+
+/** Waitlist states the panel shows: the list only brings open entries. */
+export type EstadoListaEsperaPanel = 'ESPERANDO' | 'NOTIFICADA';
+
+/**
+ * `EntradaListaEsperaRestauranteDTO`: one client waiting for a place. `fecha` is `yyyy-MM-dd`,
+ * `horario` is `HH:mm` (the shift start when the restaurant has shifts), `creada` is a local ISO
+ * date-time.
+ */
+export interface EntradaListaEsperaPanel {
+  id: number;
+  fecha: string;
+  horario: string;
+  idTurno: number | null;
+  cantidad: number;
+  estado: EstadoListaEsperaPanel;
+  creada: string;
+  cliente: string;
+}

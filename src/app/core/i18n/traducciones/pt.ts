@@ -25,6 +25,7 @@ export const PT: Traducciones = {
   'titulo.panel.capacidad': 'Capacidade · Foodies',
   'titulo.panel.fotos': 'Fotos · Foodies',
   'titulo.panel.reservas': 'Reservas · Foodies',
+  'titulo.panel.listaEspera': 'Lista de espera · Foodies',
   // App shell, header and footer
   'shell.saltarContenido': 'Pular para o conteúdo',
   'portal.cliente': 'Cliente',
@@ -465,6 +466,20 @@ export const PT: Traducciones = {
   'panel.seccion.horarios': 'Horários',
   'panel.seccion.turnos': 'Turnos',
   'panel.seccion.capacidad': 'Capacidade',
+  'panel.seccion.listaEspera': 'Lista de espera',
+  'panel.listaEspera.titulo': 'Lista de espera',
+  'panel.listaEspera.subtitulo':
+    'Clientes esperando um lugar em um turno lotado. Quando um lugar é liberado, avisamos por e-mail o primeiro da lista.',
+  'panel.listaEspera.fecha': 'Data',
+  'panel.listaEspera.fechaAyuda': 'Vazia mostra hoje e os próximos dias.',
+  'panel.listaEspera.verProximas': 'Ver próximos dias',
+  'panel.listaEspera.cargando': 'Carregando lista de espera…',
+  'panel.listaEspera.error': 'Não foi possível carregar a lista de espera.',
+  'panel.listaEspera.vacio': 'Não há ninguém na lista de espera dos próximos dias.',
+  'panel.listaEspera.vacioDia': 'Não há ninguém na lista de espera nesse dia.',
+  'panel.listaEspera.anotado': 'entrou em {fecha}',
+  'panel.listaEspera.estado.ESPERANDO': 'Aguardando',
+  'panel.listaEspera.estado.NOTIFICADA': 'Avisado por e-mail',
   'panel.error.conexion':
     'Não conseguimos conectar ao servidor. Verifique sua conexão e tente novamente.',
   'panel.error.sesion': 'Sua sessão expirou. Entre novamente.',
