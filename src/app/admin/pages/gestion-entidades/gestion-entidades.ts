@@ -24,6 +24,7 @@ import {
   EstadoRestaurante,
 } from '../../models/entidades-admin';
 import { LIMITE_STRIKES, StrikeModal } from '../../components/strike-modal/strike-modal';
+import { StrikeHistorial } from '../../components/strike-historial/strike-historial';
 import { AdminEntidadesService, TipoEntidad } from '../../services/admin-entidades.service';
 import {
   FILTRO_CLIENTES_VACIO,
@@ -64,7 +65,7 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
  */
 @Component({
   selector: 'app-gestion-entidades',
-  imports: [TPipe, NgTemplateOutlet, StrikeModal, ToastOutlet],
+  imports: [TPipe, NgTemplateOutlet, StrikeModal, StrikeHistorial, ToastOutlet],
   providers: [ToastService],
   template: `
     <section aria-labelledby="titulo-entidades">
@@ -239,6 +240,11 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
                               nombreCliente(cliente),
                               cliente.strikes
                             ),
+                            historial: abrirHistorial(
+                              'cliente',
+                              cliente.id,
+                              nombreCliente(cliente)
+                            ),
                           }
                         "
                       />
@@ -405,6 +411,11 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
                               restaurante.nombre,
                               restaurante.strikes
                             ),
+                            historial: abrirHistorial(
+                              'restaurante',
+                              restaurante.id,
+                              restaurante.nombre
+                            ),
                           }
                         "
                       />
@@ -482,7 +493,13 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
       </button>
     </ng-template>
 
-    <ng-template #celdaStrikes let-strikes="strikes" let-nombre="nombre" let-abrir="abrir">
+    <ng-template
+      #celdaStrikes
+      let-strikes="strikes"
+      let-nombre="nombre"
+      let-abrir="abrir"
+      let-historial="historial"
+    >
       <div class="flex flex-col items-start gap-1.5">
         <div class="flex items-center gap-2">
           <span class="min-w-4 font-semibold tabular-nums text-ink-900" data-testid="strikes">
@@ -497,6 +514,15 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
             (click)="abrir()"
           >
             {{ 'admin.entidades.masStrike' | t }}
+          </button>
+          <button
+            type="button"
+            class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold text-ink-700 ring-1 ring-line transition hover:bg-cream-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+            data-testid="ver-historial"
+            [attr.aria-label]="'admin.entidades.historialDe' | t: { nombre }"
+            (click)="historial()"
+          >
+            {{ 'admin.entidades.historial' | t }}
           </button>
         </div>
         @if (strikes >= limiteStrikes) {
@@ -518,6 +544,8 @@ const ESTADOS: Record<EstadoRestaurante, { texto: Clave; clases: string }> = {
       (enviar)="aplicarStrike($event)"
       (cancelar)="objetivoStrike.set(null)"
     />
+
+    <app-strike-historial />
 
     <app-toast-outlet />
   `,
@@ -567,6 +595,7 @@ export class GestionEntidades {
   protected readonly enviandoStrike = signal(false);
   protected readonly errorStrike = signal<Mensaje | null>(null);
   private readonly modalStrike = viewChild.required(StrikeModal);
+  private readonly historialStrikes = viewChild.required(StrikeHistorial);
   protected readonly pestanas = [
     {
       id: 'clientes' as const,
@@ -668,6 +697,11 @@ export class GestionEntidades {
       this.errorStrike.set(null);
       this.modalStrike().abrir();
     };
+  }
+
+  /** Opens the strike history, where the admin can also remove a strike with a reason. */
+  protected abrirHistorial(tipo: TipoEntidad, id: number, nombre: string): () => void {
+    return () => this.historialStrikes().abrir({ tipo, id, nombre });
   }
 
   /** Sends the strike; the backend emails the warning. The dialog stays open on errors. */

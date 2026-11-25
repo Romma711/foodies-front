@@ -35,6 +35,8 @@ describe('GestionEntidades', () => {
     cambiarActivoCliente: ReturnType<typeof vi.fn>;
     cambiarActivoRestaurante: ReturnType<typeof vi.fn>;
     aplicarStrike: ReturnType<typeof vi.fn>;
+    historialStrikes: ReturnType<typeof vi.fn>;
+    quitarStrike: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -53,6 +55,13 @@ describe('GestionEntidades', () => {
           sugerirBaja: true,
           emailEnviado: true,
         });
+      }),
+      historialStrikes: vi.fn(() => of([])),
+      quitarStrike: vi.fn((tipo: string, id: number) => {
+        clientes.update((lista) =>
+          lista.map((c) => (c.id === id ? { ...c, strikes: c.strikes - 1 } : c)),
+        );
+        return of({ strikes: 1 });
       }),
       cargar: vi.fn(() => of(undefined)),
       cambiarActivoCliente: vi.fn((id: number, activo: boolean) => {
@@ -283,6 +292,56 @@ describe('GestionEntidades', () => {
     expect(host.querySelector('dialog [role="alert"]')?.textContent?.trim()).toBe(
       'No se puede sancionar a un administrador',
     );
+  });
+
+  function botonHistorial(host: HTMLElement): HTMLButtonElement {
+    return host.querySelector<HTMLButtonElement>('tbody [data-testid="ver-historial"]')!;
+  }
+
+  it('cada fila abre el historial de strikes del cliente (S7d)', () => {
+    const { fixture, host } = crear();
+
+    expect(botonHistorial(host).getAttribute('aria-label')).toBe(
+      'Ver el historial de strikes de Ana Gómez',
+    );
+    botonHistorial(host).click();
+    fixture.detectChanges();
+
+    expect(servicio.historialStrikes).toHaveBeenCalledWith('cliente', 4);
+    const dialogos = host.querySelectorAll('dialog');
+    const historial = Array.from(dialogos).find((d) => d.hasAttribute('open'))!;
+    expect(historial.querySelector('h2')?.textContent).toContain(
+      'Historial de strikes de Ana Gómez',
+    );
+  });
+
+  it('al quitar un strike desde el historial se actualiza la fila (S7c)', () => {
+    const { fixture, host } = crear();
+    botonHistorial(host).click();
+    fixture.detectChanges();
+
+    const area = host.querySelector<HTMLTextAreaElement>('app-strike-historial textarea')!;
+    area.value = 'Fue un error';
+    area.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    Array.from(host.querySelectorAll<HTMLButtonElement>('app-strike-historial button'))
+      .find((b) => b.textContent?.trim() === 'Quitar un strike')!
+      .click();
+    fixture.detectChanges();
+
+    expect(servicio.quitarStrike).toHaveBeenCalledWith('cliente', 4, 'Fue un error');
+    expect(host.querySelector('tbody [data-testid="strikes"]')?.textContent?.trim()).toBe('1');
+  });
+
+  it('en restaurantes el historial es el del restaurante', () => {
+    const { fixture, host } = crear();
+    pestana(host, 'Restaurantes').click();
+    fixture.detectChanges();
+
+    botonHistorial(host).click();
+    fixture.detectChanges();
+
+    expect(servicio.historialStrikes).toHaveBeenCalledWith('restaurante', 2);
   });
 
   it('con 3 strikes muestra el badge que sugiere la baja', () => {
