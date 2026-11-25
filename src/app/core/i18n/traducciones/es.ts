@@ -1001,6 +1001,7 @@ export const ES = {
     'Tu restaurante fue dado de baja: el panel queda en modo lectura. Escribinos si creés que es un error.',
   'errores.SIN_STRIKES': 'No tiene strikes para quitar.',
   'errores.MOTIVO_OBLIGATORIO': 'Escribí el motivo.',
+  'errores.MOTIVO_MUY_LARGO': 'El motivo puede tener hasta {maximo} caracteres.',
 };
 
 export type Clave = keyof typeof ES;

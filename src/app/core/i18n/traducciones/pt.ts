@@ -1007,4 +1007,5 @@ export const PT: Traducciones = {
     'Seu restaurante foi desativado: o painel fica somente leitura. Escreva para nós se achar que é um erro.',
   'errores.SIN_STRIKES': 'Esta conta não tem strikes para remover.',
   'errores.MOTIVO_OBLIGATORIO': 'Escreva o motivo.',
+  'errores.MOTIVO_MUY_LARGO': 'O motivo pode ter até {maximo} caracteres.',
 };

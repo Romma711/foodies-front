@@ -1002,4 +1002,5 @@ export const EN: Traducciones = {
     'Your restaurant was deactivated: the dashboard is read-only. Write to us if you think this is a mistake.',
   'errores.SIN_STRIKES': 'This account has no strikes to remove.',
   'errores.MOTIVO_OBLIGATORIO': 'Write the reason.',
+  'errores.MOTIVO_MUY_LARGO': 'The reason can be up to {maximo} characters long.',
 };
